@@ -12,7 +12,7 @@ class SimpleHTTPMusicAssistantClient:
         self.server_url = server_url.rstrip("/")
         self.api_url = f"{self.server_url}/api"
         self.session = session or requests.Session()
-        self.log = LOG(self.__class__.__name__)
+        self.log = LOG()
 
     def send_command(self, command: str, **args) -> Any:
         """Send a command to Music Assistant via HTTP API."""

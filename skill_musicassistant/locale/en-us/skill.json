@@ -1,0 +1,16 @@
+{
+    "skill_id": "skill-musicassistant",
+    "source": "https://github.com/oscillatelabsllc/skill-musicassistant",
+    "package_name": "skill-musicassistant",
+    "pip_spec": "",
+    "license": "Apache-2.0",
+    "author": "Mike Gray/Oscillate Labs",
+    "extra_plugins": {},
+    "icon": "",
+    "images": [],
+    "name": "skill-musicassistant",
+    "description": "",
+    "examples": [],
+    "tags": [],
+    "version": "1.0.0"
+}

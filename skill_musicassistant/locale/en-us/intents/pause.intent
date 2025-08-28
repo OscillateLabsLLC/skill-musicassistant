@@ -1,0 +1,34 @@
+# Pause Intent
+pause
+pause (the|) music
+pause (the|) playback
+pause (the|) player
+pause (the|) audio
+
+# With location
+pause (the|) music (in|on) (the|) {location}
+pause (the|) playback (in|on) (the|) {location}
+pause (the|) player (in|on) (the|) {location}
+pause (the|) audio (in|on) (the|) {location}
+
+# Resume variants
+resume
+resume (the|) music
+resume (the|) playback
+resume (the|) player
+resume (the|) audio
+unpause
+unpause (the|) music
+unpause (the|) playback
+continue playing
+continue (the|) music
+
+# Resume with location
+resume (the|) music (in|on) (the|) {location}
+resume (the|) playback (in|on) (the|) {location}
+resume (the|) player (in|on) (the|) {location}
+resume (the|) audio (in|on) (the|) {location}
+unpause (the|) music (in|on) (the|) {location}
+unpause (the|) playback (in|on) (the|) {location}
+continue playing (in|on) (the|) {location}
+continue (the|) music (in|on) (the|) {location}

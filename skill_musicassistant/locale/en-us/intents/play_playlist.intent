@@ -1,0 +1,9 @@
+# Play Playlist Intent - Requires explicit playlist keyword
+play (the|) playlist {playlist}
+listen to (the|) playlist {playlist}
+shuffle (the|) playlist {playlist}
+
+# With location
+play (the|) playlist {playlist} (in|on|using) (the|) {location}
+listen to (the|) playlist {playlist} (in|on|using) (the|) {location}
+shuffle (the|) playlist {playlist} (in|on|using) (the|) {location}

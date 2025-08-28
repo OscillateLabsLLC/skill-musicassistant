@@ -76,9 +76,9 @@ class MusicAssistantSkill(OVOSSkill):
             if location:
                 # Try to find player by name/location
                 for player in players:
-                    if location.lower() in player.name.lower():
-                        self.log.info("Found player by location: %s", player.name)
-                        return player.player_id
+                    if location.lower() in player.get("name", "").lower():
+                        self.log.info("Found player by location: %s", player.get("name", ""))
+                        return player.get("player_id", "")
 
             # Fall back to default player
             if self.default_player:
@@ -88,7 +88,7 @@ class MusicAssistantSkill(OVOSSkill):
             # If no default, use first available player
             if players:
                 self.log.info("Using first available player: %s", players[0].name)
-                return players[0].player_id
+                return players[0].get("player_id", "")
 
             self.log.warning("No players found")
 
@@ -542,7 +542,7 @@ class MusicAssistantSkill(OVOSSkill):
         """
         # TODO: Track the last thing we did and stop it
         try:
-            self.mass_client.queue_command_pause(self.mass_client.get_players()[0].player_id)
+            self.mass_client.queue_command_pause(self.mass_client.get_players()[0].get("player_id", ""))
             return True
         except Exception as e:
             self.log.error("Error stopping: %s", e)

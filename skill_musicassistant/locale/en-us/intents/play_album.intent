@@ -1,0 +1,29 @@
+# Play Album Intent - Requires explicit album/ep/record keywords
+play (the|) (album|ep|record|compilation|single) {album}
+listen to (the|) (album|ep|record|compilation|single) {album}
+shuffle (the|) (album|ep|record|compilation|single) {album}
+
+# With artist
+play (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist}
+listen to (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist}
+shuffle (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist}
+
+# With location
+play (the|) (album|ep|record|compilation|single) {album} (in|on|using) (the|) {location}
+listen to (the|) (album|ep|record|compilation|single) {album} (in|on|using) (the|) {location}
+shuffle (the|) (album|ep|record|compilation|single) {album} (in|on|using) (the|) {location}
+
+# With artist and location
+play (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
+listen to (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
+shuffle (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
+
+# With radio mode
+play (the|) (album|ep|record|compilation|single) {album} (with|using) radio mode
+listen to (the|) (album|ep|record|compilation|single) {album} (with|using) radio mode
+play (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist} (with|using) radio mode
+listen to (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist} (with|using) radio mode
+
+# Complete patterns with all options
+play (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location} (with|using) radio mode
+listen to (the|) (album|ep|record|compilation|single) {album} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location} (with|using) radio mode

@@ -1,0 +1,19 @@
+# Play Radio Intent - Requires explicit radio/station keywords or tune verbs
+play (the|) (radio station|radio|station) {radio_station}
+listen to (the|) (radio station|radio|station) {radio_station}
+
+# With location
+play (the|) (radio station|radio|station) {radio_station} (in|on|using) (the|) {location}
+listen to (the|) (radio station|radio|station) {radio_station} (in|on|using) (the|) {location}
+
+# Tune verbs are unambiguous
+tune into {radio_station}
+tune to {radio_station}
+tune into {radio_station} (in|on|using) (the|) {location}
+tune to {radio_station} (in|on|using) (the|) {location}
+
+# Station-specific patterns with "radio" suffix
+play {radio_station} radio
+listen to {radio_station} radio
+play {radio_station} radio (in|on|using) (the|) {location}
+listen to {radio_station} radio (in|on|using) (the|) {location}

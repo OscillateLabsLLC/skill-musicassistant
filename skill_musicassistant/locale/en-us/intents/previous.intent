@@ -1,0 +1,21 @@
+# Previous Track Intent
+previous
+previous (track|song)
+back
+go back
+go to (the|) previous (track|song)
+play (the|) previous (track|song)
+last (track|song)
+rewind
+previous song please
+go back to (the|) last (track|song)
+
+# With location
+previous (track|song) (in|on) (the|) {location}
+back (in|on) (the|) {location}
+go back (in|on) (the|) {location}
+go to (the|) previous (track|song) (in|on) (the|) {location}
+play (the|) previous (track|song) (in|on) (the|) {location}
+last (track|song) (in|on) (the|) {location}
+rewind (in|on) (the|) {location}
+go back to (the|) last (track|song) (in|on) (the|) {location}

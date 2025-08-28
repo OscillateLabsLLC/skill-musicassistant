@@ -87,7 +87,7 @@ class MusicAssistantSkill(OVOSSkill):
 
             # If no default, use first available player
             if players:
-                self.log.info("Using first available player: %s", players[0].name)
+                self.log.info("Using first available player: %s", players[0].get("name", ""))
                 return players[0].get("player_id", "")
 
             self.log.warning("No players found")
@@ -100,7 +100,7 @@ class MusicAssistantSkill(OVOSSkill):
 
         return None
 
-    def _search_media(self, query, media_type=None, artist=None, album=None):
+    def _search_media(self, query, media_type=None, artist="", album=""):
         """Search for media using the Music Assistant HTTP client"""
         try:
             if not self.mass_client:
@@ -119,20 +119,14 @@ class MusicAssistantSkill(OVOSSkill):
                     tracks = [
                         t
                         for t in tracks
-                        if hasattr(t, "artist")
-                        and t.artist
-                        and hasattr(t.artist, "name")
-                        and artist.lower() in t.artist.name.lower()
+                        if t.get("artist", {}) and artist.lower() in t.get("artist", {}).get("name", "").lower()
                     ]
                 if album:
                     # Safe attribute access for track album
                     tracks = [
                         t
                         for t in tracks
-                        if hasattr(t, "album")
-                        and t.album
-                        and hasattr(t.album, "name")
-                        and album.lower() in t.album.name.lower()
+                        if t.get("album", {}) and album.lower() in t.get("album", {}).get("name", "").lower()
                     ]
                 return tracks[0] if tracks else None
 
@@ -148,9 +142,9 @@ class MusicAssistantSkill(OVOSSkill):
                         a
                         for a in albums
                         if hasattr(a, "artist")
-                        and a.artist
-                        and hasattr(a.artist, "name")
-                        and artist.lower() in a.artist.name.lower()
+                        and a.get("artist", {})
+                        and a.get("artist", {}).get("name")
+                        and artist.lower() in a.get("artist", {}).get("name", "").lower()
                     ]
                 return albums[0] if albums else None
 
@@ -176,7 +170,7 @@ class MusicAssistantSkill(OVOSSkill):
 
             # Use our HTTP client to play media
             self.mass_client.play_media(
-                queue_id=player_id, media=media_item.uri, option=enqueue, radio_mode=radio_mode
+                queue_id=player_id, media=media_item.get("uri", ""), option=enqueue, radio_mode=radio_mode
             )
             return True
         except Exception as e:
@@ -200,7 +194,7 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("play_artist.intent")
     def handle_play_artist(self, message: Message):
         """Handle playing an artist"""
-        artist_name = message.data.get("artist_name")
+        artist_name = message.data.get("artist")
         location = message.data.get("location") or self.default_player
 
         try:
@@ -220,21 +214,21 @@ class MusicAssistantSkill(OVOSSkill):
             # Play artist
             success: bool = self._play_media_item(artist, player_id)
             self.log.info("Play artist success: %s", success)
-            self.gui.show_text(f"Playing {artist.name}.")
+            self.gui.show_text(f"Playing {artist.get('name', '')}.")
 
             if success:
                 self.speak_dialog(
                     "playing",
                     {
                         "track_name": "music",
-                        "artist_name": artist.name,
+                        "artist_name": artist.get("name", ""),
                     },
                 )
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play the artist {artist_name}."})
 
         except Exception as e:
-            self._handle_exception(e, "Unexpected error while trying to play an artist: %s")
+            self._handle_exception(e, f"play the artist {artist_name}.")
 
     # This is also resume after pause
     @intent_handler("pause.intent")
@@ -300,7 +294,7 @@ class MusicAssistantSkill(OVOSSkill):
     def handle_volume(self, message: Message):
         """Handle volume control commands"""
 
-        volume_level = message.data.get("volume_level")
+        volume_level = message.data.get("volume")
         location = message.data.get("location")
 
         try:
@@ -383,10 +377,9 @@ class MusicAssistantSkill(OVOSSkill):
     def handle_play_track(self, message: Message):
         """Handle playing a track"""
 
-        track_name = message.data.get("track")
-        artist_name = message.data.get("artist")
-        location = message.data.get("location")
-        radio_mode = message.data.get("radio_mode")
+        track_name = message.data.get("track", "")
+        artist_name = message.data.get("artist", "")
+        location = message.data.get("location", "")
 
         try:
             player_id = self._get_player_id(location)
@@ -404,14 +397,14 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Play track
-            success = self._play_media_item(track, player_id, radio_mode or False)
+            success = self._play_media_item(track, player_id, False)
 
             if success:
                 self.speak_dialog(
                     "playing",
                     {
-                        "track_name": track.name,
-                        "artist_name": track.artists[0].name if track.artists else "Unknown Artist",
+                        "track_name": track.get("name", ""),
+                        "artist_name": track.get("artists", [{}])[0].get("name", "Unknown Artist"),
                     },
                 )
             else:
@@ -426,9 +419,8 @@ class MusicAssistantSkill(OVOSSkill):
         """Handle playing an album"""
 
         album_name = message.data.get("album")
-        artist_name = message.data.get("artist")
-        location = message.data.get("location")
-        radio_mode = message.data.get("radio_mode")  # TODO: Devise tests for this, possibly remove
+        artist_name = message.data.get("artist", "")
+        location = message.data.get("location", "")
 
         try:
             player_id = self._get_player_id(location)
@@ -444,14 +436,14 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Play album
-            success = self._play_media_item(album, player_id, radio_mode or False)
+            success = self._play_media_item(album, player_id, False)
 
             if success:
                 self.speak_dialog(
                     "playing_album",
                     {
-                        "album": album.name,
-                        "artist": album.artists[0].name if album.artists else "Unknown Artist",
+                        "album": album.get("name", ""),
+                        "artist": album.get("artists", [{}])[0].get("name", "Unknown Artist"),
                     },
                 )
             else:
@@ -486,7 +478,7 @@ class MusicAssistantSkill(OVOSSkill):
             success = self._play_media_item(playlist, player_id)
 
             if success:
-                self.speak_dialog("playing_playlist", {"playlist": playlist.name})
+                self.speak_dialog("playing_playlist", {"playlist": playlist.get("name", "")})
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play {playlist_name}."})
 
@@ -517,7 +509,7 @@ class MusicAssistantSkill(OVOSSkill):
             success = self._play_media_item(station, player_id)
 
             if success:
-                self.speak_dialog("playing_radio", {"radio": station.name})
+                self.speak_dialog("playing_radio", {"radio": station.get("name", "")})
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play {station_name}."})
 

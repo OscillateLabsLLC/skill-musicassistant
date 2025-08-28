@@ -30,8 +30,11 @@ Homepage = "https://github.com/oscillatelabsllc/skill-musicassistant"
 [tool.setuptools.dynamic]
 version = { attr = "skill_musicassistant.version.__version__" }
 
-[tool.setuptools.packages.find]
-include = ["skill_musicassistant*"]
+[tool.setuptools]
+packages = ["skill_musicassistant"]
+
+[tool.setuptools.package-data]
+skill_musicassistant = ["locale/**/*"]
 
 [dependency-groups]
 dev = [
@@ -103,4 +106,4 @@ warn_unused_configs = true
 ignore_missing_imports = true
 
 [tool.poetry.plugins."ovos.plugin.skill"]
-"skill-musicassistant.oscillatelabsllc" = "skill-musicassistant:MusicAssistantSkill"
+"skill-musicassistant.oscillatelabsllc" = "skill_musicassistant:MusicAssistantSkill"

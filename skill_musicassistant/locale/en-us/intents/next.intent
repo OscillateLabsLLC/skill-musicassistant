@@ -1,0 +1,18 @@
+# Next Track Intent
+next
+next (track|song)
+skip
+skip (|this )(track|song)
+skip (to the|) next (track|song)
+go to (the|) next (track|song)
+play (the|) next (track|song)
+next song please
+
+# With location
+next (track|song) (in|on) (the|) {location}
+skip (track|song) (in|on) (the|) {location}
+skip (to the|) next (track|song) (in|on) (the|) {location}
+go to (the|) next (track|song) (in|on) (the|) {location}
+play (the|) next (track|song) (in|on) (the|) {location}
+skip this song (in|on) (the|) {location}
+skip this track (in|on) (the|) {location}

@@ -25,9 +25,6 @@ license = { "text" = "Apache-2.0" }
 [project.urls]
 Homepage = "https://github.com/oscillatelabsllc/skill-musicassistant"
 
-[project.entry-points."ovos.plugin.skill"]
-"skill-musicassistant" = "skill_musicassistant:MusicAssistantSkill"
-
 [tool.setuptools.dynamic]
 version = { attr = "skill_musicassistant.version.__version__" }
 

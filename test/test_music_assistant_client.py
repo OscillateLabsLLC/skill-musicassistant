@@ -5,9 +5,6 @@ from unittest.mock import Mock
 
 import pytest
 import requests
-from music_assistant_models.enums import MediaType
-from music_assistant_models.errors import MusicAssistantError
-from music_assistant_models.player import Player
 
 from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient
 
@@ -134,7 +131,7 @@ class TestSimpleHTTPMusicAssistantClient:
         mock_response.text = "Internal Server Error"
         mock_session.post.return_value = mock_response
 
-        with pytest.raises(MusicAssistantError) as exc_info:
+        with pytest.raises(Exception) as exc_info:
             client.send_command("test/command")
 
         assert "HTTP 500" in str(exc_info.value)
@@ -153,13 +150,12 @@ class TestSimpleHTTPMusicAssistantClient:
         # Verify it's a list of Player objects
         assert isinstance(players, list)
         assert len(players) > 0
-        assert all(isinstance(p, Player) for p in players)
 
         # Check first player matches fixture data
         first_player = players[0]
         first_fixture_player = fixture["raw_response"][0]
-        assert first_player.player_id == first_fixture_player["player_id"]
-        assert first_player.name == first_fixture_player["name"]
+        assert first_player["player_id"] == first_fixture_player["player_id"]
+        assert first_player["name"] == first_fixture_player["name"]
 
     def test_search_media_with_media_types(self, client, mock_session, fixtures):
         """Test media search with specific media types."""
@@ -170,7 +166,7 @@ class TestSimpleHTTPMusicAssistantClient:
         mock_response.json.return_value = fixture["response"]
         mock_session.post.return_value = mock_response
 
-        result = client.search_media(query="Carbon Leaf", media_types=[MediaType.ARTIST], limit=5)
+        result = client.search_media(query="Carbon Leaf", media_types=["artist"], limit=5)
 
         # Verify command was called correctly
         call_args = mock_session.post.call_args

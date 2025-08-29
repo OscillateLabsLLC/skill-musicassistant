@@ -1,0 +1,6 @@
+include README.md
+include pyproject.toml
+recursive-include skill_musicassistant *.py
+recursive-include skill_musicassistant/locale *
+exclude test/*
+prune test

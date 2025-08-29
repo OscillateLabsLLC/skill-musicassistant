@@ -2,9 +2,6 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 import requests
-from music_assistant_models.enums import MediaType, QueueOption
-from music_assistant_models.errors import MusicAssistantError
-from music_assistant_models.player import Player
 from ovos_utils.log import LOG
 
 
@@ -15,7 +12,7 @@ class SimpleHTTPMusicAssistantClient:
         self.server_url = server_url.rstrip("/")
         self.api_url = f"{self.server_url}/api"
         self.session = session or requests.Session()
-        self.log = LOG(self.__class__.__name__)
+        self.log = LOG()
 
     def send_command(self, command: str, **args) -> Any:
         """Send a command to Music Assistant via HTTP API."""
@@ -24,33 +21,30 @@ class SimpleHTTPMusicAssistantClient:
         response = self.session.post(self.api_url, json=payload)
         if response.status_code == 200:
             return response.json()
-        raise MusicAssistantError(f"HTTP {response.status_code}: {response.text}")
+        raise Exception(f"HTTP {response.status_code}: {response.text}")
 
-    def get_players(self) -> List[Player]:
+    def get_players(self) -> List[Any]:
         """Get all available players."""
         result = self.send_command("players/all")
-        return [Player.from_dict(player_data) for player_data in result]
+        return [player_data for player_data in result]
 
-    def search_media(
-        self, query: str, media_types: Optional[List[MediaType]] = None, limit: int = 5
-    ) -> Dict[str, Any]:
+    def search_media(self, query: str, media_types: Optional[List[str]] = None, limit: int = 5) -> Dict[str, Any]:
         """Search for media."""
         args = {"search_query": query, "limit": limit}
         if media_types:
-            args["media_types"] = [mt.value for mt in media_types]
+            args["media_types"] = media_types
         return self.send_command("music/search", **args)
 
-    def play_media(self, queue_id: str, media: str, option: QueueOption = QueueOption.PLAY, radio_mode: bool = False):
+    def play_media(self, queue_id: str, media: str, option: str = "play", radio_mode: bool = False):
         """Play media on a player queue."""
         self.log.info(
-            f"🎵 Sending play_media: queue_id={queue_id}, media={media}, option={option.value}, "
-            f"radio_mode={radio_mode}"
+            f"🎵 Sending play_media: queue_id={queue_id}, media={media}, option={option}, radio_mode={radio_mode}"
         )
         return self.send_command(
             command="player_queues/play_media",
             queue_id=queue_id,
             media=media,
-            option=option.value,
+            option=option,
             radio_mode=radio_mode,
         )
 
@@ -104,15 +98,17 @@ class SimpleHTTPMusicAssistantClient:
         """Get the current active queue for a player."""
         return self.send_command("player_queues/get_active_queue", player_id=player_id)
 
-    def _find_player_by_id(self, player_id: str) -> Optional[Player]:
+    def _find_player_by_id(self, player_id: str) -> Optional[Any]:
         """Find a player by ID."""
         players = self.get_players()
         for player in players:
-            if player.player_id == player_id:
+            if hasattr(player, "player_id") and player.player_id == player_id:
+                return player
+            if "player_id" in player and player["player_id"] == player_id:
                 return player
         return None
 
-    def _extract_playback_state(self, player: Player) -> str:
+    def _extract_playback_state(self, player: Any) -> str:
         """Extract playback state from player object."""
         if not hasattr(player, "playback_state"):
             return "unknown"
@@ -120,7 +116,7 @@ class SimpleHTTPMusicAssistantClient:
         state = player.playback_state
         return state.value if hasattr(state, "value") else str(state)
 
-    def _extract_track_from_media(self, player: Player) -> Optional[str]:
+    def _extract_track_from_media(self, player: Any) -> Optional[str]:
         """Extract track name from player's current_media."""
         if not (hasattr(player, "current_media") and player.current_media):
             return None
@@ -134,7 +130,7 @@ class SimpleHTTPMusicAssistantClient:
             return f"{media.artist} - {track_name}"
         return track_name
 
-    def _extract_track_from_queue(self, player: Player) -> Optional[str]:
+    def _extract_track_from_queue(self, player: Any) -> Optional[str]:
         """Extract track name from player's queue items."""
         if not (hasattr(player, "current_item_id") and player.current_item_id):
             return None
@@ -153,7 +149,7 @@ class SimpleHTTPMusicAssistantClient:
             self.log.exception("Error extracting track from queue, returning None")
         return None
 
-    def _extract_current_track(self, player: Player) -> str:
+    def _extract_current_track(self, player: Any) -> str:
         """Extract current track name with artist info."""
         track_name = self._extract_track_from_media(player)
         if track_name:

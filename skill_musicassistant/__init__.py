@@ -1,9 +1,4 @@
-from typing import List
-
 import requests
-from music_assistant_models.enums import MediaType, QueueOption
-from music_assistant_models.errors import MusicAssistantError
-from music_assistant_models.player import Player
 from ovos_bus_client import Message
 from ovos_utils.process_utils import RuntimeRequirements
 from ovos_workshop.decorators import intent_handler
@@ -28,10 +23,8 @@ class MusicAssistantSkill(OVOSSkill):
         # TODO: Validate that OCP is not enabled, log a warning if it is
         self.session = requests.Session()
         self.mass_client = SimpleHTTPMusicAssistantClient(server_url=self.music_assistant_url, session=self.session)
-        self.players: List[Player] = self.mass_client.get_players()
-        self.last_player: List[
-            Player
-        ] = []  # TODO: Probably do this by session ID in a dict to support Neon Nodes/HiveMind
+        self.players = self.mass_client.get_players()
+        self.last_player = []  # TODO: Probably do this by session ID in a dict to support Neon Nodes/HiveMind
 
     @property
     def music_assistant_url(self):
@@ -77,15 +70,15 @@ class MusicAssistantSkill(OVOSSkill):
 
         try:
             # Get all available players using our HTTP client
-            players: list[Player] = self.mass_client.get_players()
+            players = self.mass_client.get_players()
             self.log.info("Got %s players", len(players))
 
             if location:
                 # Try to find player by name/location
                 for player in players:
-                    if location.lower() in player.name.lower():
-                        self.log.info("Found player by location: %s", player.name)
-                        return player.player_id
+                    if location.lower() in player.get("name", "").lower():
+                        self.log.info("Found player by location: %s", player.get("name", ""))
+                        return player.get("player_id", "")
 
             # Fall back to default player
             if self.default_player:
@@ -94,8 +87,8 @@ class MusicAssistantSkill(OVOSSkill):
 
             # If no default, use first available player
             if players:
-                self.log.info("Using first available player: %s", players[0].name)
-                return players[0].player_id
+                self.log.info("Using first available player: %s", players[0].get("name", ""))
+                return players[0].get("player_id", "")
 
             self.log.warning("No players found")
 
@@ -107,7 +100,7 @@ class MusicAssistantSkill(OVOSSkill):
 
         return None
 
-    def _search_media(self, query, media_type=None, artist=None, album=None):
+    def _search_media(self, query, media_type=None, artist="", album=""):
         """Search for media using the Music Assistant HTTP client"""
         try:
             if not self.mass_client:
@@ -119,64 +112,48 @@ class MusicAssistantSkill(OVOSSkill):
             )
 
             # Filter results by media type and additional criteria
-            if media_type == MediaType.TRACK and "tracks" in search_results:
-                from music_assistant_models.media_items import Track
-
-                tracks = [Track.from_dict(t) for t in search_results["tracks"]]
+            if media_type == "track" and "tracks" in search_results:
+                tracks = [t for t in search_results["tracks"]]
                 if artist:
                     # Safe attribute access for track artist
                     tracks = [
                         t
                         for t in tracks
-                        if hasattr(t, "artist")
-                        and t.artist
-                        and hasattr(t.artist, "name")
-                        and artist.lower() in t.artist.name.lower()
+                        if t.get("artist", {}) and artist.lower() in t.get("artist", {}).get("name", "").lower()
                     ]
                 if album:
                     # Safe attribute access for track album
                     tracks = [
                         t
                         for t in tracks
-                        if hasattr(t, "album")
-                        and t.album
-                        and hasattr(t.album, "name")
-                        and album.lower() in t.album.name.lower()
+                        if t.get("album", {}) and album.lower() in t.get("album", {}).get("name", "").lower()
                     ]
                 return tracks[0] if tracks else None
 
-            elif media_type == MediaType.ARTIST and "artists" in search_results:
-                from music_assistant_models.media_items import Artist
-
-                artists = [Artist.from_dict(a) for a in search_results["artists"]]
+            elif media_type == "artist" and "artists" in search_results:
+                artists = [a for a in search_results["artists"]]
                 return artists[0] if artists else None
 
-            elif media_type == MediaType.ALBUM and "albums" in search_results:
-                from music_assistant_models.media_items import Album
-
-                albums = [Album.from_dict(a) for a in search_results["albums"]]
+            elif media_type == "album" and "albums" in search_results:
+                albums = [a for a in search_results["albums"]]
                 if artist:
                     # Safe attribute access for album artist
                     albums = [
                         a
                         for a in albums
                         if hasattr(a, "artist")
-                        and a.artist
-                        and hasattr(a.artist, "name")
-                        and artist.lower() in a.artist.name.lower()
+                        and a.get("artist", {})
+                        and a.get("artist", {}).get("name")
+                        and artist.lower() in a.get("artist", {}).get("name", "").lower()
                     ]
                 return albums[0] if albums else None
 
-            elif media_type == MediaType.PLAYLIST and "playlists" in search_results:
-                from music_assistant_models.media_items import Playlist
-
-                playlists = [Playlist.from_dict(p) for p in search_results["playlists"]]
+            elif media_type == "playlist" and "playlists" in search_results:
+                playlists = [p for p in search_results["playlists"]]
                 return playlists[0] if playlists else None
 
-            elif media_type == MediaType.RADIO and "radio" in search_results:
-                from music_assistant_models.media_items import Radio
-
-                radios = [Radio.from_dict(r) for r in search_results["radio"]]
+            elif media_type == "radio" and "radio" in search_results:
+                radios = [r for r in search_results["radio"]]
                 return radios[0] if radios else None
 
         except Exception as e:
@@ -184,7 +161,7 @@ class MusicAssistantSkill(OVOSSkill):
 
         return None
 
-    def _play_media_item(self, media_item, player_id, radio_mode=False, enqueue=QueueOption.PLAY) -> bool:
+    def _play_media_item(self, media_item, player_id, radio_mode=False, enqueue="play") -> bool:
         """Play a media item using the Music Assistant HTTP client"""
         try:
             if self.mass_client is None:
@@ -193,7 +170,7 @@ class MusicAssistantSkill(OVOSSkill):
 
             # Use our HTTP client to play media
             self.mass_client.play_media(
-                queue_id=player_id, media=media_item.uri, option=enqueue, radio_mode=radio_mode
+                queue_id=player_id, media=media_item.get("uri", ""), option=enqueue, radio_mode=radio_mode
             )
             return True
         except Exception as e:
@@ -217,7 +194,7 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("play_artist.intent")
     def handle_play_artist(self, message: Message):
         """Handle playing an artist"""
-        artist_name = message.data.get("artist_name")
+        artist_name = message.data.get("artist")
         location = message.data.get("location") or self.default_player
 
         try:
@@ -229,7 +206,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Search for artist
-            artist = self._search_media(artist_name, MediaType.ARTIST)
+            artist = self._search_media(artist_name, "artist")
             if not artist:
                 self.speak_dialog("generic_could_not", {"thing": f"find the artist {artist_name}."})
                 self.gui.show_text(f"Could not find the artist {artist_name}.")
@@ -237,23 +214,21 @@ class MusicAssistantSkill(OVOSSkill):
             # Play artist
             success: bool = self._play_media_item(artist, player_id)
             self.log.info("Play artist success: %s", success)
-            self.gui.show_text(f"Playing {artist.name}.")
+            self.gui.show_text(f"Playing {artist.get('name', '')}.")
 
             if success:
                 self.speak_dialog(
                     "playing",
                     {
                         "track_name": "music",
-                        "artist_name": artist.name,
+                        "artist_name": artist.get("name", ""),
                     },
                 )
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play the artist {artist_name}."})
 
-        except MusicAssistantError as e:
-            self._handle_exception(e, "Music Assistant error: %s")
         except Exception as e:
-            self._handle_exception(e, "Unexpected error while trying to play an artist: %s")
+            self._handle_exception(e, f"play the artist {artist_name}.")
 
     # This is also resume after pause
     @intent_handler("pause.intent")
@@ -319,7 +294,7 @@ class MusicAssistantSkill(OVOSSkill):
     def handle_volume(self, message: Message):
         """Handle volume control commands"""
 
-        volume_level = message.data.get("volume_level")
+        volume_level = message.data.get("volume")
         location = message.data.get("location")
 
         try:
@@ -402,10 +377,9 @@ class MusicAssistantSkill(OVOSSkill):
     def handle_play_track(self, message: Message):
         """Handle playing a track"""
 
-        track_name = message.data.get("track")
-        artist_name = message.data.get("artist")
-        location = message.data.get("location")
-        radio_mode = message.data.get("radio_mode")
+        track_name = message.data.get("track", "")
+        artist_name = message.data.get("artist", "")
+        location = message.data.get("location", "")
 
         try:
             player_id = self._get_player_id(location)
@@ -415,7 +389,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Search for track
-            track = self._search_media(track_name, MediaType.TRACK, artist_name)
+            track = self._search_media(track_name, "track", artist_name)
             if not track:
                 search_query = f"{track_name} {artist_name}" if artist_name else track_name
                 self.log.error("No track found for search query: %s", search_query)
@@ -423,22 +397,19 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Play track
-            success = self._play_media_item(track, player_id, radio_mode)
+            success = self._play_media_item(track, player_id, False)
 
             if success:
                 self.speak_dialog(
                     "playing",
                     {
-                        "track_name": track.name,
-                        "artist_name": track.artists[0].name if track.artists else "Unknown Artist",
+                        "track_name": track.get("name", ""),
+                        "artist_name": track.get("artists", [{}])[0].get("name", "Unknown Artist"),
                     },
                 )
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play {track_name}."})
 
-        except MusicAssistantError as e:
-            self.log.exception("Music Assistant error: %s", e)
-            self.speak_dialog("generic_could_not", {"thing": "play the track. Check the logs for more details."})
         except Exception as e:
             self.log.exception("Unexpected error while trying to play a track: %s", e)
             self.speak_dialog("generic_could_not", {"thing": "play the track. Check the logs for more details."})
@@ -448,9 +419,8 @@ class MusicAssistantSkill(OVOSSkill):
         """Handle playing an album"""
 
         album_name = message.data.get("album")
-        artist_name = message.data.get("artist")
-        location = message.data.get("location")
-        radio_mode = message.data.get("radio_mode")  # TODO: Devise tests for this, possibly remove
+        artist_name = message.data.get("artist", "")
+        location = message.data.get("location", "")
 
         try:
             player_id = self._get_player_id(location)
@@ -459,29 +429,26 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Search for album
-            album = self._search_media(album_name, MediaType.ALBUM, artist_name)
+            album = self._search_media(album_name, "album", artist_name)
             if not album:
                 search_query = f"{album_name} {artist_name}" if artist_name else album_name
                 self.speak_dialog("generic_could_not", {"thing": f"find the album {search_query}."})
                 return
 
             # Play album
-            success = self._play_media_item(album, player_id, radio_mode)
+            success = self._play_media_item(album, player_id, False)
 
             if success:
                 self.speak_dialog(
                     "playing_album",
                     {
-                        "album": album.name,
-                        "artist": album.artists[0].name if album.artists else "Unknown Artist",
+                        "album": album.get("name", ""),
+                        "artist": album.get("artists", [{}])[0].get("name", "Unknown Artist"),
                     },
                 )
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play {album_name}."})
 
-        except MusicAssistantError as e:
-            self.log.error("Music Assistant error: %s", e)
-            self.speak_dialog("generic_could_not", {"thing": "play the album. Check the logs for more details."})
         except Exception as e:
             self.log.exception("Unexpected error while trying to play an album: %s", e)
             self.speak_dialog("generic_could_not", {"thing": "play the album. Check the logs for more details."})
@@ -501,7 +468,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Search for playlist
-            playlist = self._search_media(playlist_name, MediaType.PLAYLIST)
+            playlist = self._search_media(playlist_name, "playlist")
             if not playlist:
                 self.log.error("No playlist found for search query: %s", playlist_name)
                 self.speak_dialog("generic_could_not", {"thing": f"find the playlist {playlist_name}."})
@@ -511,13 +478,10 @@ class MusicAssistantSkill(OVOSSkill):
             success = self._play_media_item(playlist, player_id)
 
             if success:
-                self.speak_dialog("playing_playlist", {"playlist": playlist.name})
+                self.speak_dialog("playing_playlist", {"playlist": playlist.get("name", "")})
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play {playlist_name}."})
 
-        except MusicAssistantError as e:
-            self.log.exception("Music Assistant error while trying to play a playlist: %s", e)
-            self.speak_dialog("generic_could_not", {"thing": "play the playlist. Check the logs for more details."})
         except Exception as e:
             self.log.exception("Unexpected error while trying to play a playlist: %s", e)
             self.speak_dialog("generic_could_not", {"thing": "play the playlist. Check the logs for more details."})
@@ -536,7 +500,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Search for radio station
-            station = self._search_media(station_name, MediaType.RADIO)
+            station = self._search_media(station_name, "radio")
             if not station:
                 self.speak_dialog("generic_could_not", {"thing": f"find the radio station {station_name}."})
                 return
@@ -545,17 +509,12 @@ class MusicAssistantSkill(OVOSSkill):
             success = self._play_media_item(station, player_id)
 
             if success:
-                self.speak_dialog("playing_radio", {"radio": station.name})
+                self.speak_dialog("playing_radio", {"radio": station.get("name", "")})
             else:
                 self.speak_dialog("generic_could_not", {"thing": f"play {station_name}."})
 
-        except MusicAssistantError as e:
-            self.log.error("Music Assistant error: %s", e)
-            self.speak_dialog(
-                "generic_could_not", {"thing": "play the radio station. Check the logs for more details."}
-            )
         except Exception as e:
-            self.log.error("Unexpected error: %s", e)
+            self.log.error("Music Assistant error: %s", e)
             self.speak_dialog(
                 "generic_could_not", {"thing": "play the radio station. Check the logs for more details."}
             )
@@ -575,7 +534,7 @@ class MusicAssistantSkill(OVOSSkill):
         """
         # TODO: Track the last thing we did and stop it
         try:
-            self.mass_client.queue_command_pause(self.mass_client.get_players()[0].player_id)
+            self.mass_client.queue_command_pause(self.mass_client.get_players()[0].get("player_id", ""))
             return True
         except Exception as e:
             self.log.error("Error stopping: %s", e)

@@ -4,7 +4,7 @@ from ovos_utils.process_utils import RuntimeRequirements
 from ovos_workshop.decorators import intent_handler
 from ovos_workshop.skills import OVOSSkill
 
-from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient
+from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient, debug_method
 from skill_musicassistant.version import __version__
 
 
@@ -234,6 +234,7 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("pause.intent")
     def handle_pause(self, message: Message):
         """Handle pause commands"""
+        self.log.debug(f"Pause intent received:\n{message.data}")
         location = message.data.get("location")
 
         try:
@@ -255,6 +256,7 @@ class MusicAssistantSkill(OVOSSkill):
     def handle_next(self, message: Message):
         """Handle next track commands"""
         # TODO: Handle this better, so we use the default player if no location is provided
+        self.log.debug(f"Next intent received:\n{message.data}")
         location = message.data.get("location")
 
         try:
@@ -274,6 +276,7 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("previous.intent")
     def handle_previous(self, message: Message):
         """Handle previous track commands"""
+        self.log.debug(f"Previous intent received:\n{message.data}")
         location = message.data.get("location")
 
         try:
@@ -293,7 +296,7 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("volume.intent")
     def handle_volume(self, message: Message):
         """Handle volume control commands"""
-
+        self.log.debug(f"Volume intent received:\n{message.data}")
         volume_level = message.data.get("volume")
         location = message.data.get("location")
 
@@ -322,6 +325,7 @@ class MusicAssistantSkill(OVOSSkill):
             self.log.error("Volume error: %s", e)
             self.speak_dialog("generic_could_not", {"thing": "change the volume."})
 
+    @debug_method
     def _parse_volume_level(self, volume_input: str):
         """Parse volume level from various input formats"""
         if not volume_input:

@@ -1,8 +1,57 @@
+import functools
+import json
 import uuid
 from typing import Any, Dict, List, Optional
 
 import requests
 from ovos_utils.log import LOG
+
+
+def debug_method(func):
+    """Decorator to log method inputs and outputs for debugging purposes."""
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # Format arguments for logging
+        args_str = ", ".join([repr(arg) for arg in args])
+        kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in kwargs.items()])
+
+        # Combine args and kwargs for display
+        all_args = []
+        if args_str:
+            all_args.append(args_str)
+        if kwargs_str:
+            all_args.append(kwargs_str)
+        args_display = ", ".join(all_args)
+
+        # Log the method call
+        method_name = f"{self.__class__.__name__}.{func.__name__}"
+        self.log.debug(f"CALL {method_name}({args_display})")
+
+        try:
+            # Execute the function
+            result = func(self, *args, **kwargs)
+
+            # Format result for logging (truncate if too long)
+            if result is None:
+                result_str = "None"
+            elif isinstance(result, (str, int, float, bool)):
+                result_str = repr(result)
+            elif isinstance(result, (list, dict)):
+                result_str = json.dumps(result, default=str, indent=None)
+                if len(result_str) > 200:
+                    result_str = result_str[:200] + "..."
+            else:
+                result_str = f"<{type(result).__name__} object>"
+
+            self.log.debug(f"RETURN {method_name} -> {result_str}")
+            return result
+
+        except Exception as e:
+            self.log.debug(f"ERROR {method_name} -> {type(e).__name__}: {e}")
+            raise
+
+    return wrapper
 
 
 class SimpleHTTPMusicAssistantClient:
@@ -14,6 +63,7 @@ class SimpleHTTPMusicAssistantClient:
         self.session = session or requests.Session()
         self.log = LOG()
 
+    @debug_method
     def send_command(self, command: str, **args) -> Any:
         """Send a command to Music Assistant via HTTP API."""
         payload = {"command": command, "message_id": uuid.uuid4().hex, "args": args}
@@ -23,6 +73,7 @@ class SimpleHTTPMusicAssistantClient:
             return response.json()
         raise Exception(f"HTTP {response.status_code}: {response.text}")
 
+    @debug_method
     def get_players(self) -> List[Any]:
         """Get all available players."""
         result = self.send_command("players/all")
@@ -98,6 +149,7 @@ class SimpleHTTPMusicAssistantClient:
         """Get the current active queue for a player."""
         return self.send_command("player_queues/get_active_queue", player_id=player_id)
 
+    @debug_method
     def _find_player_by_id(self, player_id: str) -> Optional[Any]:
         """Find a player by ID."""
         players = self.get_players()
@@ -108,6 +160,7 @@ class SimpleHTTPMusicAssistantClient:
                 return player
         return None
 
+    @debug_method
     def _extract_playback_state(self, player: Any) -> str:
         """Extract playback state from player object."""
         if not hasattr(player, "playback_state"):
@@ -116,6 +169,7 @@ class SimpleHTTPMusicAssistantClient:
         state = player.playback_state
         return state.value if hasattr(state, "value") else str(state)
 
+    @debug_method
     def _extract_track_from_media(self, player: Any) -> Optional[str]:
         """Extract track name from player's current_media."""
         if not (hasattr(player, "current_media") and player.current_media):
@@ -130,6 +184,7 @@ class SimpleHTTPMusicAssistantClient:
             return f"{media.artist} - {track_name}"
         return track_name
 
+    @debug_method
     def _extract_track_from_queue(self, player: Any) -> Optional[str]:
         """Extract track name from player's queue items."""
         if not (hasattr(player, "current_item_id") and player.current_item_id):
@@ -149,6 +204,7 @@ class SimpleHTTPMusicAssistantClient:
             self.log.exception("Error extracting track from queue, returning None")
         return None
 
+    @debug_method
     def _extract_current_track(self, player: Any) -> str:
         """Extract current track name with artist info."""
         track_name = self._extract_track_from_media(player)
@@ -176,15 +232,18 @@ class SimpleHTTPMusicAssistantClient:
             "player_name": getattr(player, "name", "Unknown"),
         }
 
+    @debug_method
     def _format_status_emoji(self, state: str) -> str:
         """Map player state to appropriate emoji."""
         emoji_map = {"playing": "▶️", "paused": "⏸️", "stopped": "⏹️", "idle": "💤"}
         return emoji_map.get(state.lower(), "❓")
 
+    @debug_method
     def _format_power_display(self, powered: bool) -> str:
         """Format power status display."""
         return "🔌" if powered else "🔌❌"
 
+    @debug_method
     def _format_volume_display(self, volume_level: Optional[int], volume_muted: bool) -> str:
         """Format volume display with mute status."""
         volume_emoji = "🔇" if volume_muted else "🔊"
@@ -192,6 +251,7 @@ class SimpleHTTPMusicAssistantClient:
             return f"{volume_emoji} {volume_level}%"
         return f"{volume_emoji} ?"
 
+    @debug_method
     def show_current_state(self, player_id: str, action: str = ""):
         """Display current player state and track info."""
         try:

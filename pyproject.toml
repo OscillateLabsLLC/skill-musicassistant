@@ -6,13 +6,14 @@ build-backend = "setuptools.build_meta"
 name = "skill-musicassistant"
 description = "An OVOS/Neon skill to control media through Music Assistant"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Mike Gray/Oscillate Labs", email = "mike@oscillatelabs.net" },
 ]
 keywords = ["mycroft", "ovos", "neon", "plugin", "tts", "home assistant", "music assistant", "open home foundation"]
 dynamic = ["version"]
 dependencies = [
+    "music-assistant-models",
     "ovos-bus-client>=0.0.10,<2.0.0",
     "ovos-plugin-manager>=0.8.3",
     "ovos-utils>=0.7.0",
@@ -105,5 +106,8 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
 
-[tool.poetry.plugins."ovos.plugin.skill"]
+[tool.uv.sources]
+music-assistant-models = { git = "https://github.com/oscillatelabsllc/music-assistant-models" }
+
+[project.entry-points."ovos.plugin.skill"]
 "skill-musicassistant.oscillatelabsllc" = "skill_musicassistant:MusicAssistantSkill"

@@ -76,6 +76,7 @@ class SimpleHTTPMusicAssistantClient:
             return response.json()
         raise MusicAssistantError(f"HTTP {response.status_code}: {response.text}")
 
+    @debug_method
     def get_players(self) -> List[Player]:
         """Get all available players."""
         result = self.send_command("players/all")

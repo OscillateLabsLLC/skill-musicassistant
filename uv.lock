@@ -371,7 +371,7 @@ wheels = [
 [[package]]
 name = "music-assistant-models"
 version = "0.0.0"
-source = { git = "https://github.com/oscillatelabsllc/music-assistant-models#204e68da2192f288cfce3141cd6921a83d8d5297" }
+source = { git = "https://github.com/oscillatelabsllc/music-assistant-models?rev=main#c5e6647a1f3c060cd068e1ed63ee7e12d78546bf" }
 dependencies = [
     { name = "mashumaro" },
     { name = "orjson" },
@@ -1126,7 +1126,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "music-assistant-models", git = "https://github.com/oscillatelabsllc/music-assistant-models" },
+    { name = "music-assistant-models", git = "https://github.com/oscillatelabsllc/music-assistant-models?rev=main" },
     { name = "ovos-bus-client", specifier = ">=0.0.10,<2.0.0" },
     { name = "ovos-plugin-manager", specifier = ">=0.8.3" },
     { name = "ovos-utils", specifier = ">=0.7.0" },

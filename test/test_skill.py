@@ -4,6 +4,7 @@ from typing import cast
 from unittest.mock import Mock, patch
 
 import pytest
+from music_assistant_models.enums import MediaType
 from ovos_bus_client import MessageBusClient
 from ovos_utils.fakebus import FakeBus
 
@@ -100,11 +101,48 @@ class TestMusicAssistantSkillIntegration:
         player_id = skill_with_mock_client._get_player_id("Any")
         assert player_id is None
 
+    def test_search_media_artist(self, skill_with_mock_client, mock_client):
+        """Test media search for artists."""
+        # Mock search response
+        mock_client.search_media.return_value = {"artists": [{"name": "Test Artist", "uri": "test://artist/1"}]}
+
+        with patch("music_assistant_models.media_items.Artist") as mock_artist_class:
+            mock_artist = Mock(name="Test Artist")
+            mock_artist_class.from_dict.return_value = mock_artist
+
+            result = skill_with_mock_client._search_media("Test Artist", MediaType.ARTIST)
+
+            # Verify the client was called correctly
+            mock_client.search_media.assert_called_once_with(
+                query="Test Artist", media_types=[MediaType.ARTIST], limit=5
+            )
+            assert result == mock_artist
+
+    def test_search_media_track_with_artist(self, skill_with_mock_client, mock_client):
+        """Test media search for tracks with artist filtering."""
+        # Mock search response
+        mock_client.search_media.return_value = {
+            "tracks": [
+                {"name": "Test Song", "artist": {"name": "Test Artist"}},
+                {"name": "Other Song", "artist": {"name": "Other Artist"}},
+            ]
+        }
+
+        with patch("music_assistant_models.media_items.Track") as mock_track_class:
+            mock_track = Mock()
+            mock_track.artist = Mock(name="Test Artist")
+            mock_track_class.from_dict.return_value = mock_track
+
+            skill_with_mock_client._search_media("Test Song", MediaType.TRACK, artist="Test")
+
+            # Should filter by artist name
+            mock_client.search_media.assert_called_once_with(query="Test Song", media_types=[MediaType.TRACK], limit=5)
+
     def test_search_media_no_results(self, skill_with_mock_client, mock_client):
         """Test media search with no results."""
         mock_client.search_media.return_value = {"artists": []}
 
-        result = skill_with_mock_client._search_media("Nonexistent", "artist")
+        result = skill_with_mock_client._search_media("Nonexistent", MediaType.ARTIST)
         assert result is None
 
     def test_play_media_item_success(self, skill_with_mock_client, mock_client):

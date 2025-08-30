@@ -26,6 +26,9 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 import requests
+from music_assistant_models.enums import MediaType
+from music_assistant_models.errors import MusicAssistantError
+from music_assistant_models.player import Player
 
 from .music_assistant_client import SimpleHTTPMusicAssistantClient
 
@@ -62,12 +65,12 @@ class DebugMusicAssistantClient(SimpleHTTPMusicAssistantClient):
                 )
 
             return result
-        raise Exception(f"HTTP {response.status_code}: {response.text}")
+        raise MusicAssistantError(f"HTTP {response.status_code}: {response.text}")
 
-    def get_players(self) -> List[Any]:
+    def get_players(self) -> List[Player]:
         """Get players with optional fixture capture."""
         result = self.send_command("players/all")
-        players = [player_data for player_data in result]
+        players = [Player.from_dict(player_data) for player_data in result]
 
         # Capture processed players fixture
         if self.fixture_capture_enabled:
@@ -82,11 +85,13 @@ class DebugMusicAssistantClient(SimpleHTTPMusicAssistantClient):
 
         return players
 
-    def search_media(self, query: str, media_types: Optional[List[str]] = None, limit: int = 5) -> Dict[str, Any]:
+    def search_media(
+        self, query: str, media_types: Optional[List[MediaType]] = None, limit: int = 5
+    ) -> Dict[str, Any]:
         """Search media with optional fixture capture."""
         args = {"search_query": query, "limit": limit}
         if media_types:
-            args["media_types"] = media_types
+            args["media_types"] = [mt.value for mt in media_types]
 
         result = self.send_command("music/search", **args)
 
@@ -96,7 +101,7 @@ class DebugMusicAssistantClient(SimpleHTTPMusicAssistantClient):
                 "search_media",
                 {
                     "query": query,
-                    "media_types": media_types,
+                    "media_types": [mt.value for mt in media_types] if media_types else None,
                     "limit": limit,
                     "result": result,
                 },

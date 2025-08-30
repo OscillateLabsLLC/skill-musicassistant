@@ -5,6 +5,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
+from music_assistant_models.enums import MediaType, QueueOption
+from music_assistant_models.player import Player
 
 from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient
 
@@ -47,7 +49,9 @@ class TestSimpleHTTPMusicAssistantClientAdvanced:
         mock_response.json.return_value = fixture["response"]
         mock_session.post.return_value = mock_response
 
-        client.play_media(queue_id="test-queue-id", media="library://artist/204", option="play", radio_mode=False)
+        client.play_media(
+            queue_id="test-queue-id", media="library://artist/204", option=QueueOption.PLAY, radio_mode=False
+        )
 
         call_args = mock_session.post.call_args
         assert call_args[1]["json"]["command"] == "player_queues/play_media"
@@ -188,7 +192,7 @@ class TestSimpleHTTPMusicAssistantClientAdvanced:
         first_player_id = fixture["raw_response"][0]["player_id"]
         found_player = client._find_player_by_id(first_player_id)
         assert found_player is not None
-        assert found_player["player_id"] == first_player_id
+        assert found_player.player_id == first_player_id
 
         # Try to find non-existent player
         not_found = client._find_player_by_id("non-existent-id")
@@ -218,6 +222,65 @@ class TestSimpleHTTPMusicAssistantClientAdvanced:
         # Test with non-existent player
         state = client.get_player_state("non-existent")
         assert state is None
+
+    def test_state_extraction_methods(self, client):
+        """Test state extraction helper methods."""
+        # Create mock player with various states
+        mock_player = Mock(spec=Player)
+
+        # Test playback state extraction
+        mock_player.playback_state = Mock()
+        mock_player.playback_state.value = "playing"
+        state = client._extract_playback_state(mock_player)
+        assert state == "playing"
+
+        # Test with no playback_state attribute
+        del mock_player.playback_state
+        state = client._extract_playback_state(mock_player)
+        assert state == "unknown"
+
+    def test_track_extraction_methods(self, client):
+        """Test track name extraction methods."""
+        mock_player = Mock(spec=Player)
+
+        # Test extract from media
+        mock_player.current_media = Mock()
+        mock_player.current_media.title = "Test Song"
+        mock_player.current_media.artist = "Test Artist"
+
+        track = client._extract_track_from_media(mock_player)
+        assert track == "Test Artist - Test Song"
+
+        # Test without artist
+        mock_player.current_media.artist = None
+        track = client._extract_track_from_media(mock_player)
+        assert track == "Test Song"
+
+        # Test with no media
+        mock_player.current_media = None
+        track = client._extract_track_from_media(mock_player)
+        assert track is None
+
+    def test_current_track_extraction(self, client):
+        """Test the overall current track extraction method."""
+        mock_player = Mock(spec=Player)
+
+        # Test with current_media
+        mock_player.current_media = Mock()
+        mock_player.current_media.title = "Test Song"
+        mock_player.current_media.artist = "Test Artist"
+
+        track = client._extract_current_track(mock_player)
+        assert track == "Test Artist - Test Song"
+
+        # Test with no current media - should fall back to queue
+        mock_player.current_media = None
+        mock_player.current_item_id = "test-item"
+
+        # Mock the queue method to return None
+        with patch.object(client, "get_player_queue_items", return_value=None):
+            track = client._extract_current_track(mock_player)
+            assert track == "No track"
 
     def test_formatting_methods(self, client):
         """Test display formatting helper methods."""
@@ -290,7 +353,8 @@ class TestSimpleHTTPMusicAssistantClientAdvanced:
 
         # Verify we can create Player objects from the data
         players_data = players_fixture["response"]
-        assert len(players_data) > 0
+        players = [Player.from_dict(p) for p in players_data]
+        assert len(players) > 0
 
 
 if __name__ == "__main__":

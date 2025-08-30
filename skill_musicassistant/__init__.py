@@ -323,6 +323,7 @@ class MusicAssistantSkill(OVOSSkill):
 
             # Use our HTTP client for volume control
             if self.mass_client:
+                self.log.info(f"Setting volume to {volume} for player {player_id}")
                 self.mass_client.player_command_volume_set(player_id, volume)
             self.log.debug("Set volume to %s for player %s", volume, player_id)
             self.speak_dialog("volume_set", {"volume": volume})

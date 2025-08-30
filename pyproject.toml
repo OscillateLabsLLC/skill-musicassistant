@@ -47,6 +47,8 @@ dev = [
 minversion = "7.0"
 addopts = "-ra -q --cov=skill_musicassistant --cov-report=term-missing --cov-report=html --cov-branch"
 testpaths = ["test"]
+log_cli = true
+log_cli_level = "DEBUG"
 
 [tool.coverage.run]
 source = ["skill_musicassistant"]

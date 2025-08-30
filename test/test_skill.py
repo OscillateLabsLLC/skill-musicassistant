@@ -228,18 +228,19 @@ class TestSkillMessageHandlers:
     def test_handle_volume_success(self, skill_with_mocks):
         """Test successful volume handling."""
         mock_message = Mock()
-        mock_message.data = {"volume_level": "50"}
+        mock_message.data = {"volume": "50"}
 
         with patch.object(skill_with_mocks, "_get_player_id", return_value="test-player"):
             skill_with_mocks.handle_volume(mock_message)
 
+            print(f"Mass client: {skill_with_mocks.mass_client.player_command_volume_set.call_args}")
             skill_with_mocks.mass_client.player_command_volume_set.assert_called_once_with("test-player", 50)
             skill_with_mocks.speak_dialog.assert_called_once_with("volume_set", {"volume": 50})
 
     def test_handle_volume_invalid_level(self, skill_with_mocks):
         """Test volume handling with invalid level."""
         mock_message = Mock()
-        mock_message.data = {"volume_level": "invalid"}
+        mock_message.data = {"volume": "invalid"}
 
         with patch.object(skill_with_mocks, "_get_player_id", return_value="test-player"):
             skill_with_mocks.handle_volume(mock_message)

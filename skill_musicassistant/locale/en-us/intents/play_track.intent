@@ -13,13 +13,3 @@ listen to (the|) (track|song) {track} (in|on|using) (the|) {location}
 # With artist and location
 play (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
 listen to (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
-
-# With radio mode
-play (the|) (track|song) {track} (with|using) radio mode
-listen to (the|) (track|song) {track} (with|using) radio mode
-play (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (with|using) radio mode
-listen to (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (with|using) radio mode
-
-# Complete patterns with all options
-play (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location} (with|using) radio mode
-listen to (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location} (with|using) radio mode

@@ -1,10 +1,8 @@
 # Volume Control Intent
-set volume to {volume_level}
-set (the|) volume to {volume_level}
-volume {volume_level}
-turn volume to {volume_level}
-change volume to {volume_level}
-make volume {volume_level}
+(|set )(the |)music volume to {volume_level}
+turn music volume to {volume_level}
+change music volume to {volume_level}
+make music volume {volume_level}
 
 # With location
 set volume to {volume_level} (in|on) (the|) {location}
@@ -13,30 +11,6 @@ volume {volume_level} (in|on) (the|) {location}
 turn volume to {volume_level} (in|on) (the|) {location}
 change volume to {volume_level} (in|on) (the|) {location}
 make volume {volume_level} (in|on) (the|) {location}
-
-# Volume up/down
-turn up (the|) volume
-turn down (the|) volume
-volume up
-volume down
-louder
-quieter
-increase (the|) volume
-decrease (the|) volume
-raise (the|) volume
-lower (the|) volume
-
-# Volume up/down with location
-turn up (the|) volume (in|on) (the|) {location}
-turn down (the|) volume (in|on) (the|) {location}
-volume up (in|on) (the|) {location}
-volume down (in|on) (the|) {location}
-louder (in|on) (the|) {location}
-quieter (in|on) (the|) {location}
-increase (the|) volume (in|on) (the|) {location}
-decrease (the|) volume (in|on) (the|) {location}
-raise (the|) volume (in|on) (the|) {location}
-lower (the|) volume (in|on) (the|) {location}
 
 # Mute/unmute
 mute

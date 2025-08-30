@@ -316,6 +316,13 @@ class MusicAssistantSkill(OVOSSkill):
 
             # Parse volume level (could be "50", "fifty", "half", etc.)
             volume = self._parse_volume_level(str(volume_level))
+            if volume is None and "mute" in message.data:
+                if "unmute" in message.data:
+                    self.log.info("Unmuting player %s", player_id)
+                    self.mass_client.player_command_volume_mute(player_id, muted=False)
+                else:
+                    self.log.info("Muting player %s", player_id)
+                    self.mass_client.player_command_volume_mute(player_id, muted=True)
             if volume is None:
                 self.log.error("Invalid volume level: %s", volume_level)
                 self.speak_dialog("generic_could_not", {"thing": f"understand volume level {volume_level}."})

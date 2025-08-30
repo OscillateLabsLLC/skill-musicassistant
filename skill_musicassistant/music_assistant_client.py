@@ -111,7 +111,7 @@ class SimpleHTTPMusicAssistantClient:
 
     def queue_command_pause(self, queue_id: str):
         """Pause playback."""
-        return self.send_command("player_queues/pause", queue_id=queue_id)
+        return self.send_command("player_queues/play_pause", queue_id=queue_id)
 
     def queue_command_next(self, queue_id: str):
         """Skip to next track."""

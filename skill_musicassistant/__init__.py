@@ -23,6 +23,9 @@ __all__ = [
 class MusicAssistantSkill(OVOSSkill):
     """OVOS/Neon skill for music assistant functionality."""
 
+    def __init__(self, *args, bus=None, skill_id="", **kwargs):
+        super().__init__(*args, bus=bus, skill_id=skill_id, **kwargs)
+
     def initialize(self):
         """Initialize the skill and set up Music Assistant client"""
         # TODO: Validate that OCP is not enabled, log a warning if it is
@@ -73,7 +76,7 @@ class MusicAssistantSkill(OVOSSkill):
         """
         if not self.mass_client:
             self.log.warning("Music Assistant client not initialized, cannot get player ID")
-            return None
+            return ""
 
         try:
             # Get all available players using our HTTP client
@@ -266,8 +269,8 @@ class MusicAssistantSkill(OVOSSkill):
             # TODO: Handle this better, so we use the default player if no location is provided
             player_id = self._get_player_id(location)
             if not player_id:
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
-                return
+                self.log.error("No player found for location: %s", location)
+                player_id = self._get_player_id(self.default_player)
 
             if self.mass_client:
                 self.mass_client.queue_command_pause(player_id)
@@ -435,6 +438,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Play track
+            self.log.info("Playing track %s on player %s", track, player_id)
             success = self._play_media_item(track, player_id, radio_mode)
 
             if success:
@@ -478,6 +482,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Play album
+            self.log.info("Playing album %s on player %s", album, player_id)
             success = self._play_media_item(album, player_id, radio_mode)
 
             if success:
@@ -520,6 +525,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Play playlist
+            self.log.info("Playing playlist %s on player %s", playlist, player_id)
             success = self._play_media_item(playlist, player_id)
 
             if success:
@@ -554,6 +560,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return
 
             # Play radio station
+            self.log.info("Playing radio station %s on player %s", station, player_id)
             success = self._play_media_item(station, player_id)
 
             if success:

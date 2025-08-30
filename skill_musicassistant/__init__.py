@@ -217,7 +217,7 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("play_artist.intent")
     def handle_play_artist(self, message: Message):
         """Handle playing an artist"""
-        artist_name = message.data.get("artist_name")
+        artist_name = message.data.get("artist")
         location = message.data.get("location") or self.default_player
 
         try:
@@ -589,6 +589,6 @@ class MusicAssistantSkill(OVOSSkill):
         try:
             self.mass_client.queue_command_pause(self.mass_client.get_players()[0].player_id)
             return True
-        except Exception as e:
-            self.log.error("Error stopping: %s", e)
+        except Exception:
+            self.log.exception("Error stopping media playback")
             return False

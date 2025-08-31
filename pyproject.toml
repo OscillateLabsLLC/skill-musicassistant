@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 authors = [
     { name = "Mike Gray/Oscillate Labs", email = "mike@oscillatelabs.net" },
 ]
-keywords = ["mycroft", "ovos", "neon", "plugin", "tts", "home assistant", "music assistant", "open home foundation"]
+keywords = ["mycroft", "ovos", "neon", "plugin", "media", "home assistant", "music assistant", "open home foundation"]
 dynamic = ["version"]
 dependencies = [
     "music-assistant-models @ git+https://github.com/oscillatelabsllc/music-assistant-models",

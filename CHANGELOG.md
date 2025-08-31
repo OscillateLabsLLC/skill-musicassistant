@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.1.0...v0.1.1) (2025-08-31)
+
+
+### Bug Fixes
+
+* pypi friendly dependencies ([7fdd824](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/7fdd824652fc67742d74c348e840740bd7024cd9))
+
 ## 0.1.0 (2025-08-31)
 
 

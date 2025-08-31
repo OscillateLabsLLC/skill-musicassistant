@@ -369,12 +369,16 @@ wheels = [
 ]
 
 [[package]]
-name = "music-assistant-models"
-version = "0.0.0"
-source = { git = "https://github.com/oscillatelabsllc/music-assistant-models?rev=main#c5e6647a1f3c060cd068e1ed63ee7e12d78546bf" }
+name = "music-assistant-models-loose"
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mashumaro" },
     { name = "orjson" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f2/ad/906ca442ac0ed94b70092e3252a610b55fd66e33505f0ad2ced2e00d38f3/music_assistant_models_loose-0.0.1.tar.gz", hash = "sha256:e745dd1c93c8672c201e8986a1f75a328bcb40d99118632cd2822d6e533b151d", size = 35751 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/2b/97298b124146eaab097fea63e57b81a75d17eace166a7b8b3f6b68f7c303/music_assistant_models_loose-0.0.1-py3-none-any.whl", hash = "sha256:9769ec6c6813dd5d38a8507ddb93eab89ab5291cf0f137587c7cd9cb5ea44398", size = 43931 },
 ]
 
 [[package]]
@@ -1107,7 +1111,7 @@ name = "skill-musicassistant"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [
-    { name = "music-assistant-models" },
+    { name = "music-assistant-models-loose" },
     { name = "ovos-bus-client" },
     { name = "ovos-plugin-manager" },
     { name = "ovos-utils" },
@@ -1126,7 +1130,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "music-assistant-models", git = "https://github.com/oscillatelabsllc/music-assistant-models?rev=main" },
+    { name = "music-assistant-models-loose", specifier = "==0.0.1" },
     { name = "ovos-bus-client", specifier = ">=0.0.10,<2.0.0" },
     { name = "ovos-plugin-manager", specifier = ">=0.8.3" },
     { name = "ovos-utils", specifier = ">=0.7.0" },

@@ -13,7 +13,7 @@ authors = [
 keywords = ["mycroft", "ovos", "neon", "plugin", "tts", "home assistant", "music assistant", "open home foundation"]
 dynamic = ["version"]
 dependencies = [
-    "music-assistant-models",
+    "music-assistant-models @ git+https://github.com/oscillatelabsllc/music-assistant-models",
     "ovos-bus-client>=0.0.10,<2.0.0",
     "ovos-plugin-manager>=0.8.3",
     "ovos-utils>=0.7.0",

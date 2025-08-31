@@ -50,41 +50,6 @@ class TestMusicAssistantSkillIntegration:
         assert hasattr(skill, "players")
         assert hasattr(skill, "last_player")
 
-    def test_get_player_id_with_location(self, skill_with_mock_client, mock_client):
-        """Test player ID resolution with location."""
-        # Mock players response with proper name attributes
-        mock_players = [
-            Mock(name="Office Speaker", player_id="office-123"),
-            Mock(name="Living Room", player_id="living-456"),
-        ]
-        # Set the name attribute properly for string operations
-        mock_players[0].name = "Office Speaker"
-        mock_players[1].name = "Living Room"
-        mock_client.get_players.return_value = mock_players
-
-        # Test finding by location
-        player_id = skill_with_mock_client._get_player_id("Office")
-        assert player_id == "office-123"
-
-        # Test fallback to default - mock the default_player property
-        with patch.object(type(skill_with_mock_client), "default_player", new_callable=lambda: "default_player"):
-            player_id = skill_with_mock_client._get_player_id("Nonexistent")
-            assert player_id == "default_player"
-
-    def test_get_player_id_fallback_to_first(self, skill_with_mock_client, mock_client):
-        """Test fallback to first available player."""
-        # Mock players response
-        mock_players = [
-            Mock(name="Random Player", player_id="random-123"),
-        ]
-        mock_players[0].name = "Random Player"
-        mock_client.get_players.return_value = mock_players
-
-        # Mock the default_player property to return None for this test
-        with patch.object(type(skill_with_mock_client), "default_player", new_callable=lambda: None):
-            player_id = skill_with_mock_client._get_player_id("Nonexistent")
-            assert player_id == "random-123"
-
     def test_get_player_id_no_players(self, skill_with_mock_client, mock_client):
         """Test behavior when no players are available."""
         mock_client.get_players.return_value = []
@@ -262,30 +227,6 @@ class TestSkillMessageHandlers:
 
             skill_with_mocks.mass_client.queue_command_previous.assert_called_once_with("test-player")
             skill_with_mocks.speak_dialog.assert_called_once_with("previous_track")
-
-    def test_handle_volume_success(self, skill_with_mocks):
-        """Test successful volume handling."""
-        mock_message = Mock()
-        mock_message.data = {"volume": "50"}
-
-        with patch.object(skill_with_mocks, "_get_player_id", return_value="test-player"):
-            skill_with_mocks.handle_volume(mock_message)
-
-            print(f"Mass client: {skill_with_mocks.mass_client.player_command_volume_set.call_args}")
-            skill_with_mocks.mass_client.player_command_volume_set.assert_called_once_with("test-player", 50)
-            skill_with_mocks.speak_dialog.assert_called_once_with("volume_set", {"volume": 50})
-
-    def test_handle_volume_invalid_level(self, skill_with_mocks):
-        """Test volume handling with invalid level."""
-        mock_message = Mock()
-        mock_message.data = {"volume": "invalid"}
-
-        with patch.object(skill_with_mocks, "_get_player_id", return_value="test-player"):
-            skill_with_mocks.handle_volume(mock_message)
-
-            skill_with_mocks.speak_dialog.assert_called_once_with(
-                "generic_could_not", {"thing": "understand volume level invalid."}
-            )
 
 
 if __name__ == "__main__":

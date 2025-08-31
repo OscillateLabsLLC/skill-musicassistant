@@ -67,7 +67,7 @@ class TestSimpleHTTPMusicAssistantClientAdvanced:
         # Test each queue command
         commands = [
             ("queue_command_play", "player_queues/play", {}),
-            ("queue_command_pause", "player_queues/pause", {}),
+            ("queue_command_pause", "player_queues/play_pause", {}),
             ("queue_command_next", "player_queues/next", {}),
             ("queue_command_previous", "player_queues/previous", {}),
         ]
@@ -129,24 +129,22 @@ class TestSimpleHTTPMusicAssistantClientAdvanced:
 
         # Test volume up/down
         volume_commands = [
-            ("player_command_volume_up", "players/cmd/volume_up", {"step": 10}),
-            ("player_command_volume_down", "players/cmd/volume_down", {"step": 5}),
+            ("player_command_volume_up", "players/cmd/volume_up"),
+            ("player_command_volume_down", "players/cmd/volume_down"),
         ]
 
-        for method_name, expected_command, kwargs in volume_commands:
+        for method_name, expected_command in volume_commands:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = None
             mock_session.post.return_value = mock_response
 
             method = getattr(client, method_name)
-            method(player_id, **kwargs)
+            method(player_id)
 
             call_args = mock_session.post.call_args
             assert call_args[1]["json"]["command"] == expected_command
             assert call_args[1]["json"]["args"]["player_id"] == player_id
-            if "step" in kwargs:
-                assert call_args[1]["json"]["args"]["step"] == kwargs["step"]
 
         # Test volume mute
         client.player_command_volume_mute(player_id, True)

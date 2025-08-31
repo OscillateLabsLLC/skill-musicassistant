@@ -91,7 +91,13 @@ class SimpleHTTPMusicAssistantClient:
             args["media_types"] = [mt.value for mt in media_types]
         return self.send_command("music/search", **args)
 
-    def play_media(self, queue_id: str, media: str, option: QueueOption = QueueOption.PLAY, radio_mode: bool = False):
+    def play_media(
+        self,
+        queue_id: str,
+        media: str,
+        option: QueueOption = QueueOption.PLAY,  # type: ignore
+        radio_mode: bool = False,
+    ):
         """Play media on a player queue."""
         self.log.info(
             f"🎵 Sending play_media: queue_id={queue_id}, media={media}, option={option.value}, "

@@ -32,6 +32,7 @@ class MusicAssistantSkill(OVOSSkill):
         self.session = requests.Session()
         self.mass_client = SimpleHTTPMusicAssistantClient(server_url=self.music_assistant_url, session=self.session)
         self.players: List[Player] = self.mass_client.get_players()
+        self.cache_refreshed: bool = False
         self.last_player: List[
             Player
         ] = []  # TODO: Probably do this by session ID in a dict to support Neon Nodes/HiveMind
@@ -74,28 +75,35 @@ class MusicAssistantSkill(OVOSSkill):
         1. Explicit location from utterance
         2. Default player from settings
         """
+        self.log.debug("Getting player ID for location: %s", location)
+        # TODO: Fuzzy search
+        player_names = [x.name.lower() for x in self.players]
+        if location and location.lower() in player_names:
+            self.log.debug("Found player by location in cache: %s", location)
+            self.last_player.append(self.players[player_names.index(location.lower())])
+            return self.last_player[0].player_id
+        # Not in cache, try cached default player
+        if self.default_player and self.default_player.lower() in player_names:
+            self.log.debug("Couldn't find player by location, found default player in cache: %s", self.default_player)
+            self.last_player.append(self.players[player_names.index(self.default_player.lower())])
+            return self.last_player[0].player_id
         if not self.mass_client:
             self.log.warning("Music Assistant client not initialized, cannot get player ID")
             return ""
 
         try:
             # Get all available players using our HTTP client
+            if self.cache_refreshed:
+                self.log.error("Cache already refreshed, player ID cannot be found")
+                self.cache_refreshed = False
+                self.speak_dialog("generic_could_not", {"thing": "find a player."})
+                return None
+            self.log.info("Could not find %s in cache, getting players from Music Assistant", location)
             players: list[Player] = self.mass_client.get_players()
             self.log.info("Got %s players", len(players))
-
-            if location:
-                # Try to find player by name/location
-                for player in players:
-                    if location.lower() in player.name.lower():
-                        self.log.info("Found player by location: %s", player.name)
-                        return player.player_id
-
-            # If no default, use first available player
-            if players:
-                self.log.info("Using first available player: %s", players[0].name)
-                return players[0].player_id
-
-            self.log.warning("No players found")
+            self.players = players
+            self.cache_refreshed = True
+            return self._get_player_id(location)
 
         except Exception as e:
             self.log.error("Error getting players: %s", e)
@@ -107,6 +115,7 @@ class MusicAssistantSkill(OVOSSkill):
 
     def _search_media(self, query, media_type=None, artist=None, album=None):
         """Search for media using the Music Assistant HTTP client"""
+        # TODO: Allow generic search
         try:
             if not self.mass_client:
                 self.log.error("Mass client not initialized")
@@ -190,6 +199,7 @@ class MusicAssistantSkill(OVOSSkill):
                 return False
 
             # Use our HTTP client to play media
+            # TODO: Get enum instead of passing raw string
             self.mass_client.play_media(
                 queue_id=player_id, media=media_item.uri, option=enqueue, radio_mode=radio_mode
             )
@@ -221,9 +231,7 @@ class MusicAssistantSkill(OVOSSkill):
         try:
             # Get player
             player_id = self._get_player(location)
-            self.log.info("Player ID for %s: %s", location, player_id)
             if not player_id:
-                self.log.error("No player found for %s", location)
                 return
 
             # Search for artist
@@ -257,15 +265,14 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("pause.intent")
     def handle_pause(self, message: Message):
         """Handle pause commands"""
-        self.log.debug(f"Pause intent received:\n{message.data}")
+        self.log.debug("Pause intent received:\n%s", message.data)
         location = message.data.get("location")
 
         try:
-            # TODO: Handle this better, so we use the default player if no location is provided
-            player_id = self._get_player_id(location)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.log.error("No player found for location: %s", location)
-                player_id = self._get_player_id(self.default_player)
+                return
 
             if self.mass_client:
                 self.mass_client.queue_command_pause(player_id)
@@ -278,14 +285,13 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("next.intent")
     def handle_next(self, message: Message):
         """Handle next track commands"""
-        # TODO: Handle this better, so we use the default player if no location is provided
-        self.log.debug(f"Next intent received:\n{message.data}")
+        self.log.debug("Next intent received:\n%s", message.data)
         location = message.data.get("location")
 
         try:
-            player_id = self._get_player_id(location)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
                 return
 
             if self.mass_client:
@@ -299,13 +305,13 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("previous.intent")
     def handle_previous(self, message: Message):
         """Handle previous track commands"""
-        self.log.debug(f"Previous intent received:\n{message.data}")
+        self.log.debug("Previous intent received:\n%s", message.data)
         location = message.data.get("location")
 
         try:
-            player_id = self._get_player_id(location)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
                 return
 
             if self.mass_client:
@@ -319,16 +325,14 @@ class MusicAssistantSkill(OVOSSkill):
     @intent_handler("volume.intent")
     def handle_volume(self, message: Message):
         """Handle volume control commands"""
-        self.log.debug(f"Volume intent received:\n{message.data}")
+        self.log.debug("Volume intent received:\n%s", message.data)
         volume_level = message.data.get("volume_level")
         location = message.data.get("location")
 
         try:
-            player_id = self._get_player_id(location)
-            self.log.info("Player ID for %s: %s", location, player_id)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.log.error("No player found for location: %s", location)
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
                 return
 
             # Parse volume level (could be "50", "fifty", "half", etc.)
@@ -360,7 +364,7 @@ class MusicAssistantSkill(OVOSSkill):
 
             # Use our HTTP client for volume control
             if self.mass_client:
-                self.log.info(f"Setting volume to {volume} for player {player_id}")
+                self.log.info("Setting volume to %s for player %s", volume, player_id)
                 self.mass_client.player_command_volume_set(player_id, volume)
             self.log.debug("Set volume to %s for player %s", volume, player_id)
             self.speak_dialog("volume_set", {"volume": volume})
@@ -433,10 +437,9 @@ class MusicAssistantSkill(OVOSSkill):
         radio_mode = message.data.get("radio_mode")
 
         try:
-            player_id = self._get_player_id(location)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.log.error("No player found for location: %s", location)
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
                 return
 
             # Search for track
@@ -449,7 +452,7 @@ class MusicAssistantSkill(OVOSSkill):
 
             # Play track
             self.log.info("Playing track %s on player %s", track, player_id)
-            success = self._play_media_item(track, player_id, radio_mode)
+            success = self._play_media_item(track, player_id, bool(radio_mode))
 
             if success:
                 self.speak_dialog(
@@ -479,9 +482,9 @@ class MusicAssistantSkill(OVOSSkill):
         radio_mode = message.data.get("radio_mode")  # TODO: Devise tests for this, possibly remove
 
         try:
-            player_id = self._get_player_id(location)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
                 return
 
             # Search for album
@@ -493,7 +496,7 @@ class MusicAssistantSkill(OVOSSkill):
 
             # Play album
             self.log.info("Playing album %s on player %s", album, player_id)
-            success = self._play_media_item(album, player_id, radio_mode)
+            success = self._play_media_item(album, player_id, radio_mode or False)
 
             if success:
                 self.speak_dialog(
@@ -521,10 +524,9 @@ class MusicAssistantSkill(OVOSSkill):
         location = message.data.get("location")
 
         try:
-            player_id = self._get_player_id(location)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.log.error("No player found for location: %s", location)
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
                 return
 
             # Search for playlist
@@ -558,9 +560,9 @@ class MusicAssistantSkill(OVOSSkill):
         location = message.data.get("location")
 
         try:
-            player_id = self._get_player_id(location)
+            # Get player
+            player_id = self._get_player(location)
             if not player_id:
-                self.speak_dialog("generic_could_not", {"thing": "find a player."})
                 return
 
             # Search for radio station

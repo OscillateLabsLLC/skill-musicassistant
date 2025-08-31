@@ -134,13 +134,13 @@ class SimpleHTTPMusicAssistantClient:
         """Set player volume (0-100)."""
         return self.send_command("players/cmd/volume_set", player_id=player_id, volume_level=volume)
 
-    def player_command_volume_up(self, player_id: str, step: int = 5):
+    def player_command_volume_up(self, player_id: str):
         """Increase player volume."""
-        return self.send_command("players/cmd/volume_up", player_id=player_id, step=step)
+        return self.send_command("players/cmd/volume_up", player_id=player_id)
 
-    def player_command_volume_down(self, player_id: str, step: int = 5):
+    def player_command_volume_down(self, player_id: str):
         """Decrease player volume."""
-        return self.send_command("players/cmd/volume_down", player_id=player_id, step=step)
+        return self.send_command("players/cmd/volume_down", player_id=player_id)
 
     def player_command_volume_mute(self, player_id: str, muted: bool = True):
         """Mute/unmute player."""

@@ -90,11 +90,6 @@ class MusicAssistantSkill(OVOSSkill):
                         self.log.info("Found player by location: %s", player.name)
                         return player.player_id
 
-            # Fall back to default player
-            if self.default_player:
-                self.log.info("Using default player: %s", self.default_player)
-                return self.default_player
-
             # If no default, use first available player
             if players:
                 self.log.info("Using first available player: %s", players[0].name)
@@ -325,7 +320,7 @@ class MusicAssistantSkill(OVOSSkill):
     def handle_volume(self, message: Message):
         """Handle volume control commands"""
         self.log.debug(f"Volume intent received:\n{message.data}")
-        volume_level = message.data.get("volume")
+        volume_level = message.data.get("volume_level")
         location = message.data.get("location")
 
         try:

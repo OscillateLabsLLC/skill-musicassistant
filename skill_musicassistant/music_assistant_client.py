@@ -91,6 +91,20 @@ class SimpleHTTPMusicAssistantClient:
             args["media_types"] = [mt.value for mt in media_types]
         return self.send_command("music/search", **args)
 
+    def track_info(self, uri: str) -> Dict[str, Any]:
+        """Search for media."""
+        args = {"uri": uri}
+        return self.send_command("music/item_by_uri", **args)
+
+    def recommendations(self) -> Dict[str, Any]:
+        """Search for media."""
+        return self.send_command("music/recommendations")
+
+    def recently_played(self) -> Dict[str, Any]:
+        """Search for media."""
+        return self.send_command("music/recently_played_items")
+
+
     def play_media(
         self,
         queue_id: str,
@@ -151,6 +165,22 @@ class SimpleHTTPMusicAssistantClient:
     def player_command_volume_mute(self, player_id: str, muted: bool = True):
         """Mute/unmute player."""
         return self.send_command("players/cmd/volume_mute", player_id=player_id, muted=muted)
+
+    # player controls
+    def player_command_seek(self, player_id: str, position: int) -> None:
+        """Handle SEEK command for given player.
+
+        - player_id: player_id of the player to handle the command.
+        - position: position in seconds to seek to in the current playing item.
+        """
+        return self.send_command("players/cmd/seek", player_id=player_id, position=position)
+
+    def player_command_stop(self, player_id: str) -> None:
+        """Handle STOP command for given player.
+
+        - player_id: player_id of the player to handle the command.
+        """
+        return self.send_command("players/cmd/stop", player_id=player_id)
 
     # State checking methods
     def get_player_queue_items(self, queue_id: str, limit: int = 10, offset: int = 0):
@@ -235,6 +265,8 @@ class SimpleHTTPMusicAssistantClient:
             "volume_muted": getattr(player, "volume_muted", False),
             "current_track": self._extract_current_track(player),
             "player_name": getattr(player, "name", "Unknown"),
+            "player_type": getattr(player, "provider", "Unknown"),
+            "available": getattr(player, "available", False),
         }
 
     @debug_method

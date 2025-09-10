@@ -22,6 +22,15 @@ dependencies = [
 ]
 license = { "text" = "Apache-2.0" }
 
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "mypy>=1.15.0",
+    "pylint>=3.0.0",
+    "ruff>=0.9.9",
+]
+
 [project.urls]
 Homepage = "https://github.com/oscillatelabsllc/skill-musicassistant"
 
@@ -33,15 +42,6 @@ packages = ["skill_musicassistant"]
 
 [tool.setuptools.package-data]
 skill_musicassistant = ["locale/**/*"]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.4",
-    "pytest-cov>=6.0.0",
-    "mypy>=1.15.0",
-    "pylint>=3.0.0",
-    "ruff>=0.9.9",
-]
 
 [tool.pytest.ini_options]
 minversion = "7.0"

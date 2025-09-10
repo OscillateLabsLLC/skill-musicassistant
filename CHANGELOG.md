@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.1.1...v0.2.0) (2025-09-10)
+
+
+### Features
+
+* more endpoints ([5d29c86](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/5d29c86d461adc47bfa571374a6d69b5b0840194))
+* more endpoints ([1f78d4c](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/1f78d4cd80b2b5a7a50082ab2377109a8ab5a718))
+
 ## [0.1.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.1.0...v0.1.1) (2025-08-31)
 
 

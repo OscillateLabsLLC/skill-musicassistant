@@ -60,9 +60,15 @@ def debug_method(func):
 class SimpleHTTPMusicAssistantClient:
     """Simple HTTP-based Music Assistant client that avoids WebSocket issues."""
 
-    def __init__(self, server_url: str, session: requests.Session | None = None):
+    def __init__(
+        self,
+        server_url: str,
+        token: str | None = None,
+        session: requests.Session | None = None,
+    ):
         self.server_url = server_url.rstrip("/")
         self.api_url = f"{self.server_url}/api"
+        self.token = token
         self.session = session or requests.Session()
         self.log = LOG()
 
@@ -71,7 +77,11 @@ class SimpleHTTPMusicAssistantClient:
         """Send a command to Music Assistant via HTTP API."""
         payload = {"command": command, "message_id": uuid.uuid4().hex, "args": args}
 
-        response = self.session.post(self.api_url, json=payload)
+        headers = {}
+        if self.token:
+            headers["Authorization"] = f"Bearer {self.token}"
+
+        response = self.session.post(self.api_url, json=payload, headers=headers, timeout=5)
         if response.status_code == 200:
             return response.json()
         raise MusicAssistantError(f"HTTP {response.status_code}: {response.text}")
@@ -103,7 +113,6 @@ class SimpleHTTPMusicAssistantClient:
     def recently_played(self) -> Dict[str, Any]:
         """Search for media."""
         return self.send_command("music/recently_played_items")
-
 
     def play_media(
         self,

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.2.0...v0.2.1) (2025-12-21)
+
+
+### Bug Fixes
+
+* music assistant token support ([d720b48](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/d720b48bbbf8e3732326618e51466f683a569572))
+* music assistant token support ([b596c34](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/b596c3438a87ff76e0315ad59d7f12a04caeb708))
+
 ## [0.2.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.1.1...v0.2.0) (2025-09-10)
 
 

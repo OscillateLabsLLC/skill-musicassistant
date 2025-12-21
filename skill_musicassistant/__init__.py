@@ -30,7 +30,9 @@ class MusicAssistantSkill(OVOSSkill):
         """Initialize the skill and set up Music Assistant client"""
         # TODO: Validate that OCP is not enabled, log a warning if it is
         self.session = requests.Session()
-        self.mass_client = SimpleHTTPMusicAssistantClient(server_url=self.music_assistant_url, session=self.session)
+        self.mass_client = SimpleHTTPMusicAssistantClient(
+            server_url=self.music_assistant_url, token=self.music_assistant_token, session=self.session
+        )
         self.players: List[Player] = self.mass_client.get_players()
         self.cache_refreshed: bool = False
         self.last_player: List[
@@ -42,6 +44,11 @@ class MusicAssistantSkill(OVOSSkill):
         """Get the Music Assistant server URL from the skill settings"""
         # Use base HTTP URL - client will automatically add /ws for WebSocket connection
         return self.settings.get("music_assistant_url", "http://localhost:8095")
+
+    @property
+    def music_assistant_token(self):
+        """Get the Music Assistant token from the skill settings"""
+        return self.settings.get("music_assistant_token")
 
     @property
     def default_player(self):

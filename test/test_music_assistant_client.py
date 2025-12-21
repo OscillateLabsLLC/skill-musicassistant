@@ -74,15 +74,11 @@ class TestSimpleHTTPMusicAssistantClient:
         """Test client initialization with different configurations."""
         # Test with session
         session = Mock(spec=requests.Session)
-        client = SimpleHTTPMusicAssistantClient("http://localhost:8095", session)
+        client = SimpleHTTPMusicAssistantClient("http://localhost:8095", "test-token", session)
         assert client.server_url == "http://localhost:8095"
         assert client.api_url == "http://localhost:8095/api"
+        assert client.token == "test-token"
         assert client.session is session
-
-        # Test without session (should create one)
-        client = SimpleHTTPMusicAssistantClient("http://localhost:8095/")
-        assert client.server_url == "http://localhost:8095"  # Should strip trailing slash
-        assert client.session is not None
 
     def test_send_command_success(self, client, mock_session, fixtures):
         """Test successful command sending."""

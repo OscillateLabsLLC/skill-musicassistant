@@ -1,5 +1,7 @@
 # skill-musicassistant
 
+[![Status: Active](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/OscillateLabsLLC/.github/blob/main/SUPPORT_STATUS.md)
+
 Mike Gray/Oscillate Labs
 [mike@oscillatelabs.net](mailto:mike@oscillatelabs.net)
 Apache-2.0

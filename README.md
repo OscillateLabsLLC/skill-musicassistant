@@ -2,10 +2,6 @@
 
 [![Status: Active](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/OscillateLabsLLC/.github/blob/main/SUPPORT_STATUS.md)
 
-Mike Gray/Oscillate Labs
-[mike@oscillatelabs.net](mailto:mike@oscillatelabs.net)
-Apache-2.0
-
 An OVOS/Neon skill to control media through Music Assistant.
 
 OCP _must_ be disabled for this skill to work.

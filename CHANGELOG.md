@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.2.1...v0.2.2) (2026-03-17)
+
+
+### Documentation
+
+* remove personal contact from README, add CONTRIBUTING.md ([dd9169a](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/dd9169a89552c9f642631ba902303729e9e93194))
+
 ## [0.2.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.2.0...v0.2.1) (2025-12-21)
 
 

@@ -1,0 +1,9 @@
+avec Music Assistant joue la playlist {playlist}
+avec Music Assistant lance la playlist {playlist}
+avec Music Assistant mets la playlist {playlist}
+joue la playlist {playlist} avec Music Assistant
+lance la playlist {playlist} avec Music Assistant
+avec Music Assistant joue la playlist {playlist} dans {location}
+avec Music Assistant lance la playlist {playlist} dans {location}
+joue la playlist {playlist} avec Music Assistant dans {location}
+lance la playlist {playlist} avec Music Assistant dans {location}

@@ -1,8 +1,7 @@
 avec Music Assistant joue l'album {album}
 avec Music Assistant lance l'album {album}
-avec Music Assistant mets l'album {album}
-avec Music Assistant joue l'ep {album}
-avec Music Assistant lance le single {album}
+avec Music Assistant joue l'EP {album}
+avec Music Assistant joue le single {album}
 avec Music Assistant joue la compilation {album}
 joue l'album {album} avec Music Assistant
 lance l'album {album} avec Music Assistant

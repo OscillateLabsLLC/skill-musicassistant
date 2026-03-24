@@ -1,13 +1,16 @@
 avec Music Assistant mets le volume à {volume_level}
+avec Music Assistant mets le volume sur {volume_level}
+avec Music Assistant mets le volume {volume_level}
 avec Music Assistant règle le volume à {volume_level}
-avec Music Assistant baisse le volume à {volume_level}
-avec Music Assistant monte le volume à {volume_level}
 mets le volume de Music Assistant à {volume_level}
+règle le volume de Music Assistant sur {volume_level}
 règle le volume de Music Assistant à {volume_level}
 avec Music Assistant mets le volume à {volume_level} dans {location}
+avec Music Assistant mets le volume sur {volume_level} dans {location}
+avec Music Assistant mets le volume {volume_level} dans {location}
 avec Music Assistant règle le volume à {volume_level} dans {location}
 mets le volume de Music Assistant à {volume_level} dans {location}
-règle le volume de Music Assistant à {volume_level} dans {location}
+règle le volume de Music Assistant sur {volume_level} dans {location}
 avec Music Assistant coupe le son
 coupe le son de Music Assistant
 avec Music Assistant remets le son

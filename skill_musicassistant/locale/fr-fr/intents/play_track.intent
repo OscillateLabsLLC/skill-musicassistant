@@ -1,14 +1,14 @@
 avec Music Assistant joue le titre {track}
 avec Music Assistant joue la chanson {track}
-avec Music Assistant lance le titre {track}
+avec Music Assistant lance le morceau {track}
 avec Music Assistant lance la chanson {track}
 joue le titre {track} avec Music Assistant
 joue la chanson {track} avec Music Assistant
-lance le titre {track} avec Music Assistant
+lance le morceau {track} avec Music Assistant
 lance la chanson {track} avec Music Assistant
 avec Music Assistant joue le titre {track} de {artist}
 avec Music Assistant joue la chanson {track} de {artist}
-avec Music Assistant lance le titre {track} de {artist}
+avec Music Assistant lance le morceau {track} de {artist}
 joue le titre {track} de {artist} avec Music Assistant
 joue la chanson {track} de {artist} avec Music Assistant
 avec Music Assistant joue le titre {track} dans {location}

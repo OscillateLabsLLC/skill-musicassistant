@@ -16,11 +16,11 @@
   "icon": "https://www.music-assistant.io/assets/transparent-logo.png",
   "images": [],
   "name": "Music Assistant",
-  "description": "Contrôle la lecture musicale via Music Assistant dans OpenVoiceOS.",
+  "description": "Contrôle la lecture musicale sur vos lecteurs Music Assistant avec OpenVoiceOS.",
   "examples": [
-    "Avec Music Assistant, joue l'album Random Access Memories",
-    "Avec Music Assistant, lance la playlist détente dans le salon",
-    "Avec Music Assistant, mets le volume à 30 pour cent"
+    "Avec Music Assistant, joue l'album Random Access Memories dans le salon",
+    "Avec Music Assistant, lance la playlist détente",
+    "Avec Music Assistant, mets le volume sur trente pour cent"
   ],
   "tags": [
     "mycroft",

@@ -585,6 +585,19 @@ wheels = [
 ]
 
 [[package]]
+name = "ovos-number-parser"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "quebra-frases" },
+    { name = "unicode-rbnf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/47/84/9271f7ca2a4b9ab9e4d8e7cade1642764a1c0d44c112bbbce9025a7315cc/ovos-number-parser-0.5.1.tar.gz", hash = "sha256:3a5c771a25bf801fcf35ab6923185de8f96f4b3710104d65be2b57f06dffe437", size = 126723, upload-time = "2025-10-12T16:56:53.615Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c9/e2/9701592e8b5001d982aa73fe4c734ef86e21d1483fa96707ae477160205a/ovos_number_parser-0.5.1-py3-none-any.whl", hash = "sha256:15e47ed2df6415f053b4e3bae418eaca7520a43ab0c5e98292b0a0838e0934cc", size = 149472, upload-time = "2025-10-12T16:56:52.28Z" },
+]
+
+[[package]]
 name = "ovos-plugin-manager"
 version = "1.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1113,6 +1126,7 @@ source = { editable = "." }
 dependencies = [
     { name = "music-assistant-models-loose" },
     { name = "ovos-bus-client" },
+    { name = "ovos-number-parser" },
     { name = "ovos-plugin-manager" },
     { name = "ovos-utils" },
     { name = "ovos-workshop" },
@@ -1133,6 +1147,7 @@ requires-dist = [
     { name = "music-assistant-models-loose", specifier = "==0.0.1" },
     { name = "mypy", marker = "extra == 'test'", specifier = ">=1.15.0" },
     { name = "ovos-bus-client", specifier = ">=0.0.10,<2.0.0" },
+    { name = "ovos-number-parser", specifier = ">=0.0.1,<1.0.0" },
     { name = "ovos-plugin-manager", specifier = ">=0.8.3" },
     { name = "ovos-utils", specifier = ">=0.7.0" },
     { name = "ovos-workshop", specifier = "~=0.0,>=0.0.15,>=0.0.16,<1.0.0" },
@@ -1199,6 +1214,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/98/5a/da40306b885cc8c09109dc2e1abd358d5684b1425678151cdaed4731c822/typing_extensions-4.14.1.tar.gz", hash = "sha256:38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36", size = 107673, upload-time = "2025-07-04T13:28:34.16Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b5/00/d631e67a838026495268c2f6884f3711a15a9a2a96cd244fdaea53b823fb/typing_extensions-4.14.1-py3-none-any.whl", hash = "sha256:d1e1e3b58374dc93031d6eda2420a48ea44a36c2b4766a4fdeb3710755731d76", size = 43906, upload-time = "2025-07-04T13:28:32.743Z" },
+]
+
+[[package]]
+name = "unicode-rbnf"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/1f/d952ba97832647e608700c36b22d1c4476016076c9ed1ce74ae814bea55a/unicode_rbnf-2.4.0.tar.gz", hash = "sha256:6d2f12a7581c69ea6218ee61fafcd2da46e1f9986bdcd0964c5151f7c2a938ac", size = 89069, upload-time = "2025-10-07T20:59:41.3Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/21/82f5d435808cba330668a8b69efb180e3ef9739d4998e8cd0381e8c9cb23/unicode_rbnf-2.4.0-py3-none-any.whl", hash = "sha256:0176b30ac9b7b84008d7dc0f23078055dc10d2671fdadfab5747943243e20e2d", size = 141691, upload-time = "2025-10-07T20:59:40.139Z" },
 ]
 
 [[package]]

@@ -1,10 +1,10 @@
 avec Music Assistant lance de la musique de {artist}
 avec Music Assistant mets de la musique de {artist}
-avec Music Assistant joue des titres de {artist}
+avec Music Assistant joue des morceaux de {artist}
 lance de la musique de {artist} avec Music Assistant
 mets de la musique de {artist} avec Music Assistant
-joue des titres de {artist} avec Music Assistant
+joue des morceaux de {artist} avec Music Assistant
 avec Music Assistant lance de la musique de {artist} dans {location}
-avec Music Assistant joue des titres de {artist} dans {location}
+avec Music Assistant joue des morceaux de {artist} dans {location}
 lance de la musique de {artist} avec Music Assistant dans {location}
-joue des titres de {artist} avec Music Assistant dans {location}
+joue des morceaux de {artist} avec Music Assistant dans {location}

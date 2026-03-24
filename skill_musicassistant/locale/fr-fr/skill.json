@@ -20,7 +20,8 @@
   "examples": [
     "Avec Music Assistant, joue l'album Random Access Memories dans le salon",
     "Avec Music Assistant, lance la playlist détente",
-    "Avec Music Assistant, mets le volume sur trente pour cent"
+    "Avec Music Assistant, joue le morceau Get Lucky",
+    "Avec Music Assistant, mets le volume à trente pour cent"
   ],
   "tags": [
     "mycroft",

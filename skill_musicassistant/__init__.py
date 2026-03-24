@@ -4,6 +4,7 @@ import requests
 from music_assistant_models.enums import MediaType, QueueOption
 from music_assistant_models.errors import MusicAssistantError
 from music_assistant_models.player import Player
+from ovos_number_parser import extract_number
 from ovos_bus_client import Message
 from ovos_utils.process_utils import RuntimeRequirements
 from ovos_workshop.decorators import intent_handler
@@ -229,6 +230,47 @@ class MusicAssistantSkill(OVOSSkill):
         self.gui.show_text(f"{message}. Check the logs for more details.")
         self.speak_dialog("generic_could_not", {"thing": message})
 
+    def _load_volume_aliases(self):
+        """Load locale-specific volume aliases."""
+        cache_key = f"{self.lang}:volume_levels.value"
+        if cache_key not in self.resources.static:
+            aliases = {}
+            try:
+                values = self.resources.load_named_value_file("volume_levels").items()
+            except FileNotFoundError:
+                values = []
+            for name, value in values:
+                key = name.lower().strip()
+                raw = str(value).strip().lower()
+                try:
+                    aliases[key] = int(raw)
+                except ValueError:
+                    aliases[key] = raw
+            self.resources.static[cache_key] = aliases
+        return self.resources.static[cache_key]
+
+    def _load_cached_list(self, name: str):
+        """Load and cache a locale list resource."""
+        cache_key = f"{self.lang}:{name}.list"
+        if cache_key not in self.resources.static:
+            try:
+                values = self.resources.load_list_file(name) or []
+            except FileNotFoundError:
+                values = []
+            self.resources.static[cache_key] = values
+        return self.resources.static[cache_key]
+
+    def _get_volume_action(self, message: Message):
+        """Extract mute actions from the localized utterance."""
+        utterance = message.data.get("utterance", "")
+        if not utterance:
+            return None
+        if self.voc_match(utterance, "unmute", lang=self.lang):
+            return "unmute"
+        if self.voc_match(utterance, "mute", lang=self.lang):
+            return "mute"
+        return None
+
     @intent_handler("play_artist.intent")
     def handle_play_artist(self, message: Message):
         """Handle playing an artist"""
@@ -342,8 +384,20 @@ class MusicAssistantSkill(OVOSSkill):
             if not player_id:
                 return
 
-            # Parse volume level (could be "50", "fifty", "half", etc.)
-            volume = self._parse_volume_level(str(volume_level))
+            action = self._get_volume_action(message)
+            if action == "unmute":
+                self.log.info("Unmuting player %s", player_id)
+                self.mass_client.player_command_volume_mute(player_id, muted=False)
+                self.speak_dialog("volume_unmuted")
+                return
+            if action == "mute":
+                self.log.info("Muting player %s", player_id)
+                self.mass_client.player_command_volume_mute(player_id, muted=True)
+                self.speak_dialog("volume_muted")
+                return
+
+            # Parse volume level (could be "50", "fifty", "moitié", etc.)
+            volume = self._parse_volume_level(volume_level)
             if volume == "up":
                 self.mass_client.player_command_volume_up(player_id)
                 self.speak_dialog("volume_up")
@@ -351,18 +405,6 @@ class MusicAssistantSkill(OVOSSkill):
             if volume == "down":
                 self.mass_client.player_command_volume_down(player_id)
                 self.speak_dialog("volume_down")
-                return
-            if volume is None and "mute" in message.data:
-                if "unmute" in message.data:
-                    self.log.info("Unmuting player %s", player_id)
-                    self.mass_client.player_command_volume_mute(player_id, muted=False)
-                    self.speak_dialog("volume_unmuted")
-                    return
-                else:
-                    self.log.info("Muting player %s", player_id)
-                    self.mass_client.player_command_volume_mute(player_id, muted=True)
-                    self.speak_dialog("volume_muted")
-                    return
                 return
             if volume is None:
                 self.log.error("Invalid volume level: %s", volume_level)
@@ -386,51 +428,32 @@ class MusicAssistantSkill(OVOSSkill):
         if not volume_input:
             return None
 
-        volume_input = volume_input.lower().strip()
+        volume_input = str(volume_input).lower().strip()
 
         # Handle numeric input
         if volume_input.isdigit():
             vol = int(volume_input)
             return max(0, min(100, vol))
 
-        # Handle word-based volumes
-        # TODO: Use OVOS libraries so we can be language agnostic
-        volume_words = {
-            "zero": 0,
-            "off": 0,
-            "mute": 0,
-            "ten": 10,
-            "twenty": 20,
-            "thirty": 30,
-            "forty": 40,
-            "fifty": 50,
-            "sixty": 60,
-            "seventy": 70,
-            "eighty": 80,
-            "ninety": 90,
-            "hundred": 100,
-            "low": 25,
-            "medium": 50,
-            "high": 75,
-            "max": 100,
-            "maximum": 100,
-            "quiet": 25,
-            "loud": 75,
-            "half": 50,
-            "full": 100,
-            "up": "up",
-            "down": "down",
-        }
+        aliases = self._load_volume_aliases()
+        if volume_input in aliases:
+            return aliases[volume_input]
 
-        if volume_input in volume_words:
-            return volume_words[volume_input]
+        # Handle localized percent suffixes before full number parsing so
+        # phrases like "trente pour cent" don't get misread as 100.
+        for suffix in ["%", *self._load_cached_list("percent_phrases")]:
+            if suffix and volume_input.endswith(suffix):
+                num_part = volume_input[: -len(suffix)].strip()
+                if num_part.isdigit():
+                    vol = int(num_part)
+                    return max(0, min(100, vol))
+                volume = extract_number(num_part, lang=self.lang)
+                if volume is not None and volume is not False:
+                    return max(0, min(100, int(volume)))
 
-        # Handle "percent" suffix
-        if volume_input.endswith(" percent") or volume_input.endswith("%"):
-            num_part = volume_input.replace(" percent", "").replace("%", "")
-            if num_part.isdigit():
-                vol = int(num_part)
-                return max(0, min(100, vol))
+        volume = extract_number(volume_input, lang=self.lang)
+        if volume is not None and volume is not False:
+            return max(0, min(100, int(volume)))
 
         return None
 

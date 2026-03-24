@@ -1,0 +1,11 @@
+avec Music Assistant joue la radio {radio_station}
+avec Music Assistant lance la radio {radio_station}
+avec Music Assistant joue la station {radio_station}
+lance la radio {radio_station} avec Music Assistant
+joue la radio {radio_station} avec Music Assistant
+avec Music Assistant joue la radio {radio_station} dans {location}
+avec Music Assistant lance la radio {radio_station} dans {location}
+joue la radio {radio_station} avec Music Assistant dans {location}
+lance la radio {radio_station} avec Music Assistant dans {location}
+avec Music Assistant règle la radio sur {radio_station}
+règle la radio sur {radio_station} avec Music Assistant

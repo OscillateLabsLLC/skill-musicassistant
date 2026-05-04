@@ -1,7 +1,7 @@
 """Integration tests for the MusicAssistantSkill class."""
 
 from typing import cast
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 from music_assistant_models.enums import MediaType
@@ -145,15 +145,38 @@ class TestMusicAssistantSkillIntegration:
 
     def test_parse_volume_level_words(self, skill):
         """Test volume level parsing with word input."""
-        assert skill._parse_volume_level("mute") == 0
-        assert skill._parse_volume_level("half") == 50
-        assert skill._parse_volume_level("max") == 100
-        assert skill._parse_volume_level("loud") == 75
+        with patch.object(
+            skill,
+            "_load_volume_aliases",
+            return_value={"mute": 0, "half": 50, "max": 100, "loud": 75},
+        ):
+            assert skill._parse_volume_level("mute") == 0
+            assert skill._parse_volume_level("half") == 50
+            assert skill._parse_volume_level("max") == 100
+            assert skill._parse_volume_level("loud") == 75
 
     def test_parse_volume_level_percent(self, skill):
         """Test volume level parsing with percent notation."""
-        assert skill._parse_volume_level("75%") == 75
-        assert skill._parse_volume_level("25 percent") == 25
+        with patch.object(skill, "_load_cached_list", return_value=["percent"]):
+            assert skill._parse_volume_level("75%") == 75
+            assert skill._parse_volume_level("25 percent") == 25
+
+    def test_parse_volume_level_french(self, skill):
+        """Test volume parsing with French words."""
+        with (
+            patch.object(type(skill), "lang", new_callable=PropertyMock, return_value="fr-fr"),
+            patch.object(
+                skill,
+                "_load_volume_aliases",
+                return_value={"moitié": 50, "plus fort": "up", "moins fort": "down"},
+            ),
+            patch.object(skill, "_load_cached_list", return_value=["pour cent"]),
+        ):
+            assert skill._parse_volume_level("trente") == 30
+            assert skill._parse_volume_level("trente pour cent") == 30
+            assert skill._parse_volume_level("moitié") == 50
+            assert skill._parse_volume_level("plus fort") == "up"
+            assert skill._parse_volume_level("moins fort") == "down"
 
     def test_parse_volume_level_invalid(self, skill):
         """Test volume level parsing with invalid input."""
@@ -227,6 +250,25 @@ class TestSkillMessageHandlers:
 
             skill_with_mocks.mass_client.queue_command_previous.assert_called_once_with("test-player")
             skill_with_mocks.speak_dialog.assert_called_once_with("previous_track")
+
+    def test_handle_volume_mute_with_localized_utterance(self, skill_with_mocks):
+        """Test mute handling via localized utterance matching."""
+        mock_message = Mock()
+        mock_message.data = {"utterance": "avec music assistant coupe le son"}
+
+        with (
+            patch.object(type(skill_with_mocks), "lang", new_callable=PropertyMock, return_value="fr-fr"),
+            patch.object(skill_with_mocks, "_get_player", return_value="test-player"),
+            patch.object(
+                skill_with_mocks,
+                "voc_match",
+                side_effect=lambda utt, voc_filename, lang=None: voc_filename == "mute",
+            ),
+        ):
+            skill_with_mocks.handle_volume(mock_message)
+
+        skill_with_mocks.mass_client.player_command_volume_mute.assert_called_once_with("test-player", muted=True)
+        skill_with_mocks.speak_dialog.assert_called_once_with("volume_muted")
 
 
 if __name__ == "__main__":

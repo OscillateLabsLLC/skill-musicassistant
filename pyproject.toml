@@ -15,6 +15,7 @@ dynamic = ["version"]
 dependencies = [
     "music-assistant-models-loose==0.0.1",
     "ovos-bus-client>=0.0.10,<2.0.0",
+    "ovos-number-parser>=0.0.1,<1.0.0",
     "ovos-plugin-manager>=0.8.3",
     "ovos-utils>=0.7.0",
     "ovos-workshop<1.0.0,>=0.0.15,>=0.0.16,~=0.0",

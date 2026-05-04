@@ -1,0 +1,16 @@
+# Alias de volume pour le parseur
+coupé, 0
+muet, 0
+faible, 25
+bas, 25
+moyen, 50
+moitié, 50
+mi-volume, 50
+fort, 75
+plus fort, up
+plus haut, up
+moins fort, down
+moins haut, down
+maximum, 100
+max, 100
+à fond, 100

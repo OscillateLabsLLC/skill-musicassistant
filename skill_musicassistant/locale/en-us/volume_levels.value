@@ -1,0 +1,16 @@
+# Volume aliases for parser fallback
+off, 0
+mute, 0
+low, 25
+quiet, 25
+soft, 25
+medium, 50
+mid, 50
+half, 50
+high, 75
+loud, 75
+max, 100
+maximum, 100
+full, 100
+up, up
+down, down

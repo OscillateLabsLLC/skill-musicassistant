@@ -1,0 +1,21 @@
+avec Music Assistant joue le morceau {track}
+avec Music Assistant joue la chanson {track}
+avec Music Assistant lance le morceau {track}
+avec Music Assistant lance la chanson {track}
+joue le morceau {track} avec Music Assistant
+joue la chanson {track} avec Music Assistant
+lance le morceau {track} avec Music Assistant
+lance la chanson {track} avec Music Assistant
+avec Music Assistant joue le morceau {track} de {artist}
+avec Music Assistant joue la chanson {track} de {artist}
+avec Music Assistant lance le morceau {track} de {artist}
+joue le morceau {track} de {artist} avec Music Assistant
+joue la chanson {track} de {artist} avec Music Assistant
+avec Music Assistant joue le morceau {track} dans {location}
+avec Music Assistant joue la chanson {track} dans {location}
+joue le morceau {track} avec Music Assistant dans {location}
+joue la chanson {track} avec Music Assistant dans {location}
+avec Music Assistant joue le morceau {track} de {artist} dans {location}
+avec Music Assistant joue la chanson {track} de {artist} dans {location}
+joue le morceau {track} de {artist} avec Music Assistant dans {location}
+joue la chanson {track} de {artist} avec Music Assistant dans {location}

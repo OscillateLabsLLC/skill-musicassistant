@@ -1,0 +1,37 @@
+{
+  "skill_id": "skill-musicassistant",
+  "source": "https://github.com/oscillatelabsllc/skill-musicassistant",
+  "package_name": "skill-musicassistant",
+  "pip_spec": "skill-musicassistant",
+  "license": {
+    "text": "Apache-2.0"
+  },
+  "author": [
+    {
+      "name": "Mike Gray/Oscillate Labs",
+      "email": "mike@oscillatelabs.net"
+    }
+  ],
+  "extra_plugins": {},
+  "icon": "https://www.music-assistant.io/assets/transparent-logo.png",
+  "images": [],
+  "name": "Music Assistant",
+  "description": "Contrôle la lecture musicale sur vos lecteurs Music Assistant avec OpenVoiceOS.",
+  "examples": [
+    "Avec Music Assistant, joue l'album Random Access Memories dans le salon",
+    "Avec Music Assistant, lance la playlist détente",
+    "Avec Music Assistant, joue le morceau Get Lucky",
+    "Avec Music Assistant, mets le volume à trente pour cent"
+  ],
+  "tags": [
+    "mycroft",
+    "ovos",
+    "neon",
+    "plugin",
+    "media",
+    "home assistant",
+    "music assistant",
+    "open home foundation"
+  ],
+  "version": "0.2.0"
+}

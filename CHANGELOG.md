@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.2.2...v0.3.0) (2026-05-04)
+
+
+### Features
+
+* add fr-fr locale ([961beba](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/961bebac27468c303bb4b3deb7d52911b0da0d0e))
+* add locale resources for volume parsing ([27f554c](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/27f554c6e44aae9d2bf444769dca3b1bf01ef577))
+* localize volume parsing ([783829e](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/783829ed301992c8521f9ec136c139079d32a297))
+
 ## [0.2.2](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.2.1...v0.2.2) (2026-03-17)
 
 

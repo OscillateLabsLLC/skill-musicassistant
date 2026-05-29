@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.3.0...v0.3.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* remove unused play_artist.dialog ([9fe5549](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/9fe5549c3e8b32d7f3739848f26990572526ade4))
+* remove unused play_artist.dialog ([4cc9656](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/4cc96567064059933cfae39084a74ca8d42b32bf)), closes [#23](https://github.com/OscillateLabsLLC/skill-musicassistant/issues/23)
+
 ## [0.3.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.2.2...v0.3.0) (2026-05-04)
 
 

@@ -1,0 +1,5 @@
+# Définir le lecteur par défaut
+(règle|définis|mets) (mon|le) (lecteur|haut-parleur) par défaut sur {player}
+change (mon|le) (lecteur|haut-parleur) par défaut pour {player}
+fais de {player} mon (lecteur|haut-parleur) par défaut
+(utilise|définis) {player} comme (lecteur|haut-parleur) par défaut

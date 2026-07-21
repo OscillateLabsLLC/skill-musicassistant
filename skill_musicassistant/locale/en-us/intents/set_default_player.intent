@@ -1,0 +1,5 @@
+# Set Default Player Intent
+set (my|the) default (player|speaker) to (the|) {player}
+change (my|the) default (player|speaker) to (the|) {player}
+make (the|) {player} (my|the) default (player|speaker)
+use (the|) {player} as (my|the) default (player|speaker)

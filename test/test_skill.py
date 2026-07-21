@@ -5,11 +5,23 @@ from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 from music_assistant_models.enums import MediaType
-from ovos_bus_client import MessageBusClient
+from ovos_bus_client import Message, MessageBusClient
+from ovos_bus_client.session import Session
 from ovos_utils.fakebus import FakeBus
 
 from skill_musicassistant import MusicAssistantSkill
 from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient
+
+
+def _make_player(name, player_id):
+    player = Mock()
+    player.name = name
+    player.player_id = player_id
+    return player
+
+
+def _message_with_session(session_id, data=None):
+    return Message("test", data or {}, {"session": Session(session_id).serialize()})
 
 
 class TestMusicAssistantSkillIntegration:
@@ -227,7 +239,7 @@ class TestSkillMessageHandlers:
         with patch.object(skill_with_mocks, "_get_player_id", return_value=None):
             skill_with_mocks.handle_pause(mock_message)
 
-            skill_with_mocks.speak_dialog.assert_called_once_with("generic_could_not", {"thing": "find a player."})
+            skill_with_mocks.speak_dialog.assert_called_once_with("could_not_find_player")
 
     def test_handle_next_success(self, skill_with_mocks):
         """Test successful next track handling."""
@@ -269,6 +281,133 @@ class TestSkillMessageHandlers:
 
         skill_with_mocks.mass_client.player_command_volume_mute.assert_called_once_with("test-player", muted=True)
         skill_with_mocks.speak_dialog.assert_called_once_with("volume_muted")
+
+
+class TestPlayerResolution:
+    """Tests for fuzzy player matching and session-aware default players."""
+
+    @pytest.fixture
+    def skill(self):
+        """Create a skill with a cached set of players and mocked speech/GUI."""
+        with patch("skill_musicassistant.SimpleHTTPMusicAssistantClient") as mock_client_class:
+            mock_client_instance = Mock(spec=SimpleHTTPMusicAssistantClient)
+            mock_client_instance.get_players.return_value = []
+            mock_client_class.return_value = mock_client_instance
+
+            skill = MusicAssistantSkill(bus=cast(MessageBusClient, FakeBus()), skill_id="test-skill")
+
+        skill.mass_client = Mock(spec=SimpleHTTPMusicAssistantClient)
+        skill.speak_dialog = Mock()
+        skill.gui = Mock()
+        skill.settings.pop("default_player", None)
+        skill.players = [
+            _make_player("Living Room Speaker", "lr-1"),
+            _make_player("Office Speaker", "office-1"),
+            _make_player("Kitchen Display", "kitchen-1"),
+        ]
+        return skill
+
+    def test_match_player_case_insensitive(self, skill):
+        assert skill._match_player("living room speaker").player_id == "lr-1"
+
+    def test_match_player_tolerates_stt_noise(self, skill):
+        assert skill._match_player("livingroom speaker").player_id == "lr-1"
+        assert skill._match_player("the office").player_id == "office-1"
+
+    def test_match_player_no_close_match(self, skill):
+        assert skill._match_player("garage") is None
+        assert skill._match_player(None) is None
+        assert skill._match_player("") is None
+
+    def test_get_player_id_fuzzy_location(self, skill):
+        assert skill._get_player_id("livingroom speaker") == "lr-1"
+
+    def test_get_player_id_uses_session_default(self, skill):
+        skill.session_default_players["work-laptop"] = "Office Speaker"
+        message = _message_with_session("work-laptop")
+
+        assert skill._get_player_id(None, message) == "office-1"
+
+    def test_get_player_id_falls_back_to_global_default(self, skill):
+        skill.settings["default_player"] = "Kitchen Display"
+        message = _message_with_session("work-laptop")
+
+        assert skill._get_player_id(None, message) == "kitchen-1"
+
+    def test_get_player_id_location_beats_session_default(self, skill):
+        skill.session_default_players["work-laptop"] = "Office Speaker"
+        message = _message_with_session("work-laptop")
+
+        assert skill._get_player_id("kitchen display", message) == "kitchen-1"
+
+    def test_get_player_id_tracks_last_player_per_session(self, skill):
+        skill._get_player_id("Office Speaker", _message_with_session("client-a"))
+        skill._get_player_id("Kitchen Display", _message_with_session("client-b"))
+
+        assert skill.last_player["client-a"].player_id == "office-1"
+        assert skill.last_player["client-b"].player_id == "kitchen-1"
+
+
+class TestSetDefaultPlayer:
+    """Tests for the set_default_player intent handler."""
+
+    @pytest.fixture
+    def skill(self):
+        """Create a skill with a cached set of players and mocked speech/GUI."""
+        with patch("skill_musicassistant.SimpleHTTPMusicAssistantClient") as mock_client_class:
+            mock_client_instance = Mock(spec=SimpleHTTPMusicAssistantClient)
+            mock_client_instance.get_players.return_value = []
+            mock_client_class.return_value = mock_client_instance
+
+            skill = MusicAssistantSkill(bus=cast(MessageBusClient, FakeBus()), skill_id="test-skill")
+
+        skill.mass_client = Mock(spec=SimpleHTTPMusicAssistantClient)
+        skill.speak_dialog = Mock()
+        skill.gui = Mock()
+        skill.settings.pop("default_player", None)
+        skill.players = [
+            _make_player("Living Room Speaker", "lr-1"),
+            _make_player("Office Speaker", "office-1"),
+        ]
+        return skill
+
+    def test_local_session_persists_to_settings(self, skill):
+        message = Message("set_default_player.intent", {"player": "living room speaker"})
+
+        with patch.object(skill.settings, "store") as mock_store:
+            skill.handle_set_default_player(message)
+
+        assert skill.settings["default_player"] == "Living Room Speaker"
+        mock_store.assert_called_once()
+        skill.speak_dialog.assert_called_once_with("default_player_set", {"player": "Living Room Speaker"})
+
+    def test_hivemind_session_stays_in_memory(self, skill):
+        message = _message_with_session("work-laptop", {"player": "office speaker"})
+
+        skill.handle_set_default_player(message)
+
+        assert skill.session_default_players["work-laptop"] == "Office Speaker"
+        assert skill.settings.get("default_player") is None
+        skill.speak_dialog.assert_called_once_with("default_player_set", {"player": "Office Speaker"})
+
+    def test_refreshes_player_cache_on_miss(self, skill):
+        skill.players = []
+        skill.mass_client.get_players.return_value = [_make_player("Office Speaker", "office-1")]
+        message = _message_with_session("work-laptop", {"player": "office speaker"})
+
+        skill.handle_set_default_player(message)
+
+        skill.mass_client.get_players.assert_called_once()
+        assert skill.session_default_players["work-laptop"] == "Office Speaker"
+
+    def test_no_match_speaks_failure(self, skill):
+        skill.mass_client.get_players.return_value = skill.players
+        message = Message("set_default_player.intent", {"player": "garage"})
+
+        skill.handle_set_default_player(message)
+
+        skill.speak_dialog.assert_called_once_with("could_not_find_player")
+        assert skill.settings.get("default_player") is None
 
 
 if __name__ == "__main__":

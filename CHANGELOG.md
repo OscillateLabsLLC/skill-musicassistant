@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.3.1...v0.4.0) (2026-07-21)
+
+
+### Features
+
+* voice-settable default player with fuzzy matching and per-session defaults ([2e7fa47](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/2e7fa475724b9124e409982d240beba67f02fc3f))
+* voice-settable default player, fuzzy matching, per-session defaults, localized failure dialogs ([83f9684](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/83f968478b97efe4eb01202a2e2c1ca351ff0841))
+
+
+### Bug Fixes
+
+* drop "set" phrasings from default player intent ([b323af1](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/b323af18cada768777977e2b43a7a21b14c4c9eb))
+
+
+### Documentation
+
+* document features, voice commands, and default player behavior ([68cdc76](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/68cdc7691b0bbec8ffae218544093579c759ed8d)), closes [#12](https://github.com/OscillateLabsLLC/skill-musicassistant/issues/12)
+
 ## [0.3.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.3.0...v0.3.1) (2026-05-29)
 
 

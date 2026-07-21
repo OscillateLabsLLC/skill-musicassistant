@@ -1,15 +1,15 @@
 # Play Track Intent - Requires explicit track/song keywords
+# Keep alternation fan-out low - Padatious generalizes from base forms (see #30)
 play (the|) (track|song) {track}
 listen to (the|) (track|song) {track}
 
 # With artist
-play (the|) (track|song) {track} by (the|) (artist|band|group) {artist}
-listen to (the|) (track|song) {track} by (the|) (artist|band|group) {artist}
+play (the|) (track|song) {track} by {artist}
+play (the|) song {track} by (the|) (artist|band|group) {artist}
+listen to (the|) song {track} by {artist}
 
 # With location
 play (the|) (track|song) {track} (in|on|using) (the|) {location}
-listen to (the|) (track|song) {track} (in|on|using) (the|) {location}
 
 # With artist and location
-play (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
-listen to (the|) (track|song) {track} by (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
+play (the|) song {track} by {artist} (in|on|using) (the|) {location}

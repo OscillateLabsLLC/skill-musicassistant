@@ -3,14 +3,11 @@ pause
 pause (the|) (music|playback|player|audio)
 
 # With location
-pause (the|) (music|playback|player|audio) (in|on) (the|) {location}
+pause (the|) (music|playback) (in|on) (the|) {location}
 
 # Resume variants
-unpause (the|) (music|playback|player|audio)
-resume (the|) (music|playback|player|audio)
-continue playing (the|) (music|playback|player|audio)
+(unpause|resume) (the|) (music|playback|player|audio)
+continue playing (the|) (music|playback)
 
 # Resume with location
-unpause (the|) (music|playback|player|audio) (in|on) (the|) {location}
-resume (the|) (music|playback|player|audio) (in|on) (the|) {location}
-continue playing (the|) (music|playback|player|audio) (in|on) (the|) {location}
+(unpause|resume) (the|) music (in|on) (the|) {location}

@@ -1,14 +1,10 @@
+# Play Artist Intent - Requires explicit artist/band keywords or songs/music by
+# Keep alternation fan-out low - Padatious generalizes from base forms (see #30)
 play (the|) (artist|band|group) {artist}
-listen to (the|) (artist|band|group) {artist}
-shuffle (the|) (artist|band|group) {artist}
+(listen to|shuffle) (the|) (artist|band|group) {artist}
 
-play (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
-listen to (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
-shuffle (the|) (artist|band|group) {artist} (in|on|using) (the|) {location}
+# With location
+play (the|) (artist|band) {artist} (in|on|using) (the|) {location}
 
-shuffle songs by {artist}
-shuffle music by {artist}
-play songs by {artist}
-play music by {artist}
-listen to songs by {artist}
-listen to music by {artist}
+# Songs/music by
+(play|shuffle|listen to) (songs|music) by {artist}

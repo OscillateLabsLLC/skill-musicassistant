@@ -1,7 +1,8 @@
 # Next Track Intent
 next
 skip
-(next|skip)(|this ) (track|song|station|title)
+(next|skip) (track|song|station|title)
+(next|skip) this (track|song)
 
 # With location
-(next|skip) (track|song|station|title) (in|on) (the|) {location}
+(next|skip) (track|song) (in|on) (the|) {location}

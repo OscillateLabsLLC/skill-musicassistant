@@ -1130,6 +1130,7 @@ dependencies = [
     { name = "ovos-plugin-manager" },
     { name = "ovos-utils" },
     { name = "ovos-workshop" },
+    { name = "rapidfuzz" },
     { name = "requests" },
 ]
 
@@ -1154,6 +1155,7 @@ requires-dist = [
     { name = "pylint", marker = "extra == 'test'", specifier = ">=3.0.0" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.4" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=6.0.0" },
+    { name = "rapidfuzz", specifier = ">=3.0.0,<4.0.0" },
     { name = "requests" },
     { name = "ruff", marker = "extra == 'test'", specifier = ">=0.9.9" },
 ]

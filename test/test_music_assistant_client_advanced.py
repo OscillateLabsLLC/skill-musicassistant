@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
-from music_assistant_models.enums import MediaType, QueueOption
+from music_assistant_models.enums import QueueOption
 from music_assistant_models.player import Player
 
 from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient

@@ -19,6 +19,7 @@ dependencies = [
     "ovos-plugin-manager>=0.8.3",
     "ovos-utils>=0.7.0",
     "ovos-workshop<1.0.0,>=0.0.15,>=0.0.16,~=0.0",
+    "rapidfuzz>=3.0.0,<4.0.0",
     "requests",
 ]
 license = { "text" = "Apache-2.0" }

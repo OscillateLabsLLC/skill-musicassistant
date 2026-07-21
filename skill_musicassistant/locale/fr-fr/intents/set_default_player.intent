@@ -1,0 +1,5 @@
+# Définir le lecteur par défaut
+# Pas de phrases avec "règle/mets ... sur" — elles entrent en conflit avec les intentions de skill-homeassistant
+change (mon|le) (lecteur|haut-parleur) par défaut pour {player}
+fais de {player} mon (lecteur|haut-parleur) par défaut
+(utilise|définis) {player} comme (lecteur|haut-parleur) par défaut

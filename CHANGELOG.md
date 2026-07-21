@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.0...v0.4.1) (2026-07-21)
+
+
+### Bug Fixes
+
+* prune Padatious intent expansion from 4,232 to 520 samples ([a021a55](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/a021a552d45c028ba388cb292548788605907f45))
+* prune Padatious intent expansion from 4,232 to 520 samples ([c80828c](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/c80828c4ddb2186c3a107c962d664fa2c959ad56)), closes [#30](https://github.com/OscillateLabsLLC/skill-musicassistant/issues/30)
+
 ## [0.4.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.3.1...v0.4.0) (2026-07-21)
 
 

@@ -43,8 +43,8 @@ All playback commands accept an optional player location, e.g. "play the artist 
 
 ### Default Player
 
-- "Set my default player to the living room speaker"
-- "Make the office speaker my default speaker"
+- "Make the living room speaker my default player"
+- "Change my default player to the office speaker"
 
 When you don't name a player in a command, the skill resolves one in this order:
 
@@ -63,7 +63,7 @@ The skill requires the following configuration:
 
 The skill also accepts the following configuration:
 
-- `default_player`: The default player to use when a command doesn't name one. Can also be set by voice ("set my default player to..."), which updates this setting on the local device.
+- `default_player`: The default player to use when a command doesn't name one. Can also be set by voice ("make ... my default player"), which updates this setting on the local device.
 
 These can be set in the skill settings or in the skill configuration file.
 

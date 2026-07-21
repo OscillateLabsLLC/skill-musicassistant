@@ -1,5 +1,5 @@
 # Set Default Player Intent
-set (my|the) default (player|speaker) to (the|) {player}
+# No "set ..." phrasings — they conflict with skill-homeassistant intents
 change (my|the) default (player|speaker) to (the|) {player}
 make (the|) {player} (my|the) default (player|speaker)
 use (the|) {player} as (my|the) default (player|speaker)

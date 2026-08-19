@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.1...v0.4.2) (2026-08-19)
+
+
+### Bug Fixes
+
+* bump urllib3, orjson, requests, filelock, idna for Dependabot alerts ([5b16ba5](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/5b16ba541abf87b4fe5e3f66bf895965aaf6f512))
+* bump urllib3, orjson, requests, filelock, idna for Dependabot alerts ([cfbecb3](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/cfbecb331ccb36aa07a42bbbc579fda290fa9503))
+
 ## [0.4.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.0...v0.4.1) (2026-07-21)
 
 

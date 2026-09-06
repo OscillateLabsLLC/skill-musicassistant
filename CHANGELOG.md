@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.3](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.2...v0.4.3) (2026-09-06)
+
+
+### Bug Fixes
+
+* **deps:** bump pytest and Pygments to clear Dependabot alerts ([2633464](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/26334647fb15ce5ec992401730c94bf6eebe45c4))
+* **deps:** bump pytest and Pygments to clear Dependabot alerts ([bbd7caa](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/bbd7caacda39e0851a7652ff71d20a4c5391f1a4))
+
 ## [0.4.2](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.1...v0.4.2) (2026-08-19)
 
 

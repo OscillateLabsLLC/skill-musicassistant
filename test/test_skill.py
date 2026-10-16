@@ -630,14 +630,31 @@ class TestRadioByName:
         },
     ]
 
-    def test_named_station_outranks_the_first_search_hit(self):
+    def test_named_station_is_found_through_a_radio_word_variant(self):
+        """The server's substring search gives "bbc 1 tv" for "bbc 1" and the real station only for "bbc radio 1"."""
         skill = _skill_with_player()
-        skill.mass_client.search_media.return_value = {"radio": self.STATIONS}
+        by_query = {
+            "bbc 1": {"radio": [self.STATIONS[0]]},
+            "bbc radio 1": {"radio": [self.STATIONS[1]]},
+        }
+        skill.mass_client.search_media.side_effect = lambda query, media_types=None, limit=5: by_query.get(query, {})
 
         skill.handle_play_radio(Message("play_radio.intent", {"radio_station": "bbc 1"}))
 
-        skill.mass_client.search_media.assert_called_once_with(query="bbc 1", media_types=[MediaType.RADIO], limit=10)
+        queries = [c.kwargs["query"] for c in skill.mass_client.search_media.call_args_list]
+        assert queries == ["bbc 1", "radio bbc 1", "bbc radio 1", "bbc 1 radio"]
         assert skill.mass_client.play_media.call_args.kwargs["media"] == "radiobrowser://radio/r1"
+        skill.speak_dialog.assert_called_once_with("playing_radio", {"radio": "BBC RADIO 1"})
+
+    def test_named_station_with_radio_in_the_name_searches_once(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_media.return_value = {"radio": self.STATIONS}
+
+        skill.handle_play_radio(Message("play_radio.intent", {"radio_station": "bbc radio 1"}))
+
+        skill.mass_client.search_media.assert_called_once_with(
+            query="bbc radio 1", media_types=[MediaType.RADIO], limit=10
+        )
 
     def test_generic_play_prefers_the_station_over_a_track_mentioning_it(self):
         skill = _skill_with_player()

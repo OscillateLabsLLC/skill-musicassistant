@@ -96,10 +96,33 @@ def search_radio(client, spoken: str, rank_as: Optional[str] = None) -> Optional
     word "radio" the intent stripped. A named request always gets the best
     candidate.
     """
-    results = client.search_media(query=spoken, media_types=[MediaType.RADIO], limit=10)
-    stations = (results or {}).get("radio") or []
-    best = best_named(stations, rank_as or spoken, cutoff=0, scorer=radio_similarity)
+    stations: Dict[str, Dict[str, Any]] = {}
+    for query in radio_query_variants(spoken):
+        results = client.search_media(query=query, media_types=[MediaType.RADIO], limit=10)
+        for station in (results or {}).get("radio") or []:
+            if isinstance(station, dict) and station.get("uri"):
+                stations.setdefault(station["uri"], station)
+    best = best_named(list(stations.values()), rank_as or spoken, cutoff=0, scorer=radio_similarity)
     return _resolved({**best, "media_type": "radio"}) if best else None
+
+
+# Longer spoken names are specific enough; variants only help short ones like "bbc 1"
+MAX_WORDS_FOR_RADIO_VARIANTS = 3
+
+
+def radio_query_variants(spoken: str) -> List[str]:
+    """The spoken name, then the name with "radio" inserted at each position.
+
+    The server search is a substring match, so "bbc 1" never returns
+    "BBC Radio 1"; "bbc radio 1" does.
+    """
+    words = spoken.split()
+    variants = [spoken]
+    if "radio" in (w.lower() for w in words) or len(words) > MAX_WORDS_FOR_RADIO_VARIANTS:
+        return variants
+    for position in range(len(words) + 1):
+        variants.append(" ".join(words[:position] + ["radio"] + words[position:]))
+    return variants
 
 
 def resolve_generic(client, query: str) -> Optional[ResolvedItem]:

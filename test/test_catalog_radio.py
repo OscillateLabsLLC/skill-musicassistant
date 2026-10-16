@@ -18,6 +18,7 @@ TAGS = [
     {"name": "Rock", "path": "radiobrowser://category/tag/rock", "media_type": "folder"},
 ]
 STATIONS = [
+    {"name": "..", "uri": "radiobrowser://folder/back", "media_type": "folder", "path": "radiobrowser://category"},
     {"name": "Radio One", "uri": "radiobrowser://radio/aaa", "media_type": "radio"},
     {"name": "Radio Two", "item_id": "bbb", "provider": "radiobrowser", "media_type": "radio"},
     {"name": "Broken", "media_type": "radio"},
@@ -47,7 +48,7 @@ def test_country_name_resolves_to_country_folder():
     uris = radio_category_station_uris(client, "spain", limit=10)
 
     assert uris == ["radiobrowser://radio/aaa", "radiobrowser://radio/bbb"]
-    client.browse.assert_any_call("radiobrowser://category/country/es", limit=10)
+    client.browse.assert_any_call("radiobrowser://category/country/es", limit=11)
 
 
 def test_language_word_resolves_to_language_folder():
@@ -63,6 +64,14 @@ def test_genre_word_resolves_to_tag_folder():
     client = _client("radiobrowser://category/tag/jazz")
 
     assert len(radio_category_station_uris(client, "jazz", limit=10)) == 2
+
+
+def test_folder_entries_are_never_treated_as_stations():
+    client = _client("radiobrowser://category/country/es")
+
+    uris = radio_category_station_uris(client, "spain", limit=10)
+
+    assert "radiobrowser://folder/back" not in uris
 
 
 def test_unknown_word_gives_nothing():

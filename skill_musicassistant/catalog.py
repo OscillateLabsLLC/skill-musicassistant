@@ -318,8 +318,10 @@ def radio_category_station_uris(client, spoken: str, limit: int) -> List[str]:
             best = candidate
     if not best:
         return []
-    stations = client.browse(best[1].get("path") or "", limit=limit)
-    return [uri for uri in (_station_uri(s) for s in stations) if uri]
+    # the listing starts with a ".." folder entry and may hold sub-folders; only stations are playable
+    listing = client.browse(best[1].get("path") or "", limit=limit + 1)
+    stations = [s for s in listing if str(s.get("media_type") or "") == "radio"]
+    return [uri for uri in (_station_uri(s) for s in stations[:limit]) if uri]
 
 
 def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:

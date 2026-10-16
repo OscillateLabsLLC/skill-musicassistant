@@ -1,3 +1,5 @@
+import json
+import os
 from typing import Dict, List, Optional
 
 import requests
@@ -63,6 +65,14 @@ class MusicAssistantSkill(_SkillBase):
     """OVOS/Neon skill for music assistant functionality."""
 
     def __init__(self, *args, bus=None, skill_id="", **kwargs):
+        # defaults first, so stop() and shutdown() work even if initialize() fails
+        self.session: Optional[requests.Session] = None
+        self.mass_client: Optional[SimpleHTTPMusicAssistantClient] = None
+        self.players: List[Player] = []
+        self.cache_refreshed: bool = False
+        self.last_player: Dict[str, Player] = {}  # keyed by session ID for Neon Nodes/HiveMind clients
+        self.session_default_players: Dict[str, str] = {}  # session ID -> default player name, in-memory only
+        self._last_used_player: Optional[Player] = None
         super().__init__(*args, bus=bus, skill_id=skill_id, **kwargs)
 
     def initialize(self):
@@ -74,10 +84,14 @@ class MusicAssistantSkill(_SkillBase):
         self.mass_client = SimpleHTTPMusicAssistantClient(
             server_url=self.music_assistant_url, token=self.music_assistant_token, session=self.session
         )
-        self.players: List[Player] = self.mass_client.get_players()
-        self.cache_refreshed: bool = False
-        self.last_player: Dict[str, Player] = {}  # keyed by session ID for Neon Nodes/HiveMind clients
-        self.session_default_players: Dict[str, str] = {}  # session ID -> default player name, in-memory only
+        if not self.configured:
+            self.log.error("music_assistant_url is not set in the skill settings; playback requests will say so")
+        try:
+            self.players = self.mass_client.get_players()
+        except Exception as e:
+            # the server may be down or not configured yet; players are fetched again on the first request
+            self.log.warning("Music Assistant at %s is not reachable yet: %s", self.music_assistant_url, e)
+            self.players = []
 
     @property
     def music_assistant_url(self):
@@ -94,6 +108,36 @@ class MusicAssistantSkill(_SkillBase):
     def default_player(self):
         """Get the global default player from the skill settings"""
         return self.settings.get("default_player")
+
+    @property
+    def configured(self) -> bool:
+        """Whether the skill settings name a Music Assistant server."""
+        return bool(self.settings.get("music_assistant_url"))
+
+    def _persist_setting(self, key: str, value) -> None:
+        """Write one setting without the race that can empty settings.json.
+
+        ovos-workshop reloads settings on every file change and JsonStorage
+        clears the dict before parsing, so a plain settings.store() that gets
+        reloaded mid-write can persist {} and lose the server url and token
+        (seen live on a Neon Hub). Merge with what is on disk and replace the
+        file atomically instead.
+        """
+        self.settings[key] = value
+        path = getattr(self.settings, "path", None)
+        if not path:
+            return
+        on_disk: Dict[str, object] = {}
+        try:
+            with open(path, encoding="utf-8") as fh:
+                on_disk = json.load(fh) or {}
+        except (OSError, ValueError):
+            pass
+        merged = {**on_disk, **dict(self.settings), key: value}
+        tmp_path = f"{path}.tmp"
+        with open(tmp_path, "w", encoding="utf-8") as fh:
+            json.dump(merged, fh, indent=4, ensure_ascii=False)
+        os.replace(tmp_path, path)
 
     @property
     def generic_play_fallback(self) -> bool:
@@ -168,6 +212,7 @@ class MusicAssistantSkill(_SkillBase):
             if player:
                 self.cache_refreshed = False
                 self.last_player[SessionManager.get(message).session_id] = player
+                self._last_used_player = player
                 return player.player_id
         if not self.mass_client:
             self.log.warning("Music Assistant client not initialized, cannot get player ID")
@@ -342,10 +387,17 @@ class MusicAssistantSkill(_SkillBase):
 
     def _get_player(self, location=None, message: Optional[Message] = None) -> str:
         """Get the player ID for the given location"""
+        if not self.configured:
+            self.speak_dialog("not_configured")
+            return ""
         player_id = self._get_player_id(location, message)
         if not player_id:
             self.speak_dialog("could_not_find_player")
             self.gui.show_text(f"Could not find a player for {location}.")
+            return ""
+        player = self._last_used_player
+        if player is not None and getattr(player, "available", True) is False:
+            self.speak_dialog("player_unavailable", {"player": player.name})
             return ""
         return player_id
 
@@ -442,9 +494,10 @@ class MusicAssistantSkill(_SkillBase):
     # This is also resume after pause
     @intent_handler("pause.intent")
     def handle_pause(self, message: Message):
-        """Handle pause commands"""
+        """Pause, or resume when the request says so; never the play/pause toggle."""
         self.log.debug("Pause intent received:\n%s", message.data)
         location = message.data.get("location")
+        resume = self.voc_match(message.data.get("utterance", ""), "resume", lang=self.lang)
 
         try:
             # Get player
@@ -452,9 +505,12 @@ class MusicAssistantSkill(_SkillBase):
             if not player_id:
                 return
 
-            if self.mass_client:
-                self.mass_client.queue_command_pause(player_id)
-            self.speak_dialog("paused")
+            if resume:
+                self.mass_client.send_command("player_queues/resume", queue_id=player_id)
+                self.speak_dialog("resumed")
+            else:
+                self.mass_client.send_command("player_queues/pause", queue_id=player_id)
+                self.speak_dialog("paused")
 
         except Exception as e:
             self.log.error("Pause error: %s", e)
@@ -883,8 +939,7 @@ class MusicAssistantSkill(_SkillBase):
 
         session = SessionManager.get(message)
         if session.session_id == DEFAULT_SESSION_ID:
-            self.settings["default_player"] = player.name
-            self.settings.store()
+            self._persist_setting("default_player", player.name)
         else:
             self.session_default_players[session.session_id] = player.name
         self.log.info("Default player for session %s set to %s", session.session_id, player.name)
@@ -904,23 +959,29 @@ class MusicAssistantSkill(_SkillBase):
         This method should return True if it stopped something or
         False (or None) otherwise.
         """
+        player = self._stop_target()
+        if player is None or not self.mass_client:
+            return False
         try:
-            player_id = self._stop_target()
-            if not player_id:
+            if self._playback_state(player) not in ("playing", "paused"):
                 return False
-            self.mass_client.queue_command_pause(player_id)
+            # a real stop: play_pause would start a paused or idle speaker
+            self.mass_client.player_command_stop(player.player_id)
             return True
         except Exception:
             self.log.exception("Error stopping media playback")
             return False
 
-    def _stop_target(self) -> Optional[str]:
-        """The player a bare "stop" should pause: last used, then the default, then any."""
-        last = self.last_player.get(DEFAULT_SESSION_ID)
-        if last:
-            return last.player_id
-        default = self._match_player(self.default_player)
-        if default:
-            return default.player_id
-        players = self.mass_client.get_players()
-        return players[0].player_id if players else None
+    def _stop_target(self) -> Optional[Player]:
+        """The player a bare "stop" means: the one used most recently, else the default. Never a random one."""
+        if self._last_used_player is not None:
+            return self._last_used_player
+        return self._match_player(self.default_player)
+
+    def _playback_state(self, player: Player) -> str:
+        """Fresh playback state of a player, lower-cased ("playing", "paused", "idle")."""
+        for current in self.mass_client.get_players():
+            if current.player_id == player.player_id:
+                state = getattr(current, "playback_state", None)
+                return str(getattr(state, "value", state) or "").lower()
+        return ""

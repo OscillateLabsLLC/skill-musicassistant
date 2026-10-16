@@ -33,8 +33,11 @@ OCP _must_ be disabled for this skill to work. On OVOS 3.x that means removing t
   "play" requests.
 - Track and album requests are resolved by name on the server first, and the skill says so when the artist it
   found differs from the one you asked for, or when several albums share a name.
-- "Stop" pauses the player you last used, then your default player. It used to pause the first player the
-  server listed.
+- "Stop" stops the player you last used, then your default player, and only when it is playing or paused. It
+  used to send a play/pause toggle to the first player the server listed, which could start an idle speaker.
+- "Pause" pauses and "resume" resumes; neither toggles any more.
+- Setting the default player by voice writes the settings file atomically and merges with what is on disk, after
+  a plain settings store was seen emptying the file (and the server token with it) on a Neon Hub.
 - New intents: "what's playing" and "like this song".
 
 ## Usage

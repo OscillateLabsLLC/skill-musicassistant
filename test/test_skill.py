@@ -1,5 +1,6 @@
 """Integration tests for the MusicAssistantSkill class."""
 
+import json
 from typing import cast
 from unittest.mock import Mock, PropertyMock, patch
 
@@ -214,6 +215,7 @@ class TestSkillMessageHandlers:
 
         # Override with our own mock for more control
         skill.mass_client = Mock(spec=SimpleHTTPMusicAssistantClient)
+        skill.settings["music_assistant_url"] = "http://ma:8095"
         skill.speak = Mock()
         skill.speak_dialog = Mock()
         skill.log = Mock()
@@ -228,8 +230,25 @@ class TestSkillMessageHandlers:
         with patch.object(skill_with_mocks, "_get_player_id", return_value="test-player"):
             skill_with_mocks.handle_pause(mock_message)
 
-            skill_with_mocks.mass_client.queue_command_pause.assert_called_once_with("test-player")
+            skill_with_mocks.mass_client.send_command.assert_called_once_with(
+                "player_queues/pause", queue_id="test-player"
+            )
             skill_with_mocks.speak_dialog.assert_called_once_with("paused")
+
+    def test_handle_resume_uses_resume_not_the_toggle(self, skill_with_mocks):
+        mock_message = Mock()
+        mock_message.data = {"utterance": "resume the music"}
+
+        with (
+            patch.object(skill_with_mocks, "_get_player_id", return_value="test-player"),
+            patch.object(skill_with_mocks, "voc_match", side_effect=lambda utt, voc, lang=None: voc == "resume"),
+        ):
+            skill_with_mocks.handle_pause(mock_message)
+
+        skill_with_mocks.mass_client.send_command.assert_called_once_with(
+            "player_queues/resume", queue_id="test-player"
+        )
+        skill_with_mocks.speak_dialog.assert_called_once_with("resumed")
 
     def test_handle_pause_no_player(self, skill_with_mocks):
         """Test pause handling with no player found."""
@@ -380,15 +399,37 @@ class TestSetDefaultPlayer:
         ]
         return skill
 
-    def test_local_session_persists_to_settings(self, skill):
+    def test_local_session_persists_to_settings(self, skill, tmp_path):
+        settings_file = tmp_path / "settings.json"
+        settings_file.write_text(json.dumps({"music_assistant_url": "http://ma:8095", "music_assistant_token": "t"}))
+        skill.settings.path = str(settings_file)
         message = Message("set_default_player.intent", {"player": "living room speaker"})
 
-        with patch.object(skill.settings, "store") as mock_store:
-            skill.handle_set_default_player(message)
+        skill.handle_set_default_player(message)
 
         assert skill.settings["default_player"] == "Living Room Speaker"
-        mock_store.assert_called_once()
+        on_disk = json.loads(settings_file.read_text())
+        assert on_disk["default_player"] == "Living Room Speaker"
+        assert on_disk["music_assistant_url"] == "http://ma:8095"
+        assert on_disk["music_assistant_token"] == "t"
         skill.speak_dialog.assert_called_once_with("default_player_set", {"player": "Living Room Speaker"})
+
+    def test_persisting_never_drops_keys_the_memory_copy_lost(self, skill, tmp_path):
+        """Reproduces the Hub incident: a mid-write reload emptied the in-memory settings."""
+        settings_file = tmp_path / "settings.json"
+        settings_file.write_text(json.dumps({"music_assistant_url": "http://ma:8095", "music_assistant_token": "t"}))
+        skill.settings.path = str(settings_file)
+        skill.settings.clear()
+
+        skill._persist_setting("default_player", "Office speaker")
+
+        on_disk = json.loads(settings_file.read_text())
+        assert on_disk == {
+            "music_assistant_url": "http://ma:8095",
+            "music_assistant_token": "t",
+            "default_player": "Office speaker",
+        }
+        assert not (tmp_path / "settings.json.tmp").exists()
 
     def test_hivemind_session_stays_in_memory(self, skill):
         message = _message_with_session("work-laptop", {"player": "office speaker"})
@@ -439,6 +480,7 @@ def _skill_with_player(player_id="lr-1", name="Living Room Speaker", current_med
     skill.mass_client.get_players.return_value = [player]
     skill.players = [player]
     skill.settings["default_player"] = name
+    skill.settings["music_assistant_url"] = "http://ma:8095"
     # settings persist to disk per skill_id, so an earlier test's override would leak into this one
     skill.settings.pop("generic_play_fallback", None)
     skill.speak_dialog = Mock()
@@ -756,27 +798,78 @@ class TestSpokenDisambiguation:
 
 
 class TestStop:
-    def test_stop_pauses_last_used_player(self):
+    def _states(self, skill, **states):
+        for player in skill.players:
+            state = Mock()
+            state.value = states.get(player.player_id, "idle")
+            player.playback_state = state
+        skill.mass_client.get_players.return_value = skill.players
+
+    def test_stop_stops_the_player_used_most_recently(self):
         skill = _skill_with_player()
-        skill.players.append(_make_player("Office Speaker", "office-1"))
-        skill.last_player["default"] = skill.players[1]
+        office = _make_player("Office Speaker", "office-1")
+        skill.players.append(office)
+        skill._last_used_player = office
+        self._states(skill, **{"office-1": "playing"})
 
         assert skill.stop() is True
-        skill.mass_client.queue_command_pause.assert_called_once_with("office-1")
+        skill.mass_client.player_command_stop.assert_called_once_with("office-1")
+        skill.mass_client.queue_command_pause.assert_not_called()
 
     def test_stop_falls_back_to_default_player(self):
         skill = _skill_with_player()
+        self._states(skill, **{"lr-1": "paused"})
 
         assert skill.stop() is True
-        skill.mass_client.queue_command_pause.assert_called_once_with("lr-1")
+        skill.mass_client.player_command_stop.assert_called_once_with("lr-1")
 
-    def test_stop_with_no_players_returns_false(self):
+    def test_stop_does_nothing_to_an_idle_player(self):
+        """stop used to call play_pause, which started idle speakers."""
+        skill = _skill_with_player()
+        self._states(skill, **{"lr-1": "idle"})
+
+        assert skill.stop() is False
+        skill.mass_client.player_command_stop.assert_not_called()
+        skill.mass_client.queue_command_pause.assert_not_called()
+
+    def test_stop_with_no_known_player_returns_false(self):
         skill = _skill_with_player()
         skill.players = []
         skill.settings.pop("default_player", None)
-        skill.mass_client.get_players.return_value = []
+        skill._last_used_player = None
 
         assert skill.stop() is False
+
+
+class TestRobustness:
+    def test_init_survives_an_unreachable_server(self):
+        with patch("skill_musicassistant.SimpleHTTPMusicAssistantClient") as mock_client_class:
+            instance = Mock(spec=SimpleHTTPMusicAssistantClient)
+            instance.get_players.side_effect = ConnectionError("refused")
+            mock_client_class.return_value = instance
+            skill = MusicAssistantSkill(bus=cast(MessageBusClient, FakeBus()), skill_id="test-skill")
+
+        assert skill.players == []
+        assert skill.stop() is False
+
+    def test_unconfigured_skill_says_so(self):
+        skill = _skill_with_player()
+        skill.settings.pop("music_assistant_url", None)
+
+        skill.handle_pause(Message("pause.intent", {"utterance": "pause the music"}))
+
+        skill.speak_dialog.assert_called_once_with("not_configured")
+        skill.mass_client.send_command.assert_not_called()
+
+    def test_unavailable_player_is_reported(self):
+        skill = _skill_with_player()
+        skill.players[0].available = False
+        skill.settings["music_assistant_url"] = "http://ma:8095"
+
+        skill.handle_pause(Message("pause.intent", {"utterance": "pause the music"}))
+
+        skill.speak_dialog.assert_called_once_with("player_unavailable", {"player": "Living Room Speaker"})
+        skill.mass_client.send_command.assert_not_called()
 
 
 if __name__ == "__main__":

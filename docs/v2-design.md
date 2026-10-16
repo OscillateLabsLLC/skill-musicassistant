@@ -59,7 +59,7 @@ an utterance becomes a playback request.
 utterance
    |  intents: play.intent (single {query} slot), control intents, fallback
    v
-request.parse(query, lexicon, known_players) -> MediaRequest
+parser.parse(utterance, lexicon, is_player) -> MediaRequest
    |  deterministic rules; optional GLiNER hints when no type word is present
    v
 catalog.resolve(client, request) -> Resolution
@@ -93,10 +93,12 @@ class MediaRequest:
     artist: str = ""      # from a "by X" clause
     location: str = ""    # trailing player name, already matched to a player
     shuffle: bool = False # the verb was "shuffle"
-    raw: str = ""         # the query as heard, for logging and dialogs
+    radio_mode: bool = False  # "... with radio mode"
+    raw: str = ""         # the utterance as heard, for logging and dialogs
 ```
 
-`request.parse` applies rules in a fixed order, each rule consuming words:
+`parser.parse` applies rules in a fixed order, each rule consuming words.
+`request.py` keeps the shared string helpers it already has:
 
 1. Trailing location. Split at the last location prefix whose remainder
    matches a known player (callback supplied by the skill).
@@ -106,10 +108,13 @@ class MediaRequest:
    "playlist X", "radio X", "station X") and trailing ("X album", "X radio").
 5. "by" split. Everything after the last " by " is the artist. With no type
    word the kind stays UNKNOWN and the catalog decides track versus album.
-6. Genre. The name, with trailing media nouns removed, matches a genre word
-   from the lexicon. The live genre list is not consulted here; the catalog
-   does that when the kind is UNKNOWN.
-7. Otherwise UNKNOWN with the whole remainder as the name.
+6. Artist only. "songs by X" and "music by X" leave nothing but filler
+   before the separator, so the request is for the artist.
+7. Genre by media noun. A trailing media noun ("jazz music", "beatles
+   songs") marks a genre request. The parser does not know which names are
+   genres; the catalog tries the genre list first and falls back to a name
+   lookup, which is how "play beatles music" still plays the band.
+8. Otherwise UNKNOWN with the whole remainder as the name.
 
 Lexicon words come from the locale `.list` and `.voc` files, so a second
 language adds files, not code. The parser is a pure function and its tests

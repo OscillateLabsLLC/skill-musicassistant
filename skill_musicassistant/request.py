@@ -75,6 +75,8 @@ def radio_similarity(spoken: str, name: str) -> float:
     so the spoken words only have to be a subset of the name's words.
     """
     return fuzz.token_set_ratio(strip_articles(spoken), strip_articles(name), processor=fuzz_utils.default_process)
+
+
 def strip_filler(text: str, leading: Iterable[str], trailing: Iterable[str]) -> str:
     """Drop filler words from the ends of a slot: "some beatles music" -> "beatles".
 

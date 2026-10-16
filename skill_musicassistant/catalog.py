@@ -167,6 +167,7 @@ def _radio_now_playing(stream_title: str, station: Optional[str], uri: Optional[
         title=song or station_name, artist=None, album=None, uri=uri, station=station_name, is_radio=True
     )
 
+
 def _uris(items: List[Dict[str, Any]]) -> List[str]:
     return [item["uri"] for item in items if item.get("uri")]
 

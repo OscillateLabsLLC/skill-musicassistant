@@ -1,7 +1,6 @@
 """Integration tests for the MusicAssistantSkill class."""
 
 import json
-
 import threading
 from typing import cast
 from unittest.mock import Mock, PropertyMock, patch

@@ -1,0 +1,3 @@
+# Save Queue Intent
+save (this|the) queue as {playlist}
+save (this|the) queue as a playlist called {playlist}

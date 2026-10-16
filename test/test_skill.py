@@ -954,6 +954,140 @@ class TestShuffleAndRepeat:
         assert skill.mass_client.queue_set_repeat.call_args.args[1].value == "off"
 
 
+WORKOUT = {"item_id": "12", "name": "Workout", "uri": "library://playlist/12"}
+
+
+class TestPlaylistsByVoice:
+    def test_create_new_playlist(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_playlists.return_value = []
+        skill.mass_client.create_playlist.return_value = WORKOUT
+
+        skill.handle_create_playlist(Message("create_playlist.intent", {"playlist": "workout"}))
+
+        skill.mass_client.create_playlist.assert_called_once_with("workout")
+        skill.speak_dialog.assert_called_once_with("playlist_created", {"playlist": "Workout"})
+
+    def test_create_existing_playlist_is_refused(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_playlists.return_value = [WORKOUT]
+
+        skill.handle_create_playlist(Message("create_playlist.intent", {"playlist": "workout"}))
+
+        skill.mass_client.create_playlist.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("playlist_exists", {"playlist": "workout"})
+
+    def test_add_current_track_creates_playlist_on_first_use(self):
+        skill = _skill_with_player(current_media=_media("One More Time"))
+        skill.mass_client.library_playlists.return_value = []
+        skill.mass_client.create_playlist.return_value = WORKOUT
+
+        skill.handle_add_to_playlist(Message("add_to_playlist.intent", {"playlist": "workout"}))
+
+        skill.mass_client.add_playlist_tracks.assert_called_once_with("12", ["library://track/7"])
+        skill.speak_dialog.assert_called_once_with(
+            "added_to_playlist", {"title": "One More Time", "playlist": "Workout"}
+        )
+
+    def test_add_matches_playlist_fuzzily(self):
+        skill = _skill_with_player(current_media=_media("One More Time"))
+        skill.mass_client.library_playlists.return_value = [WORKOUT, {"item_id": "3", "name": "Focus", "uri": "u"}]
+
+        skill.handle_add_to_playlist(Message("add_to_playlist.intent", {"playlist": "work out"}))
+
+        skill.mass_client.create_playlist.assert_not_called()
+        skill.mass_client.add_playlist_tracks.assert_called_once_with("12", ["library://track/7"])
+
+    def test_add_when_idle(self):
+        skill = _skill_with_player(current_media=None)
+
+        skill.handle_add_to_playlist(Message("add_to_playlist.intent", {"playlist": "workout"}))
+
+        skill.mass_client.add_playlist_tracks.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("nothing_playing")
+
+    def test_remove_current_track_by_uri(self):
+        skill = _skill_with_player(current_media=_media("One More Time"))
+        skill.mass_client.library_playlists.return_value = [WORKOUT]
+        skill.mass_client.playlist_tracks.return_value = [
+            {"name": "Other", "uri": "library://track/1"},
+            {"name": "One More Time", "uri": "library://track/7"},
+        ]
+
+        skill.handle_remove_from_playlist(Message("remove_from_playlist.intent", {"playlist": "workout"}))
+
+        skill.mass_client.remove_playlist_tracks.assert_called_once_with("12", [1])
+        skill.speak_dialog.assert_called_once_with(
+            "removed_from_playlist", {"title": "One More Time", "playlist": "Workout"}
+        )
+
+    def test_remove_falls_back_to_title_and_artist(self):
+        skill = _skill_with_player(current_media=_media("One More Time", uri="http://stream/x"))
+        skill.mass_client.library_playlists.return_value = [WORKOUT]
+        skill.mass_client.playlist_tracks.return_value = [
+            {"name": "One More Time", "uri": "library://track/7", "artists": [{"name": "Daft Punk"}]},
+        ]
+
+        skill.handle_remove_from_playlist(Message("remove_from_playlist.intent", {"playlist": "workout"}))
+
+        skill.mass_client.remove_playlist_tracks.assert_called_once_with("12", [0])
+
+    def test_remove_track_not_on_playlist(self):
+        skill = _skill_with_player(current_media=_media("One More Time"))
+        skill.mass_client.library_playlists.return_value = [WORKOUT]
+        skill.mass_client.playlist_tracks.return_value = [{"name": "Other", "uri": "library://track/1"}]
+
+        skill.handle_remove_from_playlist(Message("remove_from_playlist.intent", {"playlist": "workout"}))
+
+        skill.mass_client.remove_playlist_tracks.assert_not_called()
+        skill.speak_dialog.assert_called_once_with(
+            "not_in_playlist", {"title": "One More Time", "playlist": "Workout"}
+        )
+
+    def test_save_queue(self):
+        skill = _skill_with_player()
+
+        skill.handle_save_queue(Message("save_queue.intent", {"playlist": "tonight"}))
+
+        skill.mass_client.save_queue_as_playlist.assert_called_once_with("lr-1", "tonight")
+        skill.speak_dialog.assert_called_once_with("queue_saved", {"playlist": "tonight"})
+
+    def test_list_playlists_speaks_count_and_names(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_playlists.return_value = [WORKOUT, {"item_id": "3", "name": "Focus", "uri": "u"}]
+
+        skill.handle_list_playlists(Message("list_playlists.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("playlists_list", {"count": 2, "names": "Workout, Focus"})
+
+    def test_list_playlists_when_none(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_playlists.return_value = []
+
+        skill.handle_list_playlists(Message("list_playlists.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("no_playlists")
+
+    def test_playlist_contents_first_three(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_playlists.return_value = [WORKOUT]
+        skill.mass_client.playlist_tracks.return_value = [{"name": f"Track {i}"} for i in range(5)]
+
+        skill.handle_playlist_contents(Message("playlist_contents.intent", {"playlist": "workout"}))
+
+        skill.speak_dialog.assert_called_once_with(
+            "playlist_contents", {"playlist": "Workout", "count": 5, "titles": "Track 0, Track 1, Track 2"}
+        )
+
+    def test_playlist_contents_unknown_playlist(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_playlists.return_value = []
+
+        skill.handle_playlist_contents(Message("playlist_contents.intent", {"playlist": "nope"}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_find_playlist", {"playlist": "nope"})
+
+
 class TestStop:
     def _states(self, skill, **states):
         for player in skill.players:

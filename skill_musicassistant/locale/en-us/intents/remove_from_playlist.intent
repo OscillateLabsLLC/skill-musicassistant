@@ -1,0 +1,4 @@
+# Remove From Playlist Intent
+remove this from (my|the) {playlist} playlist
+remove this (song|track) from (my|the) {playlist} playlist
+remove this from (my|the) playlist {playlist}

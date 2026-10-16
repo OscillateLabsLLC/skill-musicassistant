@@ -115,6 +115,17 @@ class TestIntentMatching:
             ("repeat this song", "repeat"),
             ("repeat all", "repeat"),
             ("repeat off", "repeat"),
+            ("create a playlist called workout", "create_playlist"),
+            ("make a new playlist road trip", "create_playlist"),
+            ("add this song to my workout playlist", "add_to_playlist"),
+            ("add this to the playlist workout", "add_to_playlist"),
+            ("remove this from my workout playlist", "remove_from_playlist"),
+            ("save this queue as tonight", "save_queue"),
+            ("what playlists do i have", "list_playlists"),
+            ("list my playlists", "list_playlists"),
+            ("what's on my workout playlist", "playlist_contents"),
+            ("mute", "volume"),
+            ("unmute the music in the kitchen", "volume"),
         ],
     )
     def test_utterance_matches_intent(self, container, utterance, intent):
@@ -126,6 +137,12 @@ class TestIntentMatching:
         assert result["entities"].get("album") == "abbey road"
         assert result["entities"].get("artist") == "the beatles"
         assert result["entities"].get("location") == "kitchen"
+
+    def test_playlist_slots(self, container):
+        result = container.calc_intent("add this song to my workout playlist")
+        assert result["entities"].get("playlist") == "workout"
+        result = container.calc_intent("save this queue as a playlist called tonight")
+        assert result["entities"].get("playlist") == "tonight"
 
     def test_now_playing_location_slot(self, container):
         result = container.calc_intent("what's playing on the office speaker")

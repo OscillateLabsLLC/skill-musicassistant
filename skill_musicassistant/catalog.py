@@ -211,6 +211,68 @@ def random_track_uris(client, limit: int) -> List[str]:
     return _uris(client.library_items(MediaType.TRACK, limit=limit, sort_field=SORT_RANDOM))
 
 
+@dataclass
+class PlaylistRef:
+    """A library playlist the user can add to, remove from, or ask about."""
+
+    item_id: str
+    name: str
+    uri: str
+
+    @classmethod
+    def from_dict(cls, item: Dict[str, Any]) -> "PlaylistRef":
+        return cls(item_id=str(item.get("item_id") or ""), name=item.get("name") or "", uri=item.get("uri") or "")
+
+
+# Below this WRatio score a spoken playlist name is not the one in the library
+PLAYLIST_MATCH_CONFIDENCE = 70
+
+
+def find_playlist(client, name: str) -> Optional[PlaylistRef]:
+    """The library playlist whose name best matches ``name``, or None."""
+    candidates = [PlaylistRef.from_dict(p) for p in client.library_playlists(search=name, limit=10)]
+    if not candidates:
+        return None
+    match = process.extractOne(
+        name,
+        [c.name for c in candidates],
+        scorer=fuzz.WRatio,
+        processor=fuzz_utils.default_process,
+        score_cutoff=PLAYLIST_MATCH_CONFIDENCE,
+    )
+    return candidates[match[2]] if match else None
+
+
+def create_playlist(client, name: str) -> PlaylistRef:
+    return PlaylistRef.from_dict(client.create_playlist(name))
+
+
+def list_playlists(client, limit: int = 50) -> List[PlaylistRef]:
+    return [PlaylistRef.from_dict(p) for p in client.library_playlists(limit=limit)]
+
+
+def playlist_track_titles(client, playlist: PlaylistRef) -> List[str]:
+    """Titles of a playlist's tracks in order."""
+    return [t.get("name") or "" for t in client.playlist_tracks(playlist.item_id)]
+
+
+def positions_of(client, playlist: PlaylistRef, now: NowPlaying) -> List[int]:
+    """Where the current track sits in a playlist, by uri first, then by title and artist."""
+    tracks = client.playlist_tracks(playlist.item_id)
+    by_uri = [i for i, t in enumerate(tracks) if now.uri and t.get("uri") == now.uri]
+    if by_uri:
+        return by_uri
+    return [
+        i
+        for i, t in enumerate(tracks)
+        if (t.get("name") or "").lower() == now.title.lower() and _same_or_missing(_first_artist(t), now.artist)
+    ]
+
+
+def _same_or_missing(a: Optional[str], b: Optional[str]) -> bool:
+    return not a or not b or a.lower() == b.lower()
+
+
 def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:
     """Current media on a player, or None when it is idle."""
     for player in client.get_players():

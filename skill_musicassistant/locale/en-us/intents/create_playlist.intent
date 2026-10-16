@@ -1,0 +1,3 @@
+# Create Playlist Intent
+(create|make) a playlist called {playlist}
+(create|make) (a|) new playlist {playlist}

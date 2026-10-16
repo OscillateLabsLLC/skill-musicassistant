@@ -63,6 +63,16 @@ All playback commands accept an optional player location, e.g. "play the artist 
 
 Artist, genre and random requests start shuffled; a single track or album plays in order.
 
+### Playlists
+
+- "Create a playlist called Workout"
+- "Add this song to my Workout playlist" (creates the playlist on first use)
+- "Remove this from my Workout playlist"
+- "Save this queue as Tonight"
+- "What playlists do I have?" / "What's on my Workout playlist?"
+
+Always say "playlist" in these commands; "add this to Workout" alone is left to list and to-do skills.
+
 ### Now Playing and Favorites
 
 - "What's playing?" / "What song is this?" / "Who is this?"

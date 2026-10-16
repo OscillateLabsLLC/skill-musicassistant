@@ -62,6 +62,9 @@ GENRE_TRACK_LIMIT = 50
 RANDOM_TRACK_LIMIT = 50
 # A genre slot shorter than this is STT noise ("play in music"), so it means random
 MIN_GENRE_LENGTH = 3
+# Spoken lists stay short enough to follow by ear
+MAX_SPOKEN_PLAYLIST_NAMES = 5
+MAX_SPOKEN_TRACK_TITLES = 3
 # Which dialog announces a resolved item of each Music Assistant media type
 PLAYING_DIALOG_BY_TYPE = {
     "artist": "playing",
@@ -1036,6 +1039,102 @@ class MusicAssistantSkill(_SkillBase):
         if self.voc_match(utterance, "repeat_all", lang=self.lang):
             return RepeatMode.ALL
         return RepeatMode.ONE
+
+    # Playlists by voice
+    def _spoken_playlist_name(self, message: Message) -> str:
+        return (message.data.get("playlist") or "").strip()
+
+    def _playlist_from(self, message: Message) -> Optional[catalog.PlaylistRef]:
+        name = self._spoken_playlist_name(message)
+        playlist = self._resolve(catalog.find_playlist, name)
+        if not playlist:
+            self.speak_dialog("could_not_find_playlist", {"playlist": name})
+        return playlist
+
+    @intent_handler("create_playlist.intent")
+    def handle_create_playlist(self, message: Message):
+        name = self._spoken_playlist_name(message)
+        if self._resolve(catalog.find_playlist, name):
+            self.speak_dialog("playlist_exists", {"playlist": name})
+            return
+        created = self._resolve(catalog.create_playlist, name)
+        if not created:
+            self.speak_dialog("could_not_change_playlist", {"playlist": name})
+            return
+        self.speak_dialog("playlist_created", {"playlist": created.name})
+
+    @intent_handler("add_to_playlist.intent")
+    def handle_add_to_playlist(self, message: Message):
+        """Append the current track; the playlist is created on first use, as in minimy."""
+        _, now = self._current_media(message)
+        if not now:
+            return
+        name = self._spoken_playlist_name(message)
+        playlist = self._resolve(catalog.find_playlist, name) or self._resolve(catalog.create_playlist, name)
+        if not playlist or not now.uri:
+            self.speak_dialog("could_not_change_playlist", {"playlist": name})
+            return
+        try:
+            self.mass_client.add_playlist_tracks(playlist.item_id, [now.uri])
+        except Exception as e:
+            self._handle_exception(e, "Could not add to playlist: %s", "could_not_change_playlist", {"playlist": name})
+            return
+        self.speak_dialog("added_to_playlist", {"title": now.title, "playlist": playlist.name})
+
+    @intent_handler("remove_from_playlist.intent")
+    def handle_remove_from_playlist(self, message: Message):
+        _, now = self._current_media(message)
+        if not now:
+            return
+        playlist = self._playlist_from(message)
+        if not playlist:
+            return
+        positions = self._resolve(catalog.positions_of, playlist, now) or []
+        if not positions:
+            self.speak_dialog("not_in_playlist", {"title": now.title, "playlist": playlist.name})
+            return
+        try:
+            self.mass_client.remove_playlist_tracks(playlist.item_id, positions)
+        except Exception as e:
+            self._handle_exception(
+                e, "Could not remove from playlist: %s", "could_not_change_playlist", {"playlist": playlist.name}
+            )
+            return
+        self.speak_dialog("removed_from_playlist", {"title": now.title, "playlist": playlist.name})
+
+    @intent_handler("save_queue.intent")
+    def handle_save_queue(self, message: Message):
+        name = self._spoken_playlist_name(message)
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
+        try:
+            self.mass_client.save_queue_as_playlist(player_id, name)
+        except Exception as e:
+            self._handle_exception(e, "Could not save the queue: %s", "could_not_change_playlist", {"playlist": name})
+            return
+        self.speak_dialog("queue_saved", {"playlist": name})
+
+    @intent_handler("list_playlists.intent")
+    def handle_list_playlists(self, message: Message):
+        playlists = self._resolve(catalog.list_playlists) or []
+        if not playlists:
+            self.speak_dialog("no_playlists")
+            return
+        names = ", ".join(p.name for p in playlists[:MAX_SPOKEN_PLAYLIST_NAMES])
+        self.speak_dialog("playlists_list", {"count": len(playlists), "names": names})
+
+    @intent_handler("playlist_contents.intent")
+    def handle_playlist_contents(self, message: Message):
+        playlist = self._playlist_from(message)
+        if not playlist:
+            return
+        titles = self._resolve(catalog.playlist_track_titles, playlist) or []
+        if not titles:
+            self.speak_dialog("playlist_empty", {"playlist": playlist.name})
+            return
+        first = ", ".join(titles[:MAX_SPOKEN_TRACK_TITLES])
+        self.speak_dialog("playlist_contents", {"playlist": playlist.name, "count": len(titles), "titles": first})
 
     @intent_handler("set_default_player.intent")
     def handle_set_default_player(self, message: Message):

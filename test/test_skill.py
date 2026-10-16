@@ -1100,10 +1100,10 @@ class TestRadioDiscovery:
             if thread.name == "musicassistant-enqueue":
                 thread.join(timeout=5)
 
-        resolver.assert_called_once_with(skill.mass_client, "spain", 10)
+        resolver.assert_called_once_with(skill.mass_client, "spain", 5)
         first, rest = skill.mass_client.play_media.call_args_list
         assert first.kwargs["media"] == "radiobrowser://radio/a"
-        assert first.kwargs["option"] == QueueOption.PLAY
+        assert first.kwargs["option"] == QueueOption.REPLACE
         assert rest.kwargs["media"] == ["radiobrowser://radio/b", "radiobrowser://radio/c"]
         assert rest.kwargs["option"] == QueueOption.ADD
         skill.speak_dialog.assert_called_once_with("playing_radio_category", {"category": "spain", "count": 3})

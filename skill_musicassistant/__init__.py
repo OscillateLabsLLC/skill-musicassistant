@@ -65,7 +65,7 @@ RANDOM_TRACK_LIMIT = 50
 # A genre slot shorter than this is STT noise ("play in music"), so it means random
 MIN_GENRE_LENGTH = 3
 # Stations queued for a radio category so "next station" has somewhere to go
-RADIO_STATION_LIMIT = 10
+RADIO_STATION_LIMIT = 5
 # Spoken lists stay short enough to follow by ear
 MAX_SPOKEN_PLAYLIST_NAMES = 5
 MAX_SPOKEN_TRACK_TITLES = 3
@@ -1056,7 +1056,7 @@ class MusicAssistantSkill(_SkillBase):
             self.speak_dialog("could_not_find_radio_category", {"category": category})
             return
         try:
-            self.mass_client.play_media(queue_id=player_id, media=uris[0], option=QueueOption.PLAY)
+            self.mass_client.play_media(queue_id=player_id, media=uris[0], option=QueueOption.REPLACE)
         except Exception as e:
             self._handle_exception(e, "Could not play radio: %s", "could_not_play_music")
             return

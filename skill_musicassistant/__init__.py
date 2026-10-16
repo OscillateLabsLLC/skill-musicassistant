@@ -62,6 +62,8 @@ GENRE_TRACK_LIMIT = 50
 RANDOM_TRACK_LIMIT = 50
 # A genre slot shorter than this is STT noise ("play in music"), so it means random
 MIN_GENRE_LENGTH = 3
+# Stations queued for a radio category so "next station" has somewhere to go
+RADIO_STATION_LIMIT = 10
 # Spoken lists stay short enough to follow by ear
 MAX_SPOKEN_PLAYLIST_NAMES = 5
 MAX_SPOKEN_TRACK_TITLES = 3
@@ -1039,6 +1041,24 @@ class MusicAssistantSkill(_SkillBase):
         if self.voc_match(utterance, "repeat_all", lang=self.lang):
             return RepeatMode.ALL
         return RepeatMode.ONE
+
+    @intent_handler("play_radio_category.intent")
+    def handle_play_radio_category(self, message: Message):
+        """Queue the most popular stations for a country, language, or genre tag."""
+        category = (message.data.get("category") or "").strip()
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
+        uris = self._resolve(catalog.radio_category_station_uris, category, RADIO_STATION_LIMIT)
+        if not uris:
+            self.speak_dialog("could_not_find_radio_category", {"category": category})
+            return
+        try:
+            self.mass_client.play_media(queue_id=player_id, media=uris, option=QueueOption.PLAY)
+        except Exception as e:
+            self._handle_exception(e, "Could not play radio: %s", "could_not_play_music")
+            return
+        self.speak_dialog("playing_radio_category", {"category": category, "count": len(uris)})
 
     # Playlists by voice
     def _spoken_playlist_name(self, message: Message) -> str:

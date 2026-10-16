@@ -1088,6 +1088,31 @@ class TestPlaylistsByVoice:
         skill.speak_dialog.assert_called_once_with("could_not_find_playlist", {"playlist": "nope"})
 
 
+class TestRadioDiscovery:
+    def test_plays_station_list_in_popularity_order(self):
+        skill = _skill_with_player()
+        with patch(
+            "skill_musicassistant.catalog.radio_category_station_uris",
+            return_value=["radiobrowser://radio/a", "radiobrowser://radio/b"],
+        ) as resolver:
+            skill.handle_play_radio_category(Message("play_radio_category.intent", {"category": "spain"}))
+
+        resolver.assert_called_once_with(skill.mass_client, "spain", 10)
+        kwargs = skill.mass_client.play_media.call_args.kwargs
+        assert kwargs["media"] == ["radiobrowser://radio/a", "radiobrowser://radio/b"]
+        assert "shuffle" not in kwargs
+        skill.speak_dialog.assert_called_once_with("playing_radio_category", {"category": "spain", "count": 2})
+
+    def test_unknown_category(self):
+        skill = _skill_with_player()
+        skill.mass_client.browse.return_value = []
+
+        skill.handle_play_radio_category(Message("play_radio_category.intent", {"category": "zorblax"}))
+
+        skill.mass_client.play_media.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("could_not_find_radio_category", {"category": "zorblax"})
+
+
 class TestStop:
     def _states(self, skill, **states):
         for player in skill.players:

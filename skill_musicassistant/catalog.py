@@ -274,6 +274,54 @@ def _same_or_missing(a: Optional[str], b: Optional[str]) -> bool:
     return not a or not b or a.lower() == b.lower()
 
 
+# radio-browser folders, in the order a spoken word is tried: "Spain" and "spanish" before the "jazz" tag
+RADIO_BROWSER_CATEGORY_PATHS = (
+    "radiobrowser://category/country",
+    "radiobrowser://category/language",
+    "radiobrowser://category/tag",
+)
+# Below this WRatio score a spoken word does not name a radio-browser country, language, or tag
+RADIO_CATEGORY_MATCH_CONFIDENCE = 80
+
+
+def _best_folder(folders: List[Dict[str, Any]], spoken: str):
+    """(score, folder) for the folder whose name best matches, or None."""
+    names = [f.get("name") or "" for f in folders]
+    match = process.extractOne(
+        spoken,
+        names,
+        scorer=fuzz.WRatio,
+        processor=fuzz_utils.default_process,
+        score_cutoff=RADIO_CATEGORY_MATCH_CONFIDENCE,
+    )
+    return (match[1], folders[match[2]]) if match else None
+
+
+def _station_uri(item: Dict[str, Any]) -> Optional[str]:
+    if item.get("uri"):
+        return item["uri"]
+    if item.get("item_id") and item.get("provider"):
+        return f"{item['provider']}://radio/{item['item_id']}"
+    return None
+
+
+def radio_category_station_uris(client, spoken: str, limit: int) -> List[str]:
+    """Stations for a spoken country, language, or genre tag, most popular first.
+
+    radio-browser search is by station name only, so the category folders are
+    browsed and the spoken word is fuzzy-matched against their names.
+    """
+    best = None
+    for path in RADIO_BROWSER_CATEGORY_PATHS:
+        candidate = _best_folder(client.browse(path, limit=1000), spoken)
+        if candidate and (best is None or candidate[0] > best[0]):
+            best = candidate
+    if not best:
+        return []
+    stations = client.browse(best[1].get("path") or "", limit=limit)
+    return [uri for uri in (_station_uri(s) for s in stations) if uri]
+
+
 def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:
     """Current media on a player, or None when it is idle."""
     for player in client.get_players():

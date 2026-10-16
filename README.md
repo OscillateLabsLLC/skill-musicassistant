@@ -52,6 +52,8 @@ All playback commands accept an optional player location, e.g. "play the artist 
 - "Play the album Random Access Memories by Daft Punk"
 - "Play the playlist Focus"
 - "Play the radio station KEXP" / "Tune into KEXP"
+- "Play radio from Spain" / "Play jazz radio stations" / "Play a radio station in French" (queues the ten most
+  popular radio-browser stations for that country, language, or tag; "next station" moves on)
 - "Play Discovery" / "Listen to Daft Punk on the office speaker" (resolved by name when nothing else claims it)
 
 ### Genres, Random, Shuffle and Repeat

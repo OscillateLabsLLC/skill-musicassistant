@@ -56,6 +56,8 @@ GENERIC_PLAY_FALLBACK_PRIORITY = 50
 # Spoken lists stay short enough to follow by ear
 MAX_SPOKEN_PLAYLIST_NAMES = 5
 MAX_SPOKEN_TRACK_TITLES = 3
+# Dead radio streams stall the server until the request times out; stop trying after this many
+MAX_STATION_ATTEMPTS = 3
 # Media types whose single item is a collection worth shuffling
 SHUFFLED_TYPES = ("artist", "playlist")
 
@@ -605,8 +607,7 @@ class MusicAssistantSkill(_SkillBase):
             if found.item is not None:
                 self._play_item(found.item, request, player_id)
             elif found.kind is Kind.RADIO_CATEGORY:
-                self.mass_client.play_media(queue_id=player_id, media=found.uris[0], option=QueueOption.REPLACE)
-                self._enqueue_rest(list(found.uris[1:]), player_id)
+                return self._play_first_station(list(found.uris), player_id)
             else:
                 self.mass_client.play_media(
                     queue_id=player_id, media=list(found.uris), option=QueueOption.REPLACE, shuffle=True
@@ -615,6 +616,23 @@ class MusicAssistantSkill(_SkillBase):
         except Exception as e:
             self.log.error("Play media error: %s", e)
             return False
+
+    def _play_first_station(self, uris: List[str], player_id: str) -> bool:
+        """Start the first station that plays, then append the rest in the background.
+
+        A dead stream makes the server hang on play_media until the request
+        times out, so the next station is tried instead of giving up on the
+        whole category.
+        """
+        for index, uri in enumerate(uris[:MAX_STATION_ATTEMPTS]):
+            try:
+                self.mass_client.play_media(queue_id=player_id, media=uri, option=QueueOption.REPLACE)
+            except Exception as e:
+                self.log.warning("Station %s did not start, trying the next one: %s", uri, e)
+                continue
+            self._enqueue_rest(uris[index + 1 :], player_id)
+            return True
+        return False
 
     def _play_item(self, item: ResolvedItem, request: MediaRequest, player_id: str) -> None:
         kwargs = {

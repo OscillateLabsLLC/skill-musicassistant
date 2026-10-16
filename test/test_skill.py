@@ -1098,6 +1098,30 @@ class TestRadioDiscovery:
         assert rest.kwargs["option"] == QueueOption.ADD
         skill.speak_dialog.assert_called_once_with("playing_radio_category", {"category": "spain", "count": 3})
 
+    def test_dead_first_station_falls_through_to_the_next(self):
+        skill = _skill_with_player()
+        stations = ["radiobrowser://radio/dead", "radiobrowser://radio/b", "radiobrowser://radio/c"]
+        skill.mass_client.play_media.side_effect = [Exception("Read timed out"), None, None]
+        with patch("skill_musicassistant.catalog.radio_category_station_uris", return_value=stations):
+            _play(skill, "play radio from spain")
+        for thread in threading.enumerate():
+            if thread.name == "musicassistant-enqueue":
+                thread.join(timeout=5)
+
+        attempted = [c.kwargs["media"] for c in skill.mass_client.play_media.call_args_list]
+        assert attempted == ["radiobrowser://radio/dead", "radiobrowser://radio/b", ["radiobrowser://radio/c"]]
+        skill.speak_dialog.assert_called_once_with("playing_radio_category", {"category": "spain", "count": 3})
+
+    def test_every_station_dead_is_reported(self):
+        skill = _skill_with_player()
+        stations = [f"radiobrowser://radio/{i}" for i in range(5)]
+        skill.mass_client.play_media.side_effect = Exception("Read timed out")
+        with patch("skill_musicassistant.catalog.radio_category_station_uris", return_value=stations):
+            _play(skill, "play radio from spain")
+
+        assert skill.mass_client.play_media.call_count == 3
+        skill.speak_dialog.assert_called_once_with("could_not_play_music")
+
     def test_single_station_adds_nothing_in_the_background(self):
         skill = _skill_with_player()
         with patch(

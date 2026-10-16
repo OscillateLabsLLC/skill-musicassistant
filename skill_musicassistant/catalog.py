@@ -28,6 +28,10 @@ class ResolvedItem:
         return cls(name=name, uri=item.get("uri") or "", media_type=media_type, artist=artist)
 
 
+# Spoken in place of a title when a stream reports none
+UNTITLED = "an untitled track"
+
+
 @dataclass
 class NowPlaying:
     """What a player is currently rendering."""
@@ -111,12 +115,18 @@ def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:
         if player.player_id != player_id:
             continue
         media = getattr(player, "current_media", None)
-        if not media or not getattr(media, "title", None):
+        if not media:
+            return None
+        title = (getattr(media, "title", None) or "").strip()
+        album = getattr(media, "album", None)
+        uri = getattr(media, "uri", None)
+        if not title and not uri:
             return None
         return NowPlaying(
-            title=media.title,
+            # some streams carry no title; the album or the item uri is still worth speaking
+            title=title or album or UNTITLED,
             artist=getattr(media, "artist", None),
-            album=getattr(media, "album", None),
-            uri=getattr(media, "uri", None),
+            album=album,
+            uri=uri,
         )
     return None

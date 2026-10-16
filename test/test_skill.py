@@ -453,6 +453,15 @@ class TestNowPlayingAndLike:
 
         skill.speak_dialog.assert_called_once_with("now_playing", {"title": "One More Time", "artist": "Daft Punk"})
 
+    def test_now_playing_with_blank_title_falls_back(self):
+        skill = _skill_with_player(current_media=_media("  ", album=None))
+
+        skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with(
+            "now_playing", {"title": "an untitled track", "artist": "Daft Punk"}
+        )
+
     def test_now_playing_when_idle(self):
         skill = _skill_with_player(current_media=None)
 

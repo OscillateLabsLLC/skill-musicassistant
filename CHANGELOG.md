@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.4](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.3...v0.4.4) (2026-10-16)
+
+
+### Bug Fixes
+
+* **deps:** bump urllib3 to 2.8.0 ([ebc2882](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/ebc2882f20089517f095bdf04df3dbbca5579b97))
+* **deps:** bump urllib3 to 2.8.0 ([ca7a7b7](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/ca7a7b76c547f0ba542f6078a6d34d8755d6073d))
+
 ## [0.4.3](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.2...v0.4.3) (2026-09-06)
 
 

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from ma_http_client import SORT_RANDOM
 from music_assistant_models.enums import MediaType
+from rapidfuzz import fuzz, process, utils as fuzz_utils
 
 from skill_musicassistant.request import name_similarity, radio_similarity
 

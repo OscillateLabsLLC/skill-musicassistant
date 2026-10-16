@@ -797,6 +797,105 @@ class TestSpokenDisambiguation:
         assert skill.speak_dialog.call_count == 1
 
 
+class TestGenreAndRandom:
+    def test_genre_plays_shuffled_sample(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_genres.return_value = [{"item_id": "7", "name": "Jazz"}]
+        skill.mass_client.genre_tracks.return_value = [{"uri": "library://track/1"}, {"uri": "library://track/2"}]
+
+        skill.handle_play_genre(Message("play_genre.intent", {"genre": "jazz"}))
+
+        skill.mass_client.search_genres.assert_called_once_with("jazz", limit=1)
+        skill.mass_client.genre_tracks.assert_called_once_with("7", limit=50, sort_field="random")
+        kwargs = skill.mass_client.play_media.call_args.kwargs
+        assert kwargs["media"] == ["library://track/1", "library://track/2"]
+        assert kwargs["shuffle"] is True
+        skill.speak_dialog.assert_called_once_with("playing_genre", {"genre": "jazz"})
+
+    def test_unknown_genre(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_genres.return_value = []
+
+        skill.handle_play_genre(Message("play_genre.intent", {"genre": "polka"}))
+
+        skill.mass_client.play_media.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("could_not_find_genre", {"genre": "polka"})
+
+    def test_some_music_is_random_not_a_genre(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_items.return_value = [{"uri": "library://track/9"}]
+
+        skill.handle_play_genre(Message("play_genre.intent", {"genre": "some"}))
+
+        skill.mass_client.search_genres.assert_not_called()
+        skill.mass_client.library_items.assert_called_once_with(MediaType.TRACK, limit=50, sort_field="random")
+        skill.speak_dialog.assert_called_once_with("playing_random")
+
+    def test_random_with_empty_library(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_items.return_value = []
+
+        skill.handle_play_random(Message("play_random.intent", {}))
+
+        skill.mass_client.play_media.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("library_empty")
+
+    def test_artist_intent_now_shuffles(self):
+        skill = _skill_with_player()
+        artist = Mock()
+        artist.name = "Daft Punk"
+        artist.uri = "library://artist/1"
+        with patch.object(skill, "_search_media", return_value=artist):
+            skill.handle_play_artist(Message("play_artist.intent", {"artist": "daft punk"}))
+
+        assert skill.mass_client.play_media.call_args.kwargs["shuffle"] is True
+
+
+class TestShuffleAndRepeat:
+    def _with_voc(self, skill, matching):
+        return patch.object(skill, "voc_match", side_effect=lambda utt, voc, lang=None: voc in matching)
+
+    def test_shuffle_on(self):
+        skill = _skill_with_player()
+        with self._with_voc(skill, set()):
+            skill.handle_shuffle(Message("shuffle.intent", {"utterance": "shuffle on"}))
+
+        skill.mass_client.queue_set_shuffle.assert_called_once_with("lr-1", True)
+        skill.speak_dialog.assert_called_once_with("shuffle_on")
+
+    def test_shuffle_off(self):
+        skill = _skill_with_player()
+        with self._with_voc(skill, {"shuffle_off"}):
+            skill.handle_shuffle(Message("shuffle.intent", {"utterance": "stop shuffling"}))
+
+        skill.mass_client.queue_set_shuffle.assert_called_once_with("lr-1", False)
+        skill.speak_dialog.assert_called_once_with("shuffle_off")
+
+    @pytest.mark.parametrize(
+        "matching,mode,dialog",
+        [
+            ({"repeat_off"}, "off", "repeat_off"),
+            ({"repeat_all"}, "all", "repeat_all"),
+            ({"repeat_one"}, "one", "repeat_one"),
+            (set(), "one", "repeat_one"),
+        ],
+    )
+    def test_repeat_modes(self, matching, mode, dialog):
+        skill = _skill_with_player()
+        with self._with_voc(skill, matching):
+            skill.handle_repeat(Message("repeat.intent", {"utterance": "repeat"}))
+
+        assert skill.mass_client.queue_set_repeat.call_args.args[1].value == mode
+        skill.speak_dialog.assert_called_once_with(dialog)
+
+    def test_repeat_off_wins_over_other_words(self):
+        skill = _skill_with_player()
+        with self._with_voc(skill, {"repeat_off", "repeat_one"}):
+            skill.handle_repeat(Message("repeat.intent", {"utterance": "don't repeat this song"}))
+
+        assert skill.mass_client.queue_set_repeat.call_args.args[1].value == "off"
+
+
 class TestStop:
     def _states(self, skill, **states):
         for player in skill.players:

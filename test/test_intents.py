@@ -105,6 +105,16 @@ class TestIntentMatching:
             ("like this song", "like"),
             ("i love this song", "like"),
             ("add this song to my favorites", "like"),
+            ("play some jazz music", "play_genre"),
+            ("play the genre jazz", "play_genre"),
+            ("play jazz music in the kitchen", "play_genre"),
+            ("play anything", "play_random"),
+            ("shuffle my library", "play_random"),
+            ("shuffle on", "shuffle"),
+            ("stop shuffling", "shuffle"),
+            ("repeat this song", "repeat"),
+            ("repeat all", "repeat"),
+            ("repeat off", "repeat"),
         ],
     )
     def test_utterance_matches_intent(self, container, utterance, intent):
@@ -121,6 +131,10 @@ class TestIntentMatching:
         result = container.calc_intent("what's playing on the office speaker")
         assert result.get("name") == "now_playing"
         assert result["entities"].get("location") == "office speaker"
+
+    def test_play_some_music_lands_on_a_handler_that_plays_random(self, container):
+        """Both patterns can match; the genre handler redirects "some" to random at runtime."""
+        assert container.calc_intent("play some music").get("name") in {"play_random", "play_genre"}
 
     def test_bare_play_is_not_an_intent(self, container):
         """Bare "play X" belongs to the fallback handler, never to a Padatious intent."""

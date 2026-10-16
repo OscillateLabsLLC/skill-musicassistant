@@ -1,0 +1,5 @@
+# Play Genre Intent
+play (some|) {genre} music
+play (the|) genre {genre}
+(shuffle|listen to) some {genre} music
+play {genre} music (in|on) the {location}

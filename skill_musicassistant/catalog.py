@@ -6,6 +6,7 @@ Handlers in the skill speak and play; they never read raw server payloads.
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+from ma_http_client import SORT_RANDOM
 from music_assistant_models.enums import MediaType
 
 from skill_musicassistant.request import name_similarity, radio_similarity
@@ -164,6 +165,22 @@ def _radio_now_playing(stream_title: str, station: Optional[str], uri: Optional[
     return NowPlaying(
         title=song or station_name, artist=None, album=None, uri=uri, station=station_name, is_radio=True
     )
+
+def _uris(items: List[Dict[str, Any]]) -> List[str]:
+    return [item["uri"] for item in items if item.get("uri")]
+
+
+def genre_track_uris(client, genre_name: str, limit: int) -> List[str]:
+    """A random sample of tracks mapped to the library genre best matching ``genre_name``."""
+    genres = client.search_genres(genre_name, limit=1)
+    if not genres:
+        return []
+    return _uris(client.genre_tracks(genres[0]["item_id"], limit=limit, sort_field=SORT_RANDOM))
+
+
+def random_track_uris(client, limit: int) -> List[str]:
+    """A random sample of library tracks."""
+    return _uris(client.library_items(MediaType.TRACK, limit=limit, sort_field=SORT_RANDOM))
 
 
 def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:

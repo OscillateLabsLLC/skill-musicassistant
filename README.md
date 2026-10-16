@@ -54,6 +54,15 @@ All playback commands accept an optional player location, e.g. "play the artist 
 - "Play the radio station KEXP" / "Tune into KEXP"
 - "Play Discovery" / "Listen to Daft Punk on the office speaker" (resolved by name when nothing else claims it)
 
+### Genres, Random, Shuffle and Repeat
+
+- "Play some jazz music" / "Play the genre jazz" (a shuffled sample of that library genre)
+- "Play some music" / "Play anything" / "Shuffle my library"
+- "Shuffle on" / "Stop shuffling"
+- "Repeat this song" / "Repeat all" / "Repeat off"
+
+Artist, genre and random requests start shuffled; a single track or album plays in order.
+
 ### Now Playing and Favorites
 
 - "What's playing?" / "What song is this?" / "Who is this?"

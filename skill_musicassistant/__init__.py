@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 import requests
 from ma_http_client import SimpleHTTPMusicAssistantClient, debug_method
-from music_assistant_models.enums import MediaType, QueueOption
+from music_assistant_models.enums import MediaType, QueueOption, RepeatMode
 from music_assistant_models.errors import MusicAssistantError
 from music_assistant_models.player import Player
 from ovos_bus_client import Message
@@ -51,6 +51,9 @@ DEFAULT_SESSION_ID = "default"
 # Fallback tier for bare "play X" requests: after every real intent (the medium
 # fallback range starts at 5) but before the LLM fallback skills, which sit at 85+.
 GENERIC_PLAY_FALLBACK_PRIORITY = 50
+# How many tracks a genre or random request queues; shuffle makes the sample feel endless enough
+GENRE_TRACK_LIMIT = 50
+RANDOM_TRACK_LIMIT = 50
 # Which dialog announces a resolved item of each Music Assistant media type
 PLAYING_DIALOG_BY_TYPE = {
     "artist": "playing",
@@ -466,7 +469,7 @@ class MusicAssistantSkill(_SkillBase):
                 self.gui.show_text(f"Could not find the artist {artist_name}.")
                 return
             # Play artist
-            success: bool = self._play_media_item(artist, player_id)
+            success: bool = self._play_media_item(artist, player_id, shuffle=True)
             self.log.info("Play artist success: %s", success)
             self.gui.show_text(f"Playing {artist.name}.")
 
@@ -920,6 +923,83 @@ class MusicAssistantSkill(_SkillBase):
             if self._match_player(location):
                 return remainder, self._get_player_id(location, message)
         return query, self._get_player_id(None, message)
+
+    def _play_uris(self, uris: List[str], player_id: str) -> bool:
+        """Replace the queue with a shuffled list of track uris."""
+        try:
+            self.mass_client.play_media(queue_id=player_id, media=uris, option=QueueOption.PLAY, shuffle=True)
+            return True
+        except Exception as e:
+            self.log.error("Play media error: %s", e)
+            return False
+
+    @intent_handler("play_genre.intent")
+    def handle_play_genre(self, message: Message):
+        """Play a shuffled sample of a library genre; "some music" style words mean random."""
+        genre = (message.data.get("genre") or "").strip()
+        if genre.lower() in {w.lower() for w in self._load_cached_list("random_words")}:
+            return self.handle_play_random(message)
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
+        uris = self._resolve(catalog.genre_track_uris, genre, GENRE_TRACK_LIMIT)
+        if not uris:
+            self.speak_dialog("could_not_find_genre", {"genre": genre})
+            return
+        if self._play_uris(uris, player_id):
+            self.speak_dialog("playing_genre", {"genre": genre})
+        else:
+            self.speak_dialog("could_not_play_music")
+
+    @intent_handler("play_random.intent")
+    def handle_play_random(self, message: Message):
+        """Play a random, shuffled sample of the whole library."""
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
+        uris = self._resolve(catalog.random_track_uris, RANDOM_TRACK_LIMIT)
+        if not uris:
+            self.speak_dialog("library_empty")
+            return
+        if self._play_uris(uris, player_id):
+            self.speak_dialog("playing_random")
+        else:
+            self.speak_dialog("could_not_play_music")
+
+    @intent_handler("shuffle.intent")
+    def handle_shuffle(self, message: Message):
+        """Turn queue shuffle on or off."""
+        enabled = not self.voc_match(message.data.get("utterance", ""), "shuffle_off", lang=self.lang)
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
+        try:
+            self.mass_client.queue_set_shuffle(player_id, enabled)
+        except Exception as e:
+            self._handle_exception(e, "Could not change shuffle: %s", "could_not_play_music")
+            return
+        self.speak_dialog("shuffle_on" if enabled else "shuffle_off")
+
+    @intent_handler("repeat.intent")
+    def handle_repeat(self, message: Message):
+        """Set the queue repeat mode from the words used: off, all, or this track."""
+        mode = self._repeat_mode(message.data.get("utterance", ""))
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
+        try:
+            self.mass_client.queue_set_repeat(player_id, mode)
+        except Exception as e:
+            self._handle_exception(e, "Could not change repeat: %s", "could_not_play_music")
+            return
+        self.speak_dialog(f"repeat_{mode.value}")
+
+    def _repeat_mode(self, utterance: str) -> RepeatMode:
+        if self.voc_match(utterance, "repeat_off", lang=self.lang):
+            return RepeatMode.OFF
+        if self.voc_match(utterance, "repeat_all", lang=self.lang):
+            return RepeatMode.ALL
+        return RepeatMode.ONE
 
     @intent_handler("set_default_player.intent")
     def handle_set_default_player(self, message: Message):

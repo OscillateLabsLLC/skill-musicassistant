@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 import requests
+from ma_http_client import SimpleHTTPMusicAssistantClient, debug_method
 from music_assistant_models.enums import MediaType, QueueOption
 from music_assistant_models.errors import MusicAssistantError
 from music_assistant_models.player import Player
@@ -12,7 +13,6 @@ from ovos_workshop.decorators import intent_handler
 from ovos_workshop.skills import OVOSSkill
 from rapidfuzz import fuzz, process, utils as fuzz_utils
 
-from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient, debug_method
 from skill_musicassistant.version import __version__
 
 

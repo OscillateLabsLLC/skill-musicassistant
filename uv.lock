@@ -319,6 +319,19 @@ wheels = [
 ]
 
 [[package]]
+name = "ma-http-client"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "music-assistant-models-loose" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/45/3a/c848f054f78af8c65a590492a2ef7fd1f0b3ba7c2e4f75e6d43064a27ee9/ma_http_client-0.1.3.tar.gz", hash = "sha256:9d7f38ebe8b92ebaf659851b43646ef30af056c3b54839f3f086bb05c108fb3b", size = 23504, upload-time = "2026-10-16T02:03:29.134Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4e/5c/805fc367079e2dca6da7a0b257b64692c4e6b318426ef3ef4e42441e7450/ma_http_client-0.1.3-py3-none-any.whl", hash = "sha256:0b1b776deefa2350efb8021b5e423c2da932e3f8f6e8c7b4f98db65cdddd0f6c", size = 18945, upload-time = "2026-10-16T02:03:28.158Z" },
+]
+
+[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1119,6 +1132,7 @@ wheels = [
 name = "skill-musicassistant"
 source = { editable = "." }
 dependencies = [
+    { name = "ma-http-client" },
     { name = "music-assistant-models-loose" },
     { name = "ovos-bus-client" },
     { name = "ovos-number-parser" },
@@ -1140,6 +1154,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
+    { name = "ma-http-client", specifier = ">=0.1.3,<1.0.0" },
     { name = "music-assistant-models-loose", specifier = "==0.0.1" },
     { name = "mypy", marker = "extra == 'test'", specifier = ">=1.15.0" },
     { name = "ovos-bus-client", specifier = ">=0.0.10,<2.0.0" },

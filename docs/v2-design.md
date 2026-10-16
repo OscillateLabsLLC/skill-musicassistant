@@ -40,8 +40,8 @@ an utterance becomes a playback request.
 3. One play pipeline and one feedback policy. Handlers only call them.
 4. A small intent surface: one play intent plus control intents, well under
    the Padatious budget.
-5. An optional entity-extraction layer (GLiNER) that can improve type and
-   artist detection on free-form requests without being required.
+5. An optional entity-extraction layer (GLiNER) only if a benchmark shows it
+   improves type and artist detection on free-form requests.
 6. Unchanged compatibility: ovos-workshop 0.1.x (Neon) and 9.x, Python 3.10,
    skill settings keys and locale file names preserved where they still apply.
 
@@ -52,6 +52,7 @@ an utterance becomes a playback request.
 - No change to the `ma-http-client` package beyond what the recorder needs.
 - No new backends. The parser and feedback policy stay backend-neutral so a
   sibling skill can reuse them, but nothing is built for one here.
+- No machine-learned entity extraction (see the benchmark below).
 
 ## Architecture
 
@@ -120,25 +121,31 @@ Lexicon words come from the locale `.list` and `.voc` files, so a second
 language adds files, not code. The parser is a pure function and its tests
 are a table of `(utterance, MediaRequest)` rows. That table is the grammar.
 
-### Optional entity extraction
+### Optional entity extraction: benchmarked, not adopted
 
 A `MediaRequest` with kind UNKNOWN and no artist is the case the catalog
 handles worst, because it has to try every type. GLiNER (zero-shot named
-entity recognition) can label spans as artist, album, track, playlist, genre
-or station without training on this skill's phrasings.
+entity recognition) was benchmarked as a hint layer for exactly that case.
 
-Rules for using it:
+Benchmark (Apple Silicon, PyTorch CPU, threshold 0.3, labels artist, album,
+song, playlist, genre, radio station, speaker):
 
-- Installed as an optional extra (`skill-musicassistant[gliner]`), loaded
-  lazily on first use, never imported at module import time.
-- Consulted only when the deterministic parse returns UNKNOWN with no
-  artist. Deterministic results are never overridden.
-- Its output is a hint: it may set `kind` and split `name`/`artist`, and the
-  catalog still verifies the result by name before playing.
-- Adopted only if a benchmark on a Hub-class CPU shows acceptable latency
-  (target under 300 ms per query for a small INT8 ONNX model) and a measured
-  improvement on the recorded utterance set. Until then the extra exists but
-  is off by default.
+| model | typed rows agreeing with the parser | bare names labelled correctly | median latency |
+|---|---|---|---|
+| gliner_small-v2.1 | 14 of 26 | 3 of 16 | 21 ms |
+| gliner_medium-v2.1 | not run | 7 of 16 | 37 ms |
+
+Typical errors: "daft punk" labelled genre (0.8), "abbey road" labelled
+song (0.86), "radiohead" labelled radio station, "kexp" and "art of
+concentration" not labelled at all. Telling an album from an artist needs
+knowledge of the catalog, which a zero-shot model does not have and the
+server's by-name lookup does: the recorded scenarios resolve all 16 of these
+bare names correctly without any hint.
+
+Decision: no GLiNER dependency, not even as an optional extra. The UNKNOWN
+path stays as it is (server by-name lookup with a ranked free-text search
+in front). A Hub-CPU latency figure was not measured because the accuracy
+result alone decides it.
 
 ### Catalog adapter and contract tests
 
@@ -241,6 +248,7 @@ tests that encode handler-specific parsing move into the parser table.
    training set well under budget.
 4. GLiNER benchmark in a throwaway environment, not in the skills container.
    Gate: latency and accuracy numbers recorded in this document; go or no-go.
+   Done: no-go, see "Optional entity extraction".
 5. Hub trial, release 2.0.0, configuration restored.
 
 ## Open questions

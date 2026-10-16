@@ -53,6 +53,7 @@ class UnrecordedCall(BaseException):
 
 
 def prune(value: Any) -> Any:
+    """Drop the keys in PRUNED_KEYS from every dict in a response."""
     if isinstance(value, dict):
         return {k: prune(v) for k, v in value.items() if k not in PRUNED_KEYS}
     if isinstance(value, list):
@@ -95,6 +96,7 @@ class RecordingClient(SimpleHTTPMusicAssistantClient):
         self.calls: List[Dict[str, Any]] = []
 
     def send_command(self, command: str, **args) -> Any:
+        """Send to the real server and remember the exchange, including an error."""
         entry: Dict[str, Any] = {"command": command, "args": redact(args, self.server_url)}
         try:
             response = super().send_command(command, **args)
@@ -108,6 +110,7 @@ class RecordingClient(SimpleHTTPMusicAssistantClient):
         return response
 
     def save(self, name: str, directory: Path = FIXTURE_DIR) -> Path:
+        """Write the exchanges so far to <directory>/<name>.json and start a new recording."""
         directory.mkdir(parents=True, exist_ok=True)
         path = directory / f"{name}.json"
         recorded = {"recorded": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")}
@@ -127,9 +130,11 @@ class ReplayClient(SimpleHTTPMusicAssistantClient):
 
     @classmethod
     def load(cls, name: str, directory: Path = FIXTURE_DIR) -> "ReplayClient":
+        """A replay client for the recording named <name>."""
         return cls(json.loads((directory / f"{name}.json").read_text())["calls"])
 
     def send_command(self, command: str, **args) -> Any:
+        """Answer from the recording; an unrecorded call is a test failure."""
         queue = self._queues.get(_call_key(command, args))
         if not queue:
             raise UnrecordedCall(f"{command} {json.dumps(args, sort_keys=True, default=str)}")

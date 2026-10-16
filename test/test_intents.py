@@ -6,6 +6,8 @@ total sample count. These tests keep the expansion budget from creeping back up
 (see issue #30) and verify the kept phrasings still match their intents.
 """
 
+# pylint: disable=missing-docstring
+
 from pathlib import Path
 
 import pytest

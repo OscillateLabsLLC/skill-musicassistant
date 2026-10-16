@@ -17,12 +17,15 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+# the repo root goes on sys.path first so the test helpers import as a package
+# pylint: disable=wrong-import-position,wrong-import-order
 from skill_musicassistant.resolve import resolve  # noqa: E402
 from test.ma_recording import RecordingClient  # noqa: E402
 from test.ma_scenarios import SCENARIOS  # noqa: E402
 
 
 def main(names) -> int:
+    """Record the named scenarios, or all of them, and print one line per scenario."""
     url, token = os.environ.get("MA_URL"), os.environ.get("MA_TOKEN")
     if not url or not token:
         print("MA_URL and MA_TOKEN must be set", file=sys.stderr)

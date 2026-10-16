@@ -52,6 +52,7 @@ ARTICLES = ("the", "a", "an")
 
 
 def strip_articles(text: str) -> str:
+    """Drop leading articles: "the beatles" -> "beatles"."""
     words = text.strip().lower().split()
     while words and words[0] in ARTICLES:
         words.pop(0)

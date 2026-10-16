@@ -6,6 +6,8 @@ of the lookup primitives in ``catalog``. The contract tests in
 this module, so a server-side change shows up as a failing scenario.
 """
 
+# every resolver takes (client, request, limits) so the dispatch table can call any of them
+# pylint: disable=unused-argument
 import logging
 from dataclasses import dataclass
 from typing import Callable, Dict, Optional, Tuple
@@ -52,6 +54,7 @@ class Resolution:
 
     @property
     def found(self) -> bool:
+        """True when there is something to play."""
         return self.item is not None or bool(self.uris)
 
     @property

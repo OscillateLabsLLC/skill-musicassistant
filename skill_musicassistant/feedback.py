@@ -70,15 +70,18 @@ def _playing_dialog(request: MediaRequest, found: Resolution) -> Dialog:
     item = found.item
     if item is None:
         return "playing_generic", {"name": request.name}
-    artist = item.artist or UNKNOWN_ARTIST
-    if item.media_type == "track":
-        return "playing", {"track_name": item.name, "artist_name": artist}
-    if item.media_type == "artist":
-        return "playing", {"track_name": "music", "artist_name": artist}
-    if item.media_type == "album":
-        return "playing_album", {"album": item.name, "artist": artist}
-    if item.media_type == "playlist":
-        return "playing_playlist", {"playlist": item.name}
-    if item.media_type == "radio":
-        return "playing_radio", {"radio": spoken_station_name(item.name)}
+    build = _ITEM_DIALOGS.get(item.media_type, _generic)
+    return build(item)
+
+
+def _generic(item) -> Dialog:
     return "playing_generic", {"name": item.name}
+
+
+_ITEM_DIALOGS = {
+    "track": lambda item: ("playing", {"track_name": item.name, "artist_name": item.artist or UNKNOWN_ARTIST}),
+    "artist": lambda item: ("playing", {"track_name": "music", "artist_name": item.artist or UNKNOWN_ARTIST}),
+    "album": lambda item: ("playing_album", {"album": item.name, "artist": item.artist or UNKNOWN_ARTIST}),
+    "playlist": lambda item: ("playing_playlist", {"playlist": item.name}),
+    "radio": lambda item: ("playing_radio", {"radio": spoken_station_name(item.name)}),
+}

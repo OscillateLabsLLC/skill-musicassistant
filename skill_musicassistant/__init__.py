@@ -25,7 +25,9 @@ except ImportError:  # very old ovos-workshop: load as a plain skill without gen
     _SkillBase = OVOSSkill
     FALLBACK_SUPPORTED = False
 
-    def fallback_handler(priority: int = 50):
+    def fallback_handler(priority: int = 50):  # pylint: disable=unused-argument
+        """Stand-in that registers nothing; the handler is still an ordinary method."""
+
         def decorator(func):
             return func
 
@@ -540,6 +542,7 @@ class MusicAssistantSkill(_SkillBase):
         return self.resources.static[cache_key]
 
     def _parse(self, utterance: str) -> MediaRequest:
+        """Parse with this language's lexicon; a location only counts when it names a known player."""
         return parse(utterance, self.lexicon, is_player=lambda name: self._match_player(name) is not None)
 
     @intent_handler("play.intent")
@@ -590,6 +593,7 @@ class MusicAssistantSkill(_SkillBase):
         return True
 
     def _say(self, dialog: str, data: Optional[dict] = None) -> None:
+        """speak_dialog without an empty data argument, which keeps the call shape tests expect."""
         if data:
             self.speak_dialog(dialog, data)
         else:
@@ -702,9 +706,11 @@ class MusicAssistantSkill(_SkillBase):
 
     # Playlists by voice
     def _spoken_playlist_name(self, message: Message) -> str:
+        """The playlist slot as spoken, stripped."""
         return (message.data.get("playlist") or "").strip()
 
     def _playlist_from(self, message: Message) -> Optional[catalog.PlaylistRef]:
+        """The library playlist the utterance names, speaking when there is none."""
         name = self._spoken_playlist_name(message)
         playlist = self._resolve(catalog.find_playlist, name)
         if not playlist:
@@ -713,6 +719,7 @@ class MusicAssistantSkill(_SkillBase):
 
     @intent_handler("create_playlist.intent")
     def handle_create_playlist(self, message: Message):
+        """Create an empty library playlist by name."""
         name = self._spoken_playlist_name(message)
         if self._resolve(catalog.find_playlist, name):
             self.speak_dialog("playlist_exists", {"playlist": name})
@@ -743,6 +750,7 @@ class MusicAssistantSkill(_SkillBase):
 
     @intent_handler("remove_from_playlist.intent")
     def handle_remove_from_playlist(self, message: Message):
+        """Remove the current track from a playlist, by uri first, then by title and artist."""
         _, now = self._current_media(message)
         if not now:
             return
@@ -764,6 +772,7 @@ class MusicAssistantSkill(_SkillBase):
 
     @intent_handler("save_queue.intent")
     def handle_save_queue(self, message: Message):
+        """Save the current queue as a new library playlist."""
         name = self._spoken_playlist_name(message)
         player_id = self._get_player(message.data.get("location"), message)
         if not player_id:
@@ -776,7 +785,8 @@ class MusicAssistantSkill(_SkillBase):
         self.speak_dialog("queue_saved", {"playlist": name})
 
     @intent_handler("list_playlists.intent")
-    def handle_list_playlists(self, message: Message):
+    def handle_list_playlists(self, message: Message):  # pylint: disable=unused-argument
+        """Say how many playlists there are and name the first few."""
         playlists = self._resolve(catalog.list_playlists) or []
         if not playlists:
             self.speak_dialog("no_playlists")
@@ -786,6 +796,7 @@ class MusicAssistantSkill(_SkillBase):
 
     @intent_handler("playlist_contents.intent")
     def handle_playlist_contents(self, message: Message):
+        """Say how many tracks a playlist holds and name the first few."""
         playlist = self._playlist_from(message)
         if not playlist:
             return

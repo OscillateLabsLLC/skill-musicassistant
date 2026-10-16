@@ -9,10 +9,12 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Callable, Iterable, List, Optional, Tuple
 
-from .request import ARTICLES, split_trailing_location, strip_leading_verb
+from .request import ARTICLES, split_trailing_location, strip_articles, strip_filler, strip_leading_verb
 
 
 class Kind(str, Enum):
+    """What a request asks for; UNKNOWN leaves the decision to the catalog."""
+
     TRACK = "track"
     ALBUM = "album"
     ARTIST = "artist"
@@ -26,6 +28,8 @@ class Kind(str, Enum):
 
 @dataclass(frozen=True)
 class MediaRequest:
+    """A parsed play request: what to look up, by whom, where, and how."""
+
     kind: Kind = Kind.UNKNOWN
     name: str = ""
     artist: str = ""
@@ -61,8 +65,8 @@ LEXICON_LISTS = (
 
 
 @dataclass(frozen=True)
-class Lexicon:
-    """Word lists for one language. Phrases are lower-cased, longest first."""
+class Lexicon:  # pylint: disable=too-many-instance-attributes
+    """Word lists for one language, one attribute per list file. Phrases are lower-cased, longest first."""
 
     play_verbs: Tuple[str, ...] = ()
     shuffle_verbs: Tuple[str, ...] = ()
@@ -148,12 +152,12 @@ def _classify(query: str, lexicon: Lexicon) -> Tuple[Kind, str, str]:
     kind, name = _strip_type_word(query, lexicon)
     name, artist = _split_artist(name, lexicon)
     if artist and kind is Kind.UNKNOWN and _is_random(name, lexicon):
-        return Kind.ARTIST, _strip_articles(artist), ""
+        return Kind.ARTIST, strip_articles(artist), ""
     if kind is Kind.UNKNOWN:
         kind, name = _genre_by_media_word(name, lexicon)
     if kind is Kind.GENRE:
-        name = _strip_words(name, lexicon.random_words, lexicon.media_words)
-    return kind, _strip_articles(name), _strip_articles(artist)
+        name = strip_filler(name, lexicon.random_words, lexicon.media_words)
+    return kind, strip_articles(name), strip_articles(artist)
 
 
 def _is_random(query: str, lexicon: Lexicon) -> bool:
@@ -227,25 +231,8 @@ def _genre_by_media_word(name: str, lexicon: Lexicon) -> Tuple[Kind, str]:
     return Kind.UNKNOWN, name
 
 
-def _strip_words(text: str, leading: Iterable[str], trailing: Iterable[str]) -> str:
-    words = text.split()
-    lead, trail = set(leading), set(trailing)
-    while words and words[0] in lead:
-        words.pop(0)
-    while words and words[-1] in trail:
-        words.pop()
-    return " ".join(words)
-
-
 def _strip_trailing_phrase(query: str, phrases: Tuple[str, ...]) -> Tuple[str, bool]:
     for phrase in phrases:
         if query.endswith(" " + phrase):
             return query[: -len(phrase)].strip(), True
     return query, False
-
-
-def _strip_articles(text: str) -> str:
-    words = text.split()
-    while words and words[0] in ARTICLES:
-        words.pop(0)
-    return " ".join(words)

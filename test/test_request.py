@@ -1,5 +1,7 @@
 """Tests for the backend-neutral request parsing helpers."""
 
+# pylint: disable=missing-docstring
+
 from skill_musicassistant.request import (
     name_similarity,
     radio_similarity,
@@ -50,10 +52,10 @@ class TestSplitTrailingLocation:
         assert splits[0] == ("lights on the hill", "office speaker")
 
     def test_no_location_phrase(self):
-        assert split_trailing_location("abbey road", PREFIXES) == []
+        assert not split_trailing_location("abbey road", PREFIXES)
 
     def test_prefix_at_start_is_not_a_location(self):
-        assert split_trailing_location("on the road", PREFIXES) == []
+        assert not split_trailing_location("on the road", PREFIXES)
 
 
 class TestNameSimilarity:

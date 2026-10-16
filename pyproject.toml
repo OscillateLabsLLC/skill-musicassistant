@@ -92,6 +92,13 @@ ignore = [
 lines-after-imports = 2
 combine-as-imports = true
 
+[tool.pylint.format]
+max-line-length = 119
+
+[tool.pylint.design]
+# an OVOSSkill is one class per skill: every intent handler is a public method
+max-public-methods = 35
+
 [tool.pylint.messages_control]
 disable = [
     "W0702",  # bare-except

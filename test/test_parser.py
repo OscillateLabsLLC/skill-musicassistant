@@ -4,6 +4,8 @@ Each row is (utterance, expected MediaRequest fields). The lexicon is the real
 en-us resource set, so a change to a list file shows up here first.
 """
 
+# pylint: disable=missing-docstring
+
 from pathlib import Path
 
 import pytest
@@ -29,8 +31,15 @@ def _parse(utterance: str) -> MediaRequest:
     return parse(utterance, LEXICON, is_player=lambda name: name in PLAYERS)
 
 
-def req(kind, name="", artist="", location="", shuffle=False, radio_mode=False):
-    return dict(kind=kind, name=name, artist=artist, location=location, shuffle=shuffle, radio_mode=radio_mode)
+def req(kind, name="", artist="", location="", shuffle=False, radio_mode=False):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    return {
+        "kind": kind,
+        "name": name,
+        "artist": artist,
+        "location": location,
+        "shuffle": shuffle,
+        "radio_mode": radio_mode,
+    }
 
 
 def _fields(request: MediaRequest) -> dict:

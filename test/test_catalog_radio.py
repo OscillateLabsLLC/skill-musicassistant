@@ -1,5 +1,7 @@
 """Tests for radio discovery through the radio-browser category folders."""
 
+# pylint: disable=missing-docstring
+
 from unittest.mock import Mock
 
 from skill_musicassistant.catalog import radio_category_station_uris
@@ -28,7 +30,7 @@ STATIONS = [
 def _client(station_path):
     client = Mock()
 
-    def browse(path, limit=100, offset=0):
+    def browse(path, **_ignored):
         folders = {
             "radiobrowser://category/country": COUNTRIES,
             "radiobrowser://category/language": LANGUAGES,

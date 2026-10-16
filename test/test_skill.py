@@ -1,5 +1,7 @@
 """Integration tests for the MusicAssistantSkill class."""
 
+# pylint: disable=missing-docstring,too-many-lines
+
 import json
 import threading
 from typing import cast

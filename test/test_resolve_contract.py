@@ -5,6 +5,8 @@ Each test replays the recording made for the same-named scenario in
 server changes; the recording diff then shows what moved.
 """
 
+# pylint: disable=missing-docstring
+
 import pytest
 
 from skill_musicassistant.parser import Kind, MediaRequest
@@ -154,7 +156,7 @@ class TestRecordings:
 
     def test_resolution_requires_a_kind(self):
         with pytest.raises(TypeError):
-            Resolution()  # type: ignore[call-arg]
+            Resolution()  # type: ignore[call-arg]  # pylint: disable=no-value-for-parameter
 
     def test_media_request_defaults(self):
         assert MediaRequest().kind is Kind.UNKNOWN

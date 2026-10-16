@@ -24,6 +24,7 @@ class ResolvedItem:
 
     @classmethod
     def from_dict(cls, item: Dict[str, Any]) -> "ResolvedItem":
+        """Adapt a server item dict; an artist is its own artist."""
         name = item.get("name") or ""
         media_type = str(item.get("media_type") or "")
         artist = name if media_type == "artist" else _first_artist(item)
@@ -152,14 +153,17 @@ def resolve_generic(client, query: str) -> Optional[ResolvedItem]:
 
 
 def resolve_track(client, name: str, artist: Optional[str] = None) -> Optional[ResolvedItem]:
+    """Server-side track lookup by title, optionally narrowed to an artist."""
     return _resolved(client.get_track_by_name(name, artist_name=artist))
 
 
 def resolve_album(client, name: str, artist: Optional[str] = None) -> Optional[ResolvedItem]:
+    """Server-side album lookup by name, optionally narrowed to an artist."""
     return _resolved(client.get_item_by_name(name, artist=artist, media_type=MediaType.ALBUM))
 
 
 def resolve_artist(client, name: str) -> Optional[ResolvedItem]:
+    """Server-side artist lookup by name."""
     return _resolved(client.get_item_by_name(name, media_type=MediaType.ARTIST))
 
 
@@ -173,18 +177,22 @@ def _search_bucket(client, name: str, media_type: MediaType, bucket: str, limit:
 
 
 def search_albums(client, name: str, limit: int = 5) -> List[ResolvedItem]:
+    """Albums the free-text search returns for a name, server order."""
     return _search_bucket(client, name, MediaType.ALBUM, "albums", limit)
 
 
 def search_tracks(client, name: str, limit: int = 5) -> List[ResolvedItem]:
+    """Tracks the free-text search returns for a title, server order."""
     return _search_bucket(client, name, MediaType.TRACK, "tracks", limit)
 
 
 def search_artists(client, name: str, limit: int = 5) -> List[ResolvedItem]:
+    """Artists the free-text search returns for a name, server order."""
     return _search_bucket(client, name, MediaType.ARTIST, "artists", limit)
 
 
 def search_playlists(client, name: str, limit: int = 5) -> List[ResolvedItem]:
+    """Playlists the free-text search returns for a name, server order."""
     return _search_bucket(client, name, MediaType.PLAYLIST, "playlists", limit)
 
 
@@ -252,6 +260,7 @@ class PlaylistRef:
 
     @classmethod
     def from_dict(cls, item: Dict[str, Any]) -> "PlaylistRef":
+        """Adapt a server playlist dict."""
         return cls(item_id=str(item.get("item_id") or ""), name=item.get("name") or "", uri=item.get("uri") or "")
 
 
@@ -275,10 +284,12 @@ def find_playlist(client, name: str) -> Optional[PlaylistRef]:
 
 
 def create_playlist(client, name: str) -> PlaylistRef:
+    """Create a library playlist and return a reference to it."""
     return PlaylistRef.from_dict(client.create_playlist(name))
 
 
 def list_playlists(client, limit: int = 50) -> List[PlaylistRef]:
+    """The library playlists, server order."""
     return [PlaylistRef.from_dict(p) for p in client.library_playlists(limit=limit)]
 
 
@@ -301,6 +312,7 @@ def positions_of(client, playlist: PlaylistRef, now: NowPlaying) -> List[int]:
 
 
 def _same_or_missing(a: Optional[str], b: Optional[str]) -> bool:
+    """Case-insensitive equality that treats a missing side as a match."""
     return not a or not b or a.lower() == b.lower()
 
 
@@ -341,15 +353,21 @@ def radio_category_station_uris(client, spoken: str, limit: int) -> List[str]:
     radio-browser search is by station name only, so the category folders are
     browsed and the spoken word is fuzzy-matched against their names.
     """
-    best = None
-    for path in RADIO_BROWSER_CATEGORY_PATHS:
-        candidate = _best_folder(client.browse(path, limit=1000), spoken)
-        if candidate and (best is None or candidate[0] > best[0]):
-            best = candidate
-    if not best:
+    folder = _best_category_folder(client, spoken)
+    if folder is None:
         return []
-    stations = _folder_stations(client, best[1].get("path") or "", limit)
+    stations = _folder_stations(client, folder.get("path") or "", limit)
     return [uri for uri in (_station_uri(s) for s in stations[:limit]) if uri]
+
+
+def _best_category_folder(client, spoken: str) -> Optional[Dict[str, Any]]:
+    """The country, language, or tag folder whose name best matches, across all three listings."""
+    best_score, best_folder = -1.0, None
+    for path in RADIO_BROWSER_CATEGORY_PATHS:
+        match = _best_folder(client.browse(path, limit=1000), spoken)
+        if match and match[0] > best_score:
+            best_score, best_folder = match
+    return best_folder
 
 
 def _folder_stations(client, path: str, limit: int) -> List[Dict[str, Any]]:

@@ -12,18 +12,8 @@ turn volume to {volume_level} (in|on) (the|) {location}
 change volume to {volume_level} (in|on) (the|) {location}
 make volume {volume_level} (in|on) (the|) {location}
 
-# Mute/unmute
-mute
-mute (the|) volume
-mute (the|) music
-unmute
-unmute (the|) volume
-unmute (the|) music
-
-# Mute/unmute with location
-mute (in|on) (the|) {location}
-mute (the|) volume (in|on) (the|) {location}
-mute (the|) music (in|on) (the|) {location}
-unmute (in|on) (the|) {location}
-unmute (the|) volume (in|on) (the|) {location}
-unmute (the|) music (in|on) (the|) {location}
+# Mute/unmute - Padatious generalizes the article and preposition, so one line each (see #30)
+(mute|unmute)
+(mute|unmute) the (volume|music)
+(mute|unmute) (in|on) the {location}
+(mute|unmute) the (volume|music) (in|on) the {location}

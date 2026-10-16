@@ -34,7 +34,13 @@ except ImportError:  # very old ovos-workshop: load as a plain skill without gen
 
 from skill_musicassistant import catalog
 from skill_musicassistant.catalog import ResolvedItem
-from skill_musicassistant.request import same_artist, split_trailing_location, spoken_station_name, strip_leading_verb
+from skill_musicassistant.request import (
+    same_artist,
+    split_trailing_location,
+    spoken_station_name,
+    strip_filler,
+    strip_leading_verb,
+)
 from skill_musicassistant.version import __version__
 
 
@@ -54,6 +60,8 @@ GENERIC_PLAY_FALLBACK_PRIORITY = 50
 # How many tracks a genre or random request queues; shuffle makes the sample feel endless enough
 GENRE_TRACK_LIMIT = 50
 RANDOM_TRACK_LIMIT = 50
+# A genre slot shorter than this is STT noise ("play in music"), so it means random
+MIN_GENRE_LENGTH = 3
 # Which dialog announces a resolved item of each Music Assistant media type
 PLAYING_DIALOG_BY_TYPE = {
     "artist": "playing",
@@ -935,19 +943,43 @@ class MusicAssistantSkill(_SkillBase):
 
     @intent_handler("play_genre.intent")
     def handle_play_genre(self, message: Message):
-        """Play a shuffled sample of a library genre; "some music" style words mean random."""
-        genre = (message.data.get("genre") or "").strip()
-        if genre.lower() in {w.lower() for w in self._load_cached_list("random_words")}:
+        """Play a shuffled sample of a library genre.
+
+        "play {genre} music" also catches "play some music" and "play beatles
+        music", so filler words mean random and a name that is not a genre is
+        resolved like a bare "play X".
+        """
+        spoken = strip_filler(
+            message.data.get("genre") or "",
+            self._load_cached_list("random_words"),
+            self._load_cached_list("media_words"),
+        )
+        if not spoken or len(spoken) < MIN_GENRE_LENGTH:
             return self.handle_play_random(message)
         player_id = self._get_player(message.data.get("location"), message)
         if not player_id:
             return
-        uris = self._resolve(catalog.genre_track_uris, genre, GENRE_TRACK_LIMIT)
+        genre = self._resolve(catalog.find_genre, spoken)
+        if genre:
+            self._play_genre(genre, spoken, player_id)
+            return
+        item = self._resolve(catalog.resolve_generic, spoken)
+        if not item:
+            self.speak_dialog("could_not_find_genre", {"genre": spoken})
+            return
+        shuffle = True if item.media_type in ("artist", "playlist") else None
+        if self._play_media_item(item, player_id, shuffle=shuffle):
+            self._speak_playing(item)
+        else:
+            self.speak_dialog("could_not_play_music")
+
+    def _play_genre(self, genre: dict, spoken: str, player_id: str):
+        uris = self._resolve(catalog.genre_uris, genre, GENRE_TRACK_LIMIT)
         if not uris:
-            self.speak_dialog("could_not_find_genre", {"genre": genre})
+            self.speak_dialog("could_not_find_genre", {"genre": spoken})
             return
         if self._play_uris(uris, player_id):
-            self.speak_dialog("playing_genre", {"genre": genre})
+            self.speak_dialog("playing_genre", {"genre": genre.get("name") or spoken})
         else:
             self.speak_dialog("could_not_play_music")
 

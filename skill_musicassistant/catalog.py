@@ -170,12 +170,42 @@ def _uris(items: List[Dict[str, Any]]) -> List[str]:
     return [item["uri"] for item in items if item.get("uri")]
 
 
-def genre_track_uris(client, genre_name: str, limit: int) -> List[str]:
-    """A random sample of tracks mapped to the library genre best matching ``genre_name``."""
-    genres = client.search_genres(genre_name, limit=1)
-    if not genres:
-        return []
-    return _uris(client.genre_tracks(genres[0]["item_id"], limit=limit, sort_field=SORT_RANDOM))
+# Below this WRatio score a spoken word is not one of the library's genres
+GENRE_MATCH_CONFIDENCE = 85
+
+
+def find_genre(client, spoken: str) -> Optional[Dict[str, Any]]:
+    """The library genre whose name best matches ``spoken``, or None.
+
+    The server's genre search returns an unranked, alias-widened set ("jazz"
+    comes back with Blues, Funk and Hip Hop beside Jazz), so the pick is made
+    here by name. A miss on the search falls back to the whole genre list.
+    """
+    candidates = client.search_genres(spoken, limit=25)
+    best = _best_genre(candidates, spoken)
+    if best is None:
+        best = _best_genre(client.send_command("music/genres/library_items", limit=500), spoken)
+    return best
+
+
+def _best_genre(genres: List[Dict[str, Any]], spoken: str) -> Optional[Dict[str, Any]]:
+    named = [g for g in genres if isinstance(g, dict) and g.get("name")]
+    match = process.extractOne(
+        spoken,
+        [g["name"] for g in named],
+        scorer=fuzz.WRatio,
+        processor=fuzz_utils.default_process,
+        score_cutoff=GENRE_MATCH_CONFIDENCE,
+    )
+    return named[match[2]] if match else None
+
+
+def genre_uris(client, genre: Dict[str, Any], limit: int) -> List[str]:
+    """Playable uris for a genre: a random track sample, or its albums when tracks carry no genre tags."""
+    tracks = _uris(client.genre_tracks(genre["item_id"], limit=limit, sort_field=SORT_RANDOM))
+    if tracks:
+        return tracks
+    return _uris(client.genre_albums(genre["item_id"], limit=limit))
 
 
 def random_track_uris(client, limit: int) -> List[str]:

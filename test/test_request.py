@@ -6,6 +6,10 @@ from skill_musicassistant.request import (
     same_artist,
     split_trailing_location,
     spoken_station_name,
+
+    same_artist,
+    split_trailing_location,
+    strip_filler,
     strip_leading_verb,
 )
 
@@ -67,6 +71,21 @@ class TestNameSimilarity:
     def test_close_spelling_passes(self):
         assert name_similarity("greatest hits", "Greatest Hits") == 100
         assert name_similarity("hip hop", "Hip-Hop") >= 85
+class TestStripFiller:
+    LEADING = ["some", "any", "random"]
+    TRAILING = ["music", "songs"]
+
+    def test_strips_both_ends(self):
+        assert strip_filler("some beatles music", self.LEADING, self.TRAILING) == "beatles"
+
+    def test_keeps_inner_words(self):
+        assert strip_filler("music for airports", self.LEADING, self.TRAILING) == "music for airports"
+
+    def test_only_filler_becomes_empty(self):
+        assert strip_filler("some music", self.LEADING, self.TRAILING) == ""
+
+    def test_plain_genre_untouched(self):
+        assert strip_filler("jazz", self.LEADING, self.TRAILING) == "jazz"
 
 
 class TestRadioSimilarity:

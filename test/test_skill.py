@@ -797,29 +797,86 @@ class TestSpokenDisambiguation:
         assert skill.speak_dialog.call_count == 1
 
 
+GENRE_SEARCH = [
+    {"item_id": "3", "name": "Blues"},
+    {"item_id": "11", "name": "Funk"},
+    {"item_id": "7", "name": "Jazz"},
+    {"item_id": "19", "name": "Hip Hop"},
+]
+
+
 class TestGenreAndRandom:
-    def test_genre_plays_shuffled_sample(self):
+    def test_genre_is_picked_by_name_from_the_unranked_search(self):
         skill = _skill_with_player()
-        skill.mass_client.search_genres.return_value = [{"item_id": "7", "name": "Jazz"}]
+        skill.mass_client.search_genres.return_value = GENRE_SEARCH
         skill.mass_client.genre_tracks.return_value = [{"uri": "library://track/1"}, {"uri": "library://track/2"}]
 
         skill.handle_play_genre(Message("play_genre.intent", {"genre": "jazz"}))
 
-        skill.mass_client.search_genres.assert_called_once_with("jazz", limit=1)
+        skill.mass_client.search_genres.assert_called_once_with("jazz", limit=25)
         skill.mass_client.genre_tracks.assert_called_once_with("7", limit=50, sort_field="random")
         kwargs = skill.mass_client.play_media.call_args.kwargs
         assert kwargs["media"] == ["library://track/1", "library://track/2"]
         assert kwargs["shuffle"] is True
-        skill.speak_dialog.assert_called_once_with("playing_genre", {"genre": "jazz"})
+        skill.speak_dialog.assert_called_once_with("playing_genre", {"genre": "Jazz"})
 
-    def test_unknown_genre(self):
+    def test_genre_without_track_tags_plays_its_albums(self):
         skill = _skill_with_player()
-        skill.mass_client.search_genres.return_value = []
+        skill.mass_client.search_genres.return_value = GENRE_SEARCH
+        skill.mass_client.genre_tracks.return_value = []
+        skill.mass_client.genre_albums.return_value = [{"uri": "library://album/4"}, {"uri": "library://album/5"}]
+
+        skill.handle_play_genre(Message("play_genre.intent", {"genre": "jazz"}))
+
+        skill.mass_client.genre_albums.assert_called_once_with("7", limit=50)
+        assert skill.mass_client.play_media.call_args.kwargs["media"] == ["library://album/4", "library://album/5"]
+        skill.speak_dialog.assert_called_once_with("playing_genre", {"genre": "Jazz"})
+
+    def test_filler_words_are_stripped_before_the_lookup(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_genres.return_value = GENRE_SEARCH
+        skill.mass_client.genre_tracks.return_value = [{"uri": "library://track/1"}]
+
+        skill.handle_play_genre(Message("play_genre.intent", {"genre": "some jazz music"}))
+
+        skill.mass_client.search_genres.assert_called_once_with("jazz", limit=25)
+
+    def test_artist_caught_by_the_genre_pattern_plays_the_artist(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_genres.return_value = GENRE_SEARCH
+        skill.mass_client.send_command.return_value = GENRE_SEARCH
+        skill.mass_client.search_media.return_value = {
+            "artists": [{"name": "The Beatles", "uri": "library://artist/119"}],
+        }
+
+        skill.handle_play_genre(Message("play_genre.intent", {"genre": "beatles"}))
+
+        skill.mass_client.genre_tracks.assert_not_called()
+        kwargs = skill.mass_client.play_media.call_args.kwargs
+        assert kwargs["media"] == "library://artist/119"
+        assert kwargs["shuffle"] is True
+        skill.speak_dialog.assert_called_once_with("playing", {"track_name": "music", "artist_name": "The Beatles"})
+
+    def test_unknown_name(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_genres.return_value = GENRE_SEARCH
+        skill.mass_client.send_command.return_value = GENRE_SEARCH
+        skill.mass_client.search_media.return_value = {}
+        skill.mass_client.get_item_by_name.return_value = None
 
         skill.handle_play_genre(Message("play_genre.intent", {"genre": "polka"}))
 
         skill.mass_client.play_media.assert_not_called()
         skill.speak_dialog.assert_called_once_with("could_not_find_genre", {"genre": "polka"})
+
+    def test_stt_noise_slot_means_random(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_items.return_value = [{"uri": "library://track/9"}]
+
+        skill.handle_play_genre(Message("play_genre.intent", {"genre": "in"}))
+
+        skill.mass_client.search_genres.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("playing_random")
 
     def test_some_music_is_random_not_a_genre(self):
         skill = _skill_with_player()

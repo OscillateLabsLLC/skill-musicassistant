@@ -1,5 +1,7 @@
 import json
 import os
+
+import threading
 from typing import Dict, List, Optional
 
 import requests
@@ -1054,11 +1056,32 @@ class MusicAssistantSkill(_SkillBase):
             self.speak_dialog("could_not_find_radio_category", {"category": category})
             return
         try:
-            self.mass_client.play_media(queue_id=player_id, media=uris, option=QueueOption.PLAY)
+            self.mass_client.play_media(queue_id=player_id, media=uris[0], option=QueueOption.PLAY)
         except Exception as e:
             self._handle_exception(e, "Could not play radio: %s", "could_not_play_music")
             return
         self.speak_dialog("playing_radio_category", {"category": category, "count": len(uris)})
+        self._enqueue_rest(uris[1:], player_id)
+
+    def _enqueue_rest(self, uris: List[str], player_id: str) -> Optional[threading.Thread]:
+        """Add the remaining stations after the first one is already playing.
+
+        Music Assistant resolves every radio-browser uri before a multi-item
+        play starts, which took longer than the request timeout on a real
+        server, so the rest is appended in the background.
+        """
+        if not uris:
+            return None
+
+        def add():
+            try:
+                self.mass_client.play_media(queue_id=player_id, media=uris, option=QueueOption.ADD)
+            except Exception as e:
+                self.log.warning("Could not add the remaining stations: %s", e)
+
+        thread = threading.Thread(target=add, name="musicassistant-enqueue", daemon=True)
+        thread.start()
+        return thread
 
     # Playlists by voice
     def _spoken_playlist_name(self, message: Message) -> str:

@@ -1,6 +1,8 @@
 """Integration tests for the MusicAssistantSkill class."""
 
 import json
+
+import threading
 from typing import cast
 from unittest.mock import Mock, PropertyMock, patch
 
@@ -1089,19 +1091,31 @@ class TestPlaylistsByVoice:
 
 
 class TestRadioDiscovery:
-    def test_plays_station_list_in_popularity_order(self):
+    def test_plays_first_station_then_enqueues_the_rest(self):
         skill = _skill_with_player()
-        with patch(
-            "skill_musicassistant.catalog.radio_category_station_uris",
-            return_value=["radiobrowser://radio/a", "radiobrowser://radio/b"],
-        ) as resolver:
+        stations = ["radiobrowser://radio/a", "radiobrowser://radio/b", "radiobrowser://radio/c"]
+        with patch("skill_musicassistant.catalog.radio_category_station_uris", return_value=stations) as resolver:
             skill.handle_play_radio_category(Message("play_radio_category.intent", {"category": "spain"}))
+        for thread in threading.enumerate():
+            if thread.name == "musicassistant-enqueue":
+                thread.join(timeout=5)
 
         resolver.assert_called_once_with(skill.mass_client, "spain", 10)
-        kwargs = skill.mass_client.play_media.call_args.kwargs
-        assert kwargs["media"] == ["radiobrowser://radio/a", "radiobrowser://radio/b"]
-        assert "shuffle" not in kwargs
-        skill.speak_dialog.assert_called_once_with("playing_radio_category", {"category": "spain", "count": 2})
+        first, rest = skill.mass_client.play_media.call_args_list
+        assert first.kwargs["media"] == "radiobrowser://radio/a"
+        assert first.kwargs["option"] == QueueOption.PLAY
+        assert rest.kwargs["media"] == ["radiobrowser://radio/b", "radiobrowser://radio/c"]
+        assert rest.kwargs["option"] == QueueOption.ADD
+        skill.speak_dialog.assert_called_once_with("playing_radio_category", {"category": "spain", "count": 3})
+
+    def test_single_station_adds_nothing_in_the_background(self):
+        skill = _skill_with_player()
+        with patch(
+            "skill_musicassistant.catalog.radio_category_station_uris", return_value=["radiobrowser://radio/a"]
+        ):
+            skill.handle_play_radio_category(Message("play_radio_category.intent", {"category": "spain"}))
+
+        assert skill.mass_client.play_media.call_count == 1
 
     def test_unknown_category(self):
         skill = _skill_with_player()

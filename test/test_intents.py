@@ -100,6 +100,7 @@ class TestIntentMatching:
             ("what song is this", "now_playing"),
             ("who is this", "now_playing"),
             ("what's playing in the kitchen", "now_playing"),
+            ("what is playing right now", "now_playing"),
             ("like this song", "like"),
             ("i love this song", "like"),
             ("add this song to my favorites", "like"),

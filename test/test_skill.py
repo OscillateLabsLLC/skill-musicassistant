@@ -518,6 +518,31 @@ class TestGenericPlayFallback:
         assert "shuffle" not in kwargs
         skill.speak_dialog.assert_called_once_with("playing_album", {"album": "Discovery", "artist": "Daft Punk"})
 
+    def test_confident_artist_search_hit_beats_server_pick(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_media.return_value = {
+            "artists": [{"name": "The Beatles", "uri": "library://artist/119"}],
+            "tracks": [{"name": "Across the Universe", "uri": "library://track/1884"}],
+        }
+
+        assert skill.handle_generic_play(self._utterance("play beatles")) is True
+
+        skill.mass_client.get_item_by_name.assert_not_called()
+        kwargs = skill.mass_client.play_media.call_args.kwargs
+        assert kwargs["media"] == "library://artist/119"
+        assert kwargs["shuffle"] is True
+        skill.speak_dialog.assert_called_once_with("playing", {"track_name": "music", "artist_name": "The Beatles"})
+
+    def test_weak_search_hits_defer_to_server_by_name(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_media.return_value = {
+            "artists": [{"name": "Red Hot Chili Peppers", "uri": "library://artist/5"}],
+        }
+        skill.mass_client.get_item_by_name.return_value = None
+
+        assert skill.handle_generic_play(self._utterance("play red knight")) is False
+        skill.mass_client.get_item_by_name.assert_called_once_with("red knight")
+
     def test_artist_is_shuffled(self):
         skill = _skill_with_player()
         skill.mass_client.get_item_by_name.return_value = {

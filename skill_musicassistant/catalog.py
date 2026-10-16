@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from music_assistant_models.enums import MediaType
+from rapidfuzz import fuzz, process, utils as fuzz_utils
 
 
 @dataclass
@@ -52,8 +53,43 @@ def _resolved(item: Optional[Dict[str, Any]]) -> Optional[ResolvedItem]:
     return ResolvedItem.from_dict(item)
 
 
+# Below this WRatio score a search hit is not what a bare "play X" meant
+GENERIC_MATCH_CONFIDENCE = 90
+# Bare requests resolve in minimy's order: an artist beats an album beats a track of the same name
+_SEARCH_BUCKETS = (
+    ("artists", "artist"),
+    ("albums", "album"),
+    ("playlists", "playlist"),
+    ("radio", "radio"),
+    ("tracks", "track"),
+)
+
+
+def _best_named(items: List[Dict[str, Any]], spoken: str) -> Optional[Dict[str, Any]]:
+    named = [item for item in items if isinstance(item, dict) and item.get("name")]
+    match = process.extractOne(
+        spoken,
+        [item["name"] for item in named],
+        scorer=fuzz.WRatio,
+        processor=fuzz_utils.default_process,
+        score_cutoff=GENERIC_MATCH_CONFIDENCE,
+    )
+    return named[match[2]] if match else None
+
+
 def resolve_generic(client, query: str) -> Optional[ResolvedItem]:
-    """Let the server pick the best item of any type for a bare request."""
+    """Best item of any type for a bare request.
+
+    A confident name match in the free-text search wins, artist first, so
+    "beatles" plays The Beatles rather than the one track the server would pick.
+    Otherwise the server's own by-name lookup decides.
+    """
+    results = client.search_media(query=query, limit=5)
+    if isinstance(results, dict):
+        for bucket, media_type in _SEARCH_BUCKETS:
+            best = _best_named(results.get(bucket) or [], query)
+            if best and best.get("uri"):
+                return ResolvedItem.from_dict({**best, "media_type": media_type})
     return _resolved(client.get_item_by_name(query))
 
 

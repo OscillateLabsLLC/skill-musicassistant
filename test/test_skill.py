@@ -609,6 +609,27 @@ class TestSpokenDisambiguation:
         )
         assert skill.speak_dialog.call_args_list[1].args[0] == "playing"
 
+    def test_track_missing_for_that_artist_plays_the_version_we_have(self):
+        skill = _skill_with_player()
+        other_version = {
+            "name": "Hallelujah",
+            "uri": "library://track/16625",
+            "media_type": "track",
+            "artists": [{"name": "Jeff Buckley"}],
+        }
+        skill.mass_client.get_track_by_name.side_effect = lambda name, artist_name=None, album_name=None: (
+            None if artist_name else other_version
+        )
+        skill.mass_client.search_media.return_value = {"tracks": []}
+
+        skill.handle_play_track(Message("play_track.intent", {"track": "hallelujah", "artist": "leonard cohen"}))
+
+        assert skill.mass_client.play_media.call_args.kwargs["media"] == "library://track/16625"
+        assert skill.speak_dialog.call_args_list[0].args == (
+            "playing_different_artist",
+            {"requested": "leonard cohen", "actual": "Jeff Buckley"},
+        )
+
     def test_track_same_artist_is_silent_about_it(self):
         skill = _skill_with_player()
         skill.mass_client.get_track_by_name.return_value = {

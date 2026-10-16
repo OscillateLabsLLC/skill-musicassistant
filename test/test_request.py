@@ -1,6 +1,6 @@
 """Tests for the backend-neutral request parsing helpers."""
 
-from skill_musicassistant.request import same_artist, split_trailing_location, strip_leading_verb
+from skill_musicassistant.request import name_similarity, same_artist, split_trailing_location, strip_leading_verb
 
 
 VERBS = ["play", "listen to", "put on", "shuffle"]
@@ -46,6 +46,20 @@ class TestSplitTrailingLocation:
 
     def test_prefix_at_start_is_not_a_location(self):
         assert split_trailing_location("on the road", PREFIXES) == []
+
+
+class TestNameSimilarity:
+    def test_articles_do_not_matter(self):
+        assert name_similarity("beatles", "The Beatles") == 100
+
+    def test_partial_matches_are_not_rewarded(self):
+        assert name_similarity("daft punk", "Punk") < 70
+        assert name_similarity("discovery", "Disco") < 80
+        assert name_similarity("hallelujah", "104.3 Hallelujah FM") < 70
+
+    def test_close_spelling_passes(self):
+        assert name_similarity("greatest hits", "Greatest Hits") == 100
+        assert name_similarity("hip hop", "Hip-Hop") >= 85
 
 
 class TestSameArtist:

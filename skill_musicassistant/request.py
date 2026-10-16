@@ -47,6 +47,27 @@ def split_trailing_location(query: str, prefixes: Iterable[str]) -> List[Tuple[s
     return splits
 
 
+# Leading articles never decide whether a spoken name is the catalog's name
+ARTICLES = ("the", "a", "an")
+
+
+def strip_articles(text: str) -> str:
+    words = text.strip().lower().split()
+    while words and words[0] in ARTICLES:
+        words.pop(0)
+    return " ".join(words)
+
+
+def name_similarity(spoken: str, name: str) -> float:
+    """Whole-name similarity, 0-100, with leading articles ignored.
+
+    A whole-string ratio, not a partial one: "daft punk" must not score as
+    the genre "Punk", and "hallelujah" must not score as the station
+    "104.3 Hallelujah FM".
+    """
+    return fuzz.ratio(strip_articles(spoken), strip_articles(name), processor=fuzz_utils.default_process)
+
+
 def same_artist(requested: Optional[str], actual: Optional[str]) -> bool:
     """True when the artist that was asked for is plausibly the one that was found."""
     if not requested or not actual:

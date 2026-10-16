@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from music_assistant_models.enums import MediaType
-from rapidfuzz import fuzz, process, utils as fuzz_utils
+
+from skill_musicassistant.request import name_similarity
 
 
 @dataclass
@@ -53,28 +54,25 @@ def _resolved(item: Optional[Dict[str, Any]]) -> Optional[ResolvedItem]:
     return ResolvedItem.from_dict(item)
 
 
-# Below this WRatio score a search hit is not what a bare "play X" meant
-GENERIC_MATCH_CONFIDENCE = 90
-# Bare requests resolve in minimy's order: an artist beats an album beats a track of the same name
+# Below this whole-name similarity a search hit is not what a bare "play X" meant
+GENERIC_MATCH_CONFIDENCE = 85
+# Bare requests resolve in minimy's order: an artist beats an album beats a track of the same name;
+# radio stations come last because their catalog names are rarely what people say
 _SEARCH_BUCKETS = (
     ("artists", "artist"),
     ("albums", "album"),
     ("playlists", "playlist"),
-    ("radio", "radio"),
     ("tracks", "track"),
+    ("radio", "radio"),
 )
 
 
-def _best_named(items: List[Dict[str, Any]], spoken: str) -> Optional[Dict[str, Any]]:
+def best_named(items: List[Dict[str, Any]], spoken: str, cutoff: float) -> Optional[Dict[str, Any]]:
+    """The item whose whole name is closest to ``spoken``, or None below ``cutoff``."""
     named = [item for item in items if isinstance(item, dict) and item.get("name")]
-    match = process.extractOne(
-        spoken,
-        [item["name"] for item in named],
-        scorer=fuzz.WRatio,
-        processor=fuzz_utils.default_process,
-        score_cutoff=GENERIC_MATCH_CONFIDENCE,
-    )
-    return named[match[2]] if match else None
+    scored = [(name_similarity(spoken, item["name"]), item) for item in named]
+    best = max(scored, key=lambda pair: pair[0], default=None)
+    return best[1] if best and best[0] >= cutoff else None
 
 
 def resolve_generic(client, query: str) -> Optional[ResolvedItem]:
@@ -87,7 +85,7 @@ def resolve_generic(client, query: str) -> Optional[ResolvedItem]:
     results = client.search_media(query=query, limit=5)
     if isinstance(results, dict):
         for bucket, media_type in _SEARCH_BUCKETS:
-            best = _best_named(results.get(bucket) or [], query)
+            best = best_named(results.get(bucket) or [], query, GENERIC_MATCH_CONFIDENCE)
             if best and best.get("uri"):
                 return ResolvedItem.from_dict({**best, "media_type": media_type})
     return _resolved(client.get_item_by_name(query))

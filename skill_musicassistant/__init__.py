@@ -605,6 +605,9 @@ class MusicAssistantSkill(_SkillBase):
             if not track:
                 found = self._search_media(track_name, MediaType.TRACK, artist_name)
                 track = self._as_resolved(found, "track") if found else None
+            if not track and artist_name:
+                # minimy's diff_artist: play the version we have and say whose it is
+                track = self._resolve(catalog.resolve_track, track_name)
             if not track:
                 search_query = f"{track_name} {artist_name}" if artist_name else track_name
                 self.log.error("No track found for search query: %s", search_query)
@@ -648,6 +651,8 @@ class MusicAssistantSkill(_SkillBase):
             album = self._resolve(catalog.resolve_album, album_name, artist_name)
             if not album:
                 album = self._album_from_search(album_name, artist_name)
+            if not album and artist_name:
+                album = self._resolve(catalog.resolve_album, album_name)
             if not album:
                 search_query = f"{album_name} {artist_name}" if artist_name else album_name
                 self.speak_dialog("could_not_find_album", {"album": search_query})

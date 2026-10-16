@@ -115,6 +115,9 @@ class TestIntentMatching:
             ("repeat this song", "repeat"),
             ("repeat all", "repeat"),
             ("repeat off", "repeat"),
+            ("play art of concentration playlist on office speaker", "play_playlist"),
+            ("play the art of concentration playlist", "play_playlist"),
+            ("shuffle the focus playlist", "play_playlist"),
             ("create a playlist called workout", "create_playlist"),
             ("make a new playlist road trip", "create_playlist"),
             ("add this song to my workout playlist", "add_to_playlist"),
@@ -137,6 +140,12 @@ class TestIntentMatching:
         assert result["entities"].get("album") == "abbey road"
         assert result["entities"].get("artist") == "the beatles"
         assert result["entities"].get("location") == "kitchen"
+
+    def test_playlist_name_before_keyword_keeps_location_out_of_the_name(self, container):
+        result = container.calc_intent("play art of concentration playlist on office speaker")
+        assert result.get("name") == "play_playlist"
+        assert result["entities"].get("playlist") == "art of concentration"
+        assert result["entities"].get("location") == "office speaker"
 
     def test_playlist_slots(self, container):
         result = container.calc_intent("add this song to my workout playlist")

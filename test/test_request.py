@@ -71,6 +71,8 @@ class TestNameSimilarity:
     def test_close_spelling_passes(self):
         assert name_similarity("greatest hits", "Greatest Hits") == 100
         assert name_similarity("hip hop", "Hip-Hop") >= 85
+
+
 class TestStripFiller:
     LEADING = ["some", "any", "random"]
     TRAILING = ["music", "songs"]

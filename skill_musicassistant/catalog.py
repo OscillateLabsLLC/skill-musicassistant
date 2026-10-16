@@ -189,15 +189,8 @@ def find_genre(client, spoken: str) -> Optional[Dict[str, Any]]:
 
 
 def _best_genre(genres: List[Dict[str, Any]], spoken: str) -> Optional[Dict[str, Any]]:
-    named = [g for g in genres if isinstance(g, dict) and g.get("name")]
-    match = process.extractOne(
-        spoken,
-        [g["name"] for g in named],
-        scorer=fuzz.WRatio,
-        processor=fuzz_utils.default_process,
-        score_cutoff=GENRE_MATCH_CONFIDENCE,
-    )
-    return named[match[2]] if match else None
+    """Whole-name match only: "daft punk" is not the genre "Punk" and "discovery" is not "Disco"."""
+    return best_named(genres, spoken, GENRE_MATCH_CONFIDENCE)
 
 
 # Albums expand to many tracks server side, and a long list makes the server resolve them all before playing

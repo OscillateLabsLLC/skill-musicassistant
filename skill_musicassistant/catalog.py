@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from music_assistant_models.enums import MediaType
 
-from skill_musicassistant.request import name_similarity
+from skill_musicassistant.request import name_similarity, radio_similarity
 
 
 @dataclass
@@ -71,12 +71,27 @@ _SEARCH_BUCKETS = (
 )
 
 
-def best_named(items: List[Dict[str, Any]], spoken: str, cutoff: float) -> Optional[Dict[str, Any]]:
-    """The item whose whole name is closest to ``spoken``, or None below ``cutoff``."""
+def best_named(
+    items: List[Dict[str, Any]], spoken: str, cutoff: float, scorer=name_similarity
+) -> Optional[Dict[str, Any]]:
+    """The item whose name is closest to ``spoken`` under ``scorer``, or None below ``cutoff``."""
     named = [item for item in items if isinstance(item, dict) and item.get("name")]
-    scored = [(name_similarity(spoken, item["name"]), item) for item in named]
+    scored = [(scorer(spoken, item["name"]), item) for item in named]
     best = max(scored, key=lambda pair: pair[0], default=None)
     return best[1] if best and best[0] >= cutoff else None
+
+
+# Radio names are "NAME - slogan", so the station bucket uses the word-subset scorer
+RADIO_MATCH_CONFIDENCE = 90
+_BUCKET_SCORERS = {"radio": radio_similarity}
+
+
+def search_radio(client, spoken: str) -> Optional[ResolvedItem]:
+    """The radio station whose name best fits ``spoken``; a named request always gets the best candidate."""
+    results = client.search_media(query=spoken, media_types=[MediaType.RADIO], limit=10)
+    stations = (results or {}).get("radio") or []
+    best = best_named(stations, spoken, cutoff=0, scorer=radio_similarity)
+    return _resolved({**best, "media_type": "radio"}) if best else None
 
 
 def resolve_generic(client, query: str) -> Optional[ResolvedItem]:
@@ -89,7 +104,9 @@ def resolve_generic(client, query: str) -> Optional[ResolvedItem]:
     results = client.search_media(query=query, limit=5)
     if isinstance(results, dict):
         for bucket, media_type in _SEARCH_BUCKETS:
-            best = best_named(results.get(bucket) or [], query, GENERIC_MATCH_CONFIDENCE)
+            scorer = _BUCKET_SCORERS.get(bucket, name_similarity)
+            cutoff = RADIO_MATCH_CONFIDENCE if bucket == "radio" else GENERIC_MATCH_CONFIDENCE
+            best = best_named(results.get(bucket) or [], query, cutoff, scorer)
             if best and best.get("uri"):
                 return ResolvedItem.from_dict({**best, "media_type": media_type})
     return _resolved(client.get_item_by_name(query))

@@ -84,6 +84,7 @@ class TestIntentMatching:
             ("play the playlist focus", "play_playlist"),
             ("play the playlist focus in the kitchen", "play_playlist"),
             ("tune into kexp", "play_radio"),
+            ("tune in to bbc radio 1", "play_radio"),
             ("play the radio station kexp", "play_radio"),
             ("play kexp radio", "play_radio"),
             ("pause the music", "pause"),

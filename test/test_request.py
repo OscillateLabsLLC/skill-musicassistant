@@ -1,6 +1,12 @@
 """Tests for the backend-neutral request parsing helpers."""
 
-from skill_musicassistant.request import name_similarity, same_artist, split_trailing_location, strip_leading_verb
+from skill_musicassistant.request import (
+    name_similarity,
+    radio_similarity,
+    same_artist,
+    split_trailing_location,
+    strip_leading_verb,
+)
 
 
 VERBS = ["play", "listen to", "put on", "shuffle"]
@@ -60,6 +66,17 @@ class TestNameSimilarity:
     def test_close_spelling_passes(self):
         assert name_similarity("greatest hits", "Greatest Hits") == 100
         assert name_similarity("hip hop", "Hip-Hop") >= 85
+
+
+class TestRadioSimilarity:
+    def test_slogan_does_not_hurt(self):
+        assert radio_similarity("bbc radio 1", "BBC RADIO 1 - The biggest new pop and all-day vibes") == 100
+
+    def test_word_order_does_not_matter(self):
+        assert radio_similarity("bbc 1 radio", "BBC Radio 1") == 100
+
+    def test_other_station_scores_lower(self):
+        assert radio_similarity("bbc 1 radio", "bbc 1 tv") < radio_similarity("bbc 1 radio", "BBC Radio 1 - news")
 
 
 class TestSameArtist:

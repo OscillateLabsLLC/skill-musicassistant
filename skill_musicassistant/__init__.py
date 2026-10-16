@@ -721,6 +721,11 @@ class MusicAssistantSkill(_SkillBase):
                 {"playlist": playlist_name},
             )
 
+    def _with_radio_word(self, spoken: str) -> str:
+        """ "bbc 1" said inside a radio request means "bbc 1 radio", which outranks "bbc 1 tv"."""
+        words = spoken.lower().split()
+        return spoken if "radio" in words else f"{spoken} radio"
+
     @intent_handler("play_radio.intent")
     def handle_play_radio(self, message: Message):
         """Handle playing radio stations"""
@@ -735,7 +740,10 @@ class MusicAssistantSkill(_SkillBase):
                 return
 
             # Search for radio station
-            station = self._search_media(station_name, MediaType.RADIO)
+            station = self._resolve(catalog.search_radio, self._with_radio_word(station_name))
+            if not station:
+                found = self._search_media(station_name, MediaType.RADIO)
+                station = self._as_resolved(found, "radio") if found else None
             if not station:
                 self.speak_dialog("could_not_find_radio", {"station": station_name})
                 return

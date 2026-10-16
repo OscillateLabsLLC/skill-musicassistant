@@ -68,6 +68,15 @@ def name_similarity(spoken: str, name: str) -> float:
     return fuzz.ratio(strip_articles(spoken), strip_articles(name), processor=fuzz_utils.default_process)
 
 
+def radio_similarity(spoken: str, name: str) -> float:
+    """Station-name similarity, 0-100, tolerant of the slogan stations append.
+
+    Catalog names look like "BBC RADIO 1 - The biggest new pop and all-day vibes",
+    so the spoken words only have to be a subset of the name's words.
+    """
+    return fuzz.token_set_ratio(strip_articles(spoken), strip_articles(name), processor=fuzz_utils.default_process)
+
+
 def same_artist(requested: Optional[str], actual: Optional[str]) -> bool:
     """True when the artist that was asked for is plausibly the one that was found."""
     if not requested or not actual:

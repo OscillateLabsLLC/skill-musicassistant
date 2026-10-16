@@ -599,6 +599,38 @@ class TestGenericPlayFallback:
         assert skill.can_answer(["play discovery"], "en-us") is False
 
 
+class TestRadioByName:
+    STATIONS = [
+        {"name": "bbc 1 tv", "uri": "radiobrowser://radio/tv", "media_type": "radio"},
+        {
+            "name": "BBC RADIO 1 - The biggest new pop and all-day vibes",
+            "uri": "radiobrowser://radio/r1",
+            "media_type": "radio",
+        },
+    ]
+
+    def test_named_station_outranks_the_first_search_hit(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_media.return_value = {"radio": self.STATIONS}
+
+        skill.handle_play_radio(Message("play_radio.intent", {"radio_station": "bbc 1"}))
+
+        skill.mass_client.search_media.assert_called_once_with(
+            query="bbc 1 radio", media_types=[MediaType.RADIO], limit=10
+        )
+        assert skill.mass_client.play_media.call_args.kwargs["media"] == "radiobrowser://radio/r1"
+
+    def test_generic_play_prefers_the_station_over_a_track_mentioning_it(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_media.return_value = {
+            "tracks": [{"name": "3rd Planet BBC Radio 1 Session Version Radio Edit", "uri": "library://track/1"}],
+            "radio": self.STATIONS,
+        }
+
+        assert skill.handle_generic_play(Message("fallback", {"utterance": "play bbc radio 1"})) is True
+        assert skill.mass_client.play_media.call_args.kwargs["media"] == "radiobrowser://radio/r1"
+
+
 class TestSpokenDisambiguation:
     def test_track_by_name_announces_different_artist(self):
         skill = _skill_with_player()

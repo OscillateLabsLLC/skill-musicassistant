@@ -7,8 +7,8 @@ listen to (the|) (radio|station) {radio_station}
 play (the|) (radio|station) {radio_station} (in|on|using) (the|) {location}
 
 # Tune verbs are unambiguous
-tune (into|to) {radio_station}
-tune (into|to) {radio_station} (in|on|using) (the|) {location}
+tune (into|to|in to) {radio_station}
+tune (into|to|in to) {radio_station} (in|on|using) (the|) {location}
 
 # Station-specific patterns with "radio" suffix
 play {radio_station} radio

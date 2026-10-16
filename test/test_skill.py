@@ -310,6 +310,15 @@ class TestPlayerResolution:
     def test_match_player_case_insensitive(self, skill):
         assert skill._match_player("living room speaker").player_id == "lr-1"
 
+    def test_match_player_prefers_exact_name_over_suffixed_sibling(self, skill):
+        """Music Assistant often exposes "X speaker+" next to "X speaker"; both normalize the same."""
+        skill.players = [
+            _make_player("Office speaker+", "office-plus"),
+            _make_player("Office speaker", "office-1"),
+        ]
+        assert skill._match_player("office speaker").player_id == "office-1"
+        assert skill._match_player("Office Speaker").player_id == "office-1"
+
     def test_match_player_tolerates_stt_noise(self, skill):
         assert skill._match_player("livingroom speaker").player_id == "lr-1"
         assert skill._match_player("the office").player_id == "office-1"

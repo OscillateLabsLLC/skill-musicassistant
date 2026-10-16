@@ -123,19 +123,32 @@ class MusicAssistantSkill(_SkillBase):
         """Fuzzy-match a spoken name against the cached players, tolerating STT noise."""
         if not name or not self.players:
             return None
-        result = process.extractOne(
+        candidates = process.extract(
             name,
             [player.name for player in self.players],
             scorer=fuzz.WRatio,
             processor=fuzz_utils.default_process,
             score_cutoff=PLAYER_MATCH_CONFIDENCE,
+            limit=None,
         )
-        if not result:
+        if not candidates:
             self.log.debug("No player matched %s with confidence >= %s", name, PLAYER_MATCH_CONFIDENCE)
             return None
-        matched_name, score, index = result
+        matched_name, score, index = max(candidates, key=lambda c: self._match_rank(name, c))
         self.log.debug("Matched player %s to %s (score %s)", name, matched_name, score)
         return self.players[index]
+
+    @staticmethod
+    def _match_rank(spoken: str, candidate) -> tuple:
+        """Highest score wins; on a tie, "Office speaker" beats "Office speaker+" for "office speaker".
+
+        rapidfuzz strips punctuation before scoring, so sibling players that differ
+        only by a suffix tie. Prefer the one whose raw name equals the spoken name,
+        then the shorter name.
+        """
+        matched_name, score, _ = candidate
+        exact = matched_name.strip().lower() == spoken.strip().lower()
+        return (score, exact, -len(matched_name))
 
     def _session_default_player(self, message: Optional[Message] = None) -> Optional[str]:
         """Get this session's default player override, if one was set by voice."""

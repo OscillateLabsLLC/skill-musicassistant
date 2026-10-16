@@ -4,17 +4,38 @@
 
 An OVOS/Neon skill to control media through [Music Assistant](https://www.music-assistant.io/).
 
-OCP _must_ be disabled for this skill to work.
+OCP _must_ be disabled for this skill to work. On OVOS 3.x that means removing the
+`ovos-ocp-pipeline-plugin-high` and `ovos-ocp-pipeline-plugin-medium` entries from
+`intents.pipeline` in `mycroft.conf`; on Neon Hub, OCP is already off.
 
 ## Features
 
 - Play artists, tracks, albums, playlists, and radio stations on any Music Assistant player
-- Playback controls: pause/resume, next track, previous track
+- Just say "play X": when no other skill claims a request that starts with a play verb, the skill asks
+  Music Assistant to resolve the name across artists, albums, tracks, playlists and radio
+- Tells you what it actually matched: "I couldn't find that by Leonard Cohen, so here it is by Jeff Buckley"
+- "What's playing?" and "like this song"
+- Playback controls: pause/resume, next track, previous track, stop
 - Volume control: set a level, turn it up/down, mute/unmute
 - Target any player by name in the command ("...on the kitchen speaker")
 - Fuzzy player name matching — minor mispronunciations and speech-to-text noise still resolve to the right player
 - Set your default player by voice, per device when running under HiveMind/Neon Nodes
 - Localized in English and French
+
+## Upgrading to 1.0
+
+1.0 changes how requests are resolved. Upgrade at your own risk and review your settings afterwards.
+
+- The skill depends on the [ma-http-client](https://pypi.org/project/ma-http-client/) package (0.2.0 or later)
+  instead of a vendored copy of the client.
+- A generic "play X" fallback handler is on by default. It runs after every registered intent and before the
+  LLM fallback skills. Turn it off with the `generic_play_fallback` setting if another skill should own bare
+  "play" requests.
+- Track and album requests are resolved by name on the server first, and the skill says so when the artist it
+  found differs from the one you asked for, or when several albums share a name.
+- "Stop" pauses the player you last used, then your default player. It used to pause the first player the
+  server listed.
+- New intents: "what's playing" and "like this song".
 
 ## Usage
 
@@ -28,6 +49,12 @@ All playback commands accept an optional player location, e.g. "play the artist 
 - "Play the album Random Access Memories by Daft Punk"
 - "Play the playlist Focus"
 - "Play the radio station KEXP" / "Tune into KEXP"
+- "Play Discovery" / "Listen to Daft Punk on the office speaker" (resolved by name when nothing else claims it)
+
+### Now Playing and Favorites
+
+- "What's playing?" / "What song is this?" / "Who is this?"
+- "Like this song" / "Add this song to my favorites"
 
 ### Playback Controls
 

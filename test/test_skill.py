@@ -410,6 +410,243 @@ class TestSetDefaultPlayer:
         assert skill.settings.get("default_player") is None
 
 
+def _media(title, artist="Daft Punk", album="Discovery", uri="library://track/7"):
+    media = Mock()
+    media.title = title
+    media.artist = artist
+    media.album = album
+    media.uri = uri
+    return media
+
+
+def _skill_with_player(player_id="lr-1", name="Living Room Speaker", current_media=None):
+    with patch("skill_musicassistant.SimpleHTTPMusicAssistantClient") as mock_client_class:
+        mock_client_class.return_value = Mock(spec=SimpleHTTPMusicAssistantClient, **{"get_players.return_value": []})
+        skill = MusicAssistantSkill(bus=cast(MessageBusClient, FakeBus()), skill_id="test-skill")
+    player = _make_player(name, player_id)
+    player.current_media = current_media
+    skill.mass_client = Mock(spec=SimpleHTTPMusicAssistantClient)
+    skill.mass_client.get_players.return_value = [player]
+    skill.players = [player]
+    skill.settings["default_player"] = name
+    # settings persist to disk per skill_id, so an earlier test's override would leak into this one
+    skill.settings.pop("generic_play_fallback", None)
+    skill.speak_dialog = Mock()
+    skill.gui = Mock()
+    return skill
+
+
+class TestNowPlayingAndLike:
+    def test_now_playing_speaks_title_and_artist(self):
+        skill = _skill_with_player(current_media=_media("One More Time"))
+
+        skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("now_playing", {"title": "One More Time", "artist": "Daft Punk"})
+
+    def test_now_playing_when_idle(self):
+        skill = _skill_with_player(current_media=None)
+
+        skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("nothing_playing")
+
+    def test_like_adds_current_uri_to_favorites(self):
+        skill = _skill_with_player(current_media=_media("One More Time"))
+
+        skill.handle_like(Message("like.intent", {}))
+
+        skill.mass_client.add_favorite.assert_called_once_with("library://track/7")
+        skill.speak_dialog.assert_called_once_with("liked", {"title": "One More Time"})
+
+    def test_like_when_idle_does_not_call_server(self):
+        skill = _skill_with_player(current_media=None)
+
+        skill.handle_like(Message("like.intent", {}))
+
+        skill.mass_client.add_favorite.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("nothing_playing")
+
+
+class TestGenericPlayFallback:
+    def _utterance(self, text):
+        return Message("ovos.skills.fallback", {"utterance": text, "lang": "en-us"})
+
+    def test_declines_without_play_verb(self):
+        skill = _skill_with_player()
+
+        assert skill.handle_generic_play(self._utterance("what time is it")) is False
+        skill.mass_client.get_item_by_name.assert_not_called()
+
+    def test_declines_when_nothing_resolves(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = None
+
+        assert skill.handle_generic_play(self._utterance("play the news")) is False
+        skill.mass_client.play_media.assert_not_called()
+
+    def test_declines_when_setting_is_off(self):
+        skill = _skill_with_player()
+        skill.settings["generic_play_fallback"] = False
+
+        assert skill.handle_generic_play(self._utterance("play discovery")) is False
+        skill.mass_client.get_item_by_name.assert_not_called()
+
+    def test_plays_resolved_album_and_speaks_its_type(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = {
+            "name": "Discovery",
+            "uri": "library://album/3",
+            "media_type": "album",
+            "artists": [{"name": "Daft Punk"}],
+        }
+
+        assert skill.handle_generic_play(self._utterance("play discovery")) is True
+
+        skill.mass_client.get_item_by_name.assert_called_once_with("discovery")
+        kwargs = skill.mass_client.play_media.call_args.kwargs
+        assert kwargs["media"] == "library://album/3"
+        assert "shuffle" not in kwargs
+        skill.speak_dialog.assert_called_once_with("playing_album", {"album": "Discovery", "artist": "Daft Punk"})
+
+    def test_artist_is_shuffled(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = {
+            "name": "Daft Punk",
+            "uri": "library://artist/1",
+            "media_type": "artist",
+        }
+
+        skill.handle_generic_play(self._utterance("listen to daft punk"))
+
+        assert skill.mass_client.play_media.call_args.kwargs["shuffle"] is True
+        skill.speak_dialog.assert_called_once_with("playing", {"track_name": "music", "artist_name": "Daft Punk"})
+
+    def test_trailing_location_selects_player(self):
+        skill = _skill_with_player(player_id="office-1", name="Office Speaker")
+        skill.mass_client.get_item_by_name.return_value = {
+            "name": "Discovery",
+            "uri": "library://album/3",
+            "media_type": "album",
+        }
+
+        skill.handle_generic_play(self._utterance("play discovery on the office speaker"))
+
+        skill.mass_client.get_item_by_name.assert_called_once_with("discovery")
+        assert skill.mass_client.play_media.call_args.kwargs["queue_id"] == "office-1"
+
+    def test_server_error_declines_instead_of_raising(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.side_effect = Exception("unknown command")
+
+        assert skill.handle_generic_play(self._utterance("play discovery")) is False
+
+    def test_can_answer_accepts_both_workshop_signatures(self):
+        skill = _skill_with_player()
+
+        assert skill.can_answer(["play discovery"], "en-us") is True
+        assert skill.can_answer(["what time is it"], "en-us") is False
+        assert skill.can_answer(Message("fallback", {"utterances": ["listen to daft punk"]})) is True
+        assert skill.can_answer(Message("fallback", {"utterances": ["who are you"]})) is False
+
+    def test_can_answer_respects_setting(self):
+        skill = _skill_with_player()
+        skill.settings["generic_play_fallback"] = False
+
+        assert skill.can_answer(["play discovery"], "en-us") is False
+
+
+class TestSpokenDisambiguation:
+    def test_track_by_name_announces_different_artist(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_track_by_name.return_value = {
+            "name": "Hallelujah",
+            "uri": "library://track/9",
+            "media_type": "track",
+            "artists": [{"name": "Jeff Buckley"}],
+        }
+
+        skill.handle_play_track(Message("play_track.intent", {"track": "hallelujah", "artist": "leonard cohen"}))
+
+        skill.mass_client.get_track_by_name.assert_called_once_with("hallelujah", artist_name="leonard cohen")
+        assert skill.speak_dialog.call_args_list[0].args == (
+            "playing_different_artist",
+            {"requested": "leonard cohen", "actual": "Jeff Buckley"},
+        )
+        assert skill.speak_dialog.call_args_list[1].args[0] == "playing"
+
+    def test_track_same_artist_is_silent_about_it(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_track_by_name.return_value = {
+            "name": "Hallelujah",
+            "uri": "library://track/9",
+            "media_type": "track",
+            "artists": [{"name": "Leonard Cohen"}],
+        }
+
+        skill.handle_play_track(Message("play_track.intent", {"track": "hallelujah", "artist": "leonard cohen"}))
+
+        assert skill.speak_dialog.call_count == 1
+        assert skill.speak_dialog.call_args.args[0] == "playing"
+
+    def test_album_falls_back_to_search_and_counts_matches(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = None
+        skill.mass_client.search_media.return_value = {
+            "albums": [
+                {"name": "Greatest Hits", "uri": "library://album/1", "artists": [{"name": "Queen"}]},
+                {"name": "Greatest Hits", "uri": "library://album/2", "artists": [{"name": "ABBA"}]},
+            ]
+        }
+
+        skill.handle_play_album(Message("play_album.intent", {"album": "greatest hits"}))
+
+        assert skill.speak_dialog.call_args_list[0].args == (
+            "found_several_albums",
+            {"count": 2, "album": "greatest hits"},
+        )
+        assert skill.mass_client.play_media.call_args.kwargs["media"] == "library://album/1"
+
+    def test_album_search_prefers_requested_artist(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = None
+        skill.mass_client.search_media.return_value = {
+            "albums": [
+                {"name": "Greatest Hits", "uri": "library://album/1", "artists": [{"name": "Queen"}]},
+                {"name": "Greatest Hits", "uri": "library://album/2", "artists": [{"name": "ABBA"}]},
+            ]
+        }
+
+        skill.handle_play_album(Message("play_album.intent", {"album": "greatest hits", "artist": "abba"}))
+
+        assert skill.mass_client.play_media.call_args.kwargs["media"] == "library://album/2"
+        assert skill.speak_dialog.call_count == 1
+
+
+class TestStop:
+    def test_stop_pauses_last_used_player(self):
+        skill = _skill_with_player()
+        skill.players.append(_make_player("Office Speaker", "office-1"))
+        skill.last_player["default"] = skill.players[1]
+
+        assert skill.stop() is True
+        skill.mass_client.queue_command_pause.assert_called_once_with("office-1")
+
+    def test_stop_falls_back_to_default_player(self):
+        skill = _skill_with_player()
+
+        assert skill.stop() is True
+        skill.mass_client.queue_command_pause.assert_called_once_with("lr-1")
+
+    def test_stop_with_no_players_returns_false(self):
+        skill = _skill_with_player()
+        skill.players = []
+        skill.settings.pop("default_player", None)
+        skill.mass_client.get_players.return_value = []
+
+        assert skill.stop() is False
+
+
 if __name__ == "__main__":
     # Run tests with pytest
     pytest.main([__file__, "-v"])

@@ -1,0 +1,55 @@
+"""Turn spoken music requests into structured pieces.
+
+Nothing here knows about Music Assistant, so a skill with a different backend
+can reuse the same parsing and the same spoken-feedback rules.
+"""
+
+from typing import Iterable, List, Optional, Tuple
+
+from rapidfuzz import fuzz, utils as fuzz_utils
+
+
+# Below this WRatio score two artist names are treated as different people
+ARTIST_MATCH_CONFIDENCE = 80
+
+
+def strip_leading_verb(utterance: str, verbs: Iterable[str]) -> Optional[str]:
+    """Return what follows a leading play verb, or None when the utterance has none.
+
+    Longer verbs are tried first so "listen to" wins over a hypothetical "listen".
+    """
+    text = utterance.strip().lower()
+    for verb in sorted((v.strip().lower() for v in verbs if v.strip()), key=len, reverse=True):
+        if text == verb:
+            return ""
+        if text.startswith(verb + " "):
+            return text[len(verb) :].strip()
+    return None
+
+
+def split_trailing_location(query: str, prefixes: Iterable[str]) -> List[Tuple[str, str]]:
+    """Candidate (query, location) splits at the last "on the X" / "in the X" phrase.
+
+    Callers check each location against their known players and keep the first
+    that matches; an empty list means the query has no location phrase.
+    """
+    words = query.strip().split()
+    splits: List[Tuple[str, str]] = []
+    for prefix in sorted((p.strip().lower() for p in prefixes if p.strip()), key=len, reverse=True):
+        prefix_words = prefix.split()
+        for start in range(len(words) - len(prefix_words), 0, -1):
+            if [w.lower() for w in words[start : start + len(prefix_words)]] != prefix_words:
+                continue
+            location = " ".join(words[start + len(prefix_words) :])
+            if location:
+                splits.append((" ".join(words[:start]), location))
+            break
+    return splits
+
+
+def same_artist(requested: Optional[str], actual: Optional[str]) -> bool:
+    """True when the artist that was asked for is plausibly the one that was found."""
+    if not requested or not actual:
+        return True
+    score = fuzz.WRatio(requested, actual, processor=fuzz_utils.default_process)
+    return score >= ARTIST_MATCH_CONFIDENCE

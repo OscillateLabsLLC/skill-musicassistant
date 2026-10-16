@@ -13,6 +13,26 @@ from ovos_workshop.decorators import intent_handler
 from ovos_workshop.skills import OVOSSkill
 from rapidfuzz import fuzz, process, utils as fuzz_utils
 
+
+try:
+    from ovos_workshop.decorators import fallback_handler
+    from ovos_workshop.skills.fallback import FallbackSkill as _SkillBase
+
+    FALLBACK_SUPPORTED = True
+except ImportError:  # very old ovos-workshop: load as a plain skill without generic play
+    _SkillBase = OVOSSkill
+    FALLBACK_SUPPORTED = False
+
+    def fallback_handler(priority: int = 50):
+        def decorator(func):
+            return func
+
+        return decorator
+
+
+from skill_musicassistant import catalog
+from skill_musicassistant.catalog import ResolvedItem
+from skill_musicassistant.request import same_artist, split_trailing_location, strip_leading_verb
 from skill_musicassistant.version import __version__
 
 
@@ -26,9 +46,20 @@ __all__ = [
 PLAYER_MATCH_CONFIDENCE = 70
 # Session ID used by the local device (i.e. not a HiveMind/Neon Node client)
 DEFAULT_SESSION_ID = "default"
+# Fallback tier for bare "play X" requests: after every real intent (the medium
+# fallback range starts at 5) but before the LLM fallback skills, which sit at 85+.
+GENERIC_PLAY_FALLBACK_PRIORITY = 50
+# Which dialog announces a resolved item of each Music Assistant media type
+PLAYING_DIALOG_BY_TYPE = {
+    "artist": "playing",
+    "track": "playing",
+    "album": "playing_album",
+    "playlist": "playing_playlist",
+    "radio": "playing_radio",
+}
 
 
-class MusicAssistantSkill(OVOSSkill):
+class MusicAssistantSkill(_SkillBase):
     """OVOS/Neon skill for music assistant functionality."""
 
     def __init__(self, *args, bus=None, skill_id="", **kwargs):
@@ -37,6 +68,8 @@ class MusicAssistantSkill(OVOSSkill):
     def initialize(self):
         """Initialize the skill and set up Music Assistant client"""
         # TODO: Validate that OCP is not enabled, log a warning if it is
+        if not FALLBACK_SUPPORTED:
+            self.log.warning("ovos-workshop has no fallback API; generic 'play X' requests are disabled")
         self.session = requests.Session()
         self.mass_client = SimpleHTTPMusicAssistantClient(
             server_url=self.music_assistant_url, token=self.music_assistant_token, session=self.session
@@ -61,6 +94,11 @@ class MusicAssistantSkill(OVOSSkill):
     def default_player(self):
         """Get the global default player from the skill settings"""
         return self.settings.get("default_player")
+
+    @property
+    def generic_play_fallback(self) -> bool:
+        """Whether bare "play X" utterances that no intent claimed are resolved by name."""
+        return bool(self.settings.get("generic_play_fallback", True))
 
     @property
     def network_requirements(self):
@@ -221,22 +259,73 @@ class MusicAssistantSkill(OVOSSkill):
 
         return None
 
-    def _play_media_item(self, media_item, player_id, radio_mode=False, enqueue=QueueOption.PLAY) -> bool:
+    def _play_media_item(
+        self, media_item, player_id, radio_mode=False, enqueue=QueueOption.PLAY, shuffle: Optional[bool] = None
+    ) -> bool:
         """Play a media item using the Music Assistant HTTP client"""
         try:
             if self.mass_client is None:
                 self.log.error("Failed to create Music Assistant client")
                 return False
 
-            # Use our HTTP client to play media
-            # TODO: Get enum instead of passing raw string
-            self.mass_client.play_media(
-                queue_id=player_id, media=media_item.uri, option=enqueue, radio_mode=radio_mode
-            )
+            kwargs = {"queue_id": player_id, "media": media_item.uri, "option": enqueue, "radio_mode": radio_mode}
+            if shuffle is not None:
+                kwargs["shuffle"] = shuffle
+            self.mass_client.play_media(**kwargs)
             return True
         except Exception as e:
             self.log.error("Play media error: %s", e)
             return False
+
+    def _resolve(self, resolver, *args) -> Optional[ResolvedItem]:
+        """Run a server-side by-name lookup; None on any failure so callers fall back to search."""
+        try:
+            return resolver(self.mass_client, *args)
+        except Exception as e:
+            self.log.warning("By-name lookup failed, falling back to search: %s", e)
+            return None
+
+    @staticmethod
+    def _as_resolved(model_item, media_type: str) -> ResolvedItem:
+        """Adapt a music_assistant_models item from the search path to a ResolvedItem."""
+        artists = getattr(model_item, "artists", None) or []
+        artist = artists[0].name if artists else None
+        return ResolvedItem(name=model_item.name, uri=model_item.uri, media_type=media_type, artist=artist)
+
+    def _album_from_search(self, album_name: str, artist_name: Optional[str]) -> Optional[ResolvedItem]:
+        """Free-text album search; says how many matched when the name is ambiguous."""
+        try:
+            albums = catalog.search_albums(self.mass_client, album_name)
+        except Exception as e:
+            self.log.error("Album search error: %s", e)
+            return None
+        if artist_name:
+            albums = [a for a in albums if same_artist(artist_name, a.artist)] or albums
+        if not albums:
+            return None
+        if len(albums) > 1 and not artist_name:
+            self.speak_dialog("found_several_albums", {"count": len(albums), "album": album_name})
+        return albums[0]
+
+    def _speak_if_different_artist(self, requested: Optional[str], item: ResolvedItem):
+        if requested and not same_artist(requested, item.artist):
+            self.speak_dialog("playing_different_artist", {"requested": requested, "actual": item.artist or ""})
+
+    def _speak_playing(self, item: ResolvedItem):
+        """Announce a resolved item with the dialog its media type already uses."""
+        artist = item.artist or "Unknown Artist"
+        dialog = PLAYING_DIALOG_BY_TYPE.get(item.media_type)
+        if dialog == "playing":
+            track_name = item.name if item.media_type == "track" else "music"
+            self.speak_dialog(dialog, {"track_name": track_name, "artist_name": artist})
+        elif dialog == "playing_album":
+            self.speak_dialog(dialog, {"album": item.name, "artist": artist})
+        elif dialog == "playing_playlist":
+            self.speak_dialog(dialog, {"playlist": item.name})
+        elif dialog == "playing_radio":
+            self.speak_dialog(dialog, {"radio": item.name})
+        else:
+            self.speak_dialog("playing_generic", {"name": item.name})
 
     def _get_player(self, location=None, message: Optional[Message] = None) -> str:
         """Get the player ID for the given location"""
@@ -499,26 +588,22 @@ class MusicAssistantSkill(OVOSSkill):
             if not player_id:
                 return
 
-            # Search for track
-            track = self._search_media(track_name, MediaType.TRACK, artist_name)
+            track = self._resolve(catalog.resolve_track, track_name, artist_name)
+            if not track:
+                found = self._search_media(track_name, MediaType.TRACK, artist_name)
+                track = self._as_resolved(found, "track") if found else None
             if not track:
                 search_query = f"{track_name} {artist_name}" if artist_name else track_name
                 self.log.error("No track found for search query: %s", search_query)
                 self.speak_dialog("could_not_find_track", {"track": search_query})
                 return
 
-            # Play track
             self.log.info("Playing track %s on player %s", track, player_id)
             success = self._play_media_item(track, player_id, bool(radio_mode))
 
             if success:
-                self.speak_dialog(
-                    "playing",
-                    {
-                        "track_name": track.name,
-                        "artist_name": track.artists[0].name if track.artists else "Unknown Artist",
-                    },
-                )
+                self._speak_if_different_artist(artist_name, track)
+                self._speak_playing(track)
             else:
                 self.speak_dialog("could_not_play_track", {"track": track_name})
 
@@ -547,25 +632,20 @@ class MusicAssistantSkill(OVOSSkill):
             if not player_id:
                 return
 
-            # Search for album
-            album = self._search_media(album_name, MediaType.ALBUM, artist_name)
+            album = self._resolve(catalog.resolve_album, album_name, artist_name)
+            if not album:
+                album = self._album_from_search(album_name, artist_name)
             if not album:
                 search_query = f"{album_name} {artist_name}" if artist_name else album_name
                 self.speak_dialog("could_not_find_album", {"album": search_query})
                 return
 
-            # Play album
             self.log.info("Playing album %s on player %s", album, player_id)
             success = self._play_media_item(album, player_id, radio_mode or False)
 
             if success:
-                self.speak_dialog(
-                    "playing_album",
-                    {
-                        "album": album.name,
-                        "artist": album.artists[0].name if album.artists else "Unknown Artist",
-                    },
-                )
+                self._speak_if_different_artist(artist_name, album)
+                self._speak_playing(album)
             else:
                 self.speak_dialog("could_not_play_album", {"album": album_name})
 
@@ -656,6 +736,101 @@ class MusicAssistantSkill(OVOSSkill):
         except Exception as e:
             self._handle_exception(e, "Unexpected error: %s", "could_not_play_radio", {"station": station_name})
 
+    def _current_media(self, message: Message):
+        """(player_id, NowPlaying) for the requested or default player; speaks when nothing plays."""
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return None, None
+        try:
+            now = catalog.now_playing_for(self.mass_client, player_id)
+        except Exception as e:
+            self.log.error("Could not read the current media: %s", e)
+            now = None
+        if not now:
+            self.speak_dialog("nothing_playing")
+        return player_id, now
+
+    @intent_handler("now_playing.intent")
+    def handle_now_playing(self, message: Message):
+        """Say which track and artist a player is rendering."""
+        _, now = self._current_media(message)
+        if not now:
+            return
+        self.speak_dialog("now_playing", {"title": now.title, "artist": now.artist or "Unknown Artist"})
+        self.gui.show_text(f"{now.title} - {now.artist or ''}")
+
+    @intent_handler("like.intent")
+    def handle_like(self, message: Message):
+        """Add the current track to the Music Assistant favorites."""
+        _, now = self._current_media(message)
+        if not now:
+            return
+        if not now.uri:
+            self.speak_dialog("could_not_find_track", {"track": now.title})
+            return
+        try:
+            self.mass_client.add_favorite(now.uri)
+        except Exception as e:
+            self._handle_exception(e, "Could not add to favorites: %s", "could_not_find_track", {"track": now.title})
+            return
+        self.speak_dialog("liked", {"title": now.title})
+
+    def can_answer(self, *args, **kwargs) -> bool:
+        """Pre-check the fallback service runs before dispatching to this skill.
+
+        Signature differs by ovos-workshop version: ``(utterances, lang)`` on the
+        0.x line Neon ships, ``(message)`` on 9.x, where it is also abstract.
+        Claims only utterances that start with a play verb.
+        """
+        if not self.generic_play_fallback:
+            return False
+        verbs = self._load_cached_list("play_verbs")
+        return any(strip_leading_verb(u, verbs) for u in self._utterances_from(args, kwargs))
+
+    @staticmethod
+    def _utterances_from(args, kwargs) -> List[str]:
+        """Normalize the two can_answer calling conventions to a list of transcriptions."""
+        candidate = kwargs.get("message") or kwargs.get("utterances") or (args[0] if args else None)
+        if isinstance(candidate, Message):
+            return list(candidate.data.get("utterances") or [candidate.data.get("utterance", "")])
+        if isinstance(candidate, str):
+            return [candidate]
+        return list(candidate or [])
+
+    @fallback_handler(priority=GENERIC_PLAY_FALLBACK_PRIORITY)
+    def handle_generic_play(self, message: Message) -> bool:
+        """Resolve "play X" with no type word when no intent claimed it.
+
+        Runs in the medium fallback tier, after every registered intent and
+        before the LLM fallbacks (85+). Claims the utterance only when it starts
+        with a play verb AND the server resolves the remainder to something
+        playable; otherwise returns False so later fallbacks get their turn.
+        """
+        if not self.generic_play_fallback:
+            return False
+        utterance = message.data.get("utterance", "")
+        query = strip_leading_verb(utterance, self._load_cached_list("play_verbs"))
+        if not query:
+            return False
+        query, player_id = self._query_and_player(query, message)
+        if not player_id:
+            return False
+        item = self._resolve(catalog.resolve_generic, query)
+        if not item:
+            return False
+        shuffle = True if item.media_type in ("artist", "playlist") else None
+        if not self._play_media_item(item, player_id, shuffle=shuffle):
+            return False
+        self._speak_playing(item)
+        return True
+
+    def _query_and_player(self, query: str, message: Message):
+        """Peel a trailing "on the kitchen speaker" off the query when it names a player."""
+        for remainder, location in split_trailing_location(query, self._load_cached_list("location_prefixes")):
+            if self._match_player(location):
+                return remainder, self._get_player_id(location, message)
+        return query, self._get_player_id(None, message)
+
     @intent_handler("set_default_player.intent")
     def handle_set_default_player(self, message: Message):
         """Handle setting the default player for this session (or globally for the local device)"""
@@ -695,10 +870,23 @@ class MusicAssistantSkill(OVOSSkill):
         This method should return True if it stopped something or
         False (or None) otherwise.
         """
-        # TODO: Track the last thing we did and stop it
         try:
-            self.mass_client.queue_command_pause(self.mass_client.get_players()[0].player_id)
+            player_id = self._stop_target()
+            if not player_id:
+                return False
+            self.mass_client.queue_command_pause(player_id)
             return True
         except Exception:
             self.log.exception("Error stopping media playback")
             return False
+
+    def _stop_target(self) -> Optional[str]:
+        """The player a bare "stop" should pause: last used, then the default, then any."""
+        last = self.last_player.get(DEFAULT_SESSION_ID)
+        if last:
+            return last.player_id
+        default = self._match_player(self.default_player)
+        if default:
+            return default.player_id
+        players = self.mass_client.get_players()
+        return players[0].player_id if players else None

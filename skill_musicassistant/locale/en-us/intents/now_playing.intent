@@ -1,0 +1,5 @@
+# Now Playing Intent
+(what's|what is|whats) (playing|this|this song|this track)
+what (song|track) is (this|playing)
+who (is this|sings this|is playing)
+(what's|what is) playing (in|on) (the|) {location}

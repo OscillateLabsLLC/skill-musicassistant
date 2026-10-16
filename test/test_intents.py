@@ -12,6 +12,7 @@ import pytest
 from ovos_utils.bracket_expansion import expand_template
 from padacioso import IntentContainer
 
+
 LOCALE_DIR = Path(__file__).parent.parent / "skill_musicassistant" / "locale"
 
 # Hard ceilings from issue #30 - raise these only with a measured justification
@@ -21,9 +22,7 @@ MAX_SAMPLES_PER_FILE = 200
 
 def _intent_lines(path: Path):
     return [
-        line.strip()
-        for line in path.read_text().splitlines()
-        if line.strip() and not line.strip().startswith("#")
+        line.strip() for line in path.read_text().splitlines() if line.strip() and not line.strip().startswith("#")
     ]
 
 
@@ -41,8 +40,7 @@ class TestExpansionBudget:
         counts = _expansion_counts(lang)
         total = sum(counts.values())
         assert total <= MAX_SAMPLES_PER_LOCALE, (
-            f"{lang} intents expand to {total} Padatious samples "
-            f"(budget {MAX_SAMPLES_PER_LOCALE}): {counts}"
+            f"{lang} intents expand to {total} Padatious samples (budget {MAX_SAMPLES_PER_LOCALE}): {counts}"
         )
 
     @pytest.mark.parametrize("lang", ["en-us", "fr-fr"])
@@ -98,6 +96,13 @@ class TestIntentMatching:
             ("make the office speaker my default speaker", "set_default_player"),
             ("change my default player to the kitchen display", "set_default_player"),
             ("set the music volume to 50", "volume"),
+            ("what's playing", "now_playing"),
+            ("what song is this", "now_playing"),
+            ("who is this", "now_playing"),
+            ("what's playing in the kitchen", "now_playing"),
+            ("like this song", "like"),
+            ("i love this song", "like"),
+            ("add this song to my favorites", "like"),
         ],
     )
     def test_utterance_matches_intent(self, container, utterance, intent):
@@ -109,3 +114,25 @@ class TestIntentMatching:
         assert result["entities"].get("album") == "abbey road"
         assert result["entities"].get("artist") == "the beatles"
         assert result["entities"].get("location") == "kitchen"
+
+    def test_now_playing_location_slot(self, container):
+        result = container.calc_intent("what's playing on the office speaker")
+        assert result.get("name") == "now_playing"
+        assert result["entities"].get("location") == "office speaker"
+
+    def test_bare_play_is_not_an_intent(self, container):
+        """Bare "play X" belongs to the fallback handler, never to a Padatious intent."""
+        assert container.calc_intent("play abbey road").get("name") is None
+
+
+class TestLocaleParity:
+    @pytest.mark.parametrize("kind", ["intents", "dialog"])
+    def test_fr_fr_has_every_en_us_resource(self, kind):
+        en = {p.name for p in (LOCALE_DIR / "en-us" / kind).iterdir()}
+        fr = {p.name for p in (LOCALE_DIR / "fr-fr" / kind).iterdir()}
+        assert en - fr == set(), f"fr-fr is missing {kind}: {sorted(en - fr)}"
+
+    @pytest.mark.parametrize("name", ["play_verbs.list", "location_prefixes.list"])
+    def test_word_lists_exist_in_both_locales(self, name):
+        for lang in ("en-us", "fr-fr"):
+            assert (LOCALE_DIR / lang / name).read_text().strip(), f"{lang}/{name} is empty"

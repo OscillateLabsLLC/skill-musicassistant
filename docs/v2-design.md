@@ -251,7 +251,40 @@ tests that encode handler-specific parsing move into the parser table.
    Done: no-go, see "Optional entity extraction".
 5. Hub trial, release 2.0.0, configuration restored.
 
+## Related OVOS work
+
+The OCP stack has assets that bear on this design; they were checked against
+the parser after stage 4.
+
+- `ovos-media-classifier` (used by `ovos-ocp-pipeline-plugin`) classifies
+  medium, playback type, structure, genres and qualifiers from an utterance.
+  `Signals.title` carries the raw query by design; it does not separate
+  artist from album or track. Its entity side is Aho-Corasick exact matching
+  over the user's own library lists (`ner_list`), plus a capped gazetteer.
+  That is the same answer this skill gets from the server's by-name lookup,
+  so there is nothing to borrow for the UNKNOWN case, and the medium
+  decision is not needed while the skill only plays music.
+- `Jarbas/music_queries_*` on Hugging Face: synthetic requests with slot
+  labels (artist, track, album, genre, country, location, theme) and the
+  template each came from. Running the parser over 1,035 rows limited to
+  the slots this skill handles gives 95 agreements. 697 of the rows have no
+  leading play verb ("I want to listen to X", "give me a few tracks from X",
+  "start a X mix", "queue up some X"), which neither the play intent nor the
+  fallback would claim today. The dataset is the obvious benchmark for
+  widening the grammar through the lexicon lists (lead-in phrases, "X's
+  songs", "X mix") without adding intent files.
+- `Jarbas/WikidataMediaEntities`: a 1.6M-row typed gazetteer (299k artists,
+  207k albums, 3k songs). Not needed while the catalog is the gazetteer.
+- `TigreGotico/search-term-extraction`: token-classification data for
+  pulling the search term out of a request, in eleven languages including
+  French. A candidate source for French lead-in phrases.
+
 ## Open questions
+
+- Whether to widen the grammar to the verbless phrasings in the
+  `music_queries` corpus. It is lexicon work, not code, but every lead-in
+  added to `play.intent` also widens what the intent claims from other
+  skills.
 
 - A single `{query}` slot may let Padatious claim unrelated "play" requests
   (games, podcasts from other skills). The fallback already handles

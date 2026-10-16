@@ -1,0 +1,267 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/genres/library_items",
+   "args": {
+    "search": "jazz",
+    "limit": 25
+   },
+   "response": [
+    {
+     "item_id": "6",
+     "provider": "library",
+     "name": "Blues",
+     "uri": "library://genre/6",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 19
+    },
+    {
+     "item_id": "19",
+     "provider": "library",
+     "name": "Electronic",
+     "uri": "library://genre/19",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 353
+    },
+    {
+     "item_id": "23",
+     "provider": "library",
+     "name": "Funk",
+     "uri": "library://genre/23",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 23
+    },
+    {
+     "item_id": "26",
+     "provider": "library",
+     "name": "Hip Hop",
+     "uri": "library://genre/26",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 54
+    },
+    {
+     "item_id": "29",
+     "provider": "library",
+     "name": "Jazz",
+     "uri": "library://genre/29",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 49
+    },
+    {
+     "item_id": "31",
+     "provider": "library",
+     "name": "Latin",
+     "uri": "library://genre/31",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 7
+    },
+    {
+     "item_id": "37",
+     "provider": "library",
+     "name": "Poetry",
+     "uri": "library://genre/37",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 11
+    },
+    {
+     "item_id": "39",
+     "provider": "library",
+     "name": "Pop",
+     "uri": "library://genre/39",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 132
+    },
+    {
+     "item_id": "42",
+     "provider": "library",
+     "name": "R&b",
+     "uri": "library://genre/42",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 19
+    },
+    {
+     "item_id": "47",
+     "provider": "library",
+     "name": "Rock",
+     "uri": "library://genre/47",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 154
+    },
+    {
+     "item_id": "51",
+     "provider": "library",
+     "name": "Soul",
+     "uri": "library://genre/51",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 19
+    },
+    {
+     "item_id": "57",
+     "provider": "library",
+     "name": "Trap",
+     "uri": "library://genre/57",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 14
+    }
+   ]
+  },
+  {
+   "command": "music/genres/tracks",
+   "args": {
+    "item_id": "29",
+    "limit": 50,
+    "sort_field": "random"
+   },
+   "response": []
+  },
+  {
+   "command": "music/genres/albums",
+   "args": {
+    "item_id": "29",
+    "limit": 50,
+    "sort_field": "random"
+   },
+   "response": [
+    {
+     "item_id": "273",
+     "provider": "library",
+     "name": "Billie Holiday",
+     "uri": "library://album/273",
+     "media_type": "album",
+     "artists": [
+      {
+       "item_id": "140",
+       "provider": "library",
+       "name": "Billie Holiday",
+       "uri": "library://artist/140",
+       "media_type": "artist",
+       "available": true,
+       "image": null
+      }
+     ]
+    },
+    {
+     "item_id": "1217",
+     "provider": "library",
+     "name": "Little Broken Hearts",
+     "uri": "library://album/1217",
+     "media_type": "album",
+     "artists": [
+      {
+       "item_id": "954",
+       "provider": "library",
+       "name": "Norah Jones",
+       "uri": "library://artist/954",
+       "media_type": "artist",
+       "available": true,
+       "image": null
+      }
+     ]
+    },
+    {
+     "item_id": "2231",
+     "provider": "library",
+     "name": "Twentysomething",
+     "uri": "library://album/2231",
+     "media_type": "album",
+     "artists": [
+      {
+       "item_id": "625",
+       "provider": "library",
+       "name": "Jamie Cullum",
+       "uri": "library://artist/625",
+       "media_type": "artist",
+       "available": true,
+       "image": null
+      }
+     ]
+    },
+    {
+     "item_id": "2578",
+     "provider": "library",
+     "name": "Women And Songs Beginnings",
+     "uri": "library://album/2578",
+     "media_type": "album",
+     "artists": [
+      {
+       "item_id": "977",
+       "provider": "library",
+       "name": "Original Soundtrack",
+       "uri": "library://artist/977",
+       "media_type": "artist",
+       "available": true,
+       "image": null
+      }
+     ]
+    },
+    {
+     "item_id": "2651",
+     "provider": "library",
+     "name": "Twentysomething",
+     "uri": "library://album/2651",
+     "media_type": "album",
+     "artists": [
+      {
+       "item_id": "625",
+       "provider": "library",
+       "name": "Jamie Cullum",
+       "uri": "library://artist/625",
+       "media_type": "artist",
+       "available": true,
+       "image": null
+      }
+     ]
+    },
+    {
+     "item_id": "2714",
+     "provider": "library",
+     "name": "The Pursuit",
+     "uri": "library://album/2714",
+     "media_type": "album",
+     "artists": [
+      {
+       "item_id": "625",
+       "provider": "library",
+       "name": "Jamie Cullum",
+       "uri": "library://artist/625",
+       "media_type": "artist",
+       "available": true,
+       "image": null
+      }
+     ]
+    },
+    {
+     "item_id": "2715",
+     "provider": "library",
+     "name": "S3NS",
+     "uri": "library://album/2715",
+     "media_type": "album",
+     "artists": [
+      {
+       "item_id": "2355",
+       "provider": "library",
+       "name": "Ibrahim Maalouf",
+       "uri": "library://artist/2355",
+       "media_type": "artist",
+       "available": true,
+       "image": null
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

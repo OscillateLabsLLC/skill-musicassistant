@@ -1,0 +1,54 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/item_by_name",
+   "args": {
+    "name": "echo echo",
+    "artist": "the beatles",
+    "media_type": "album"
+   },
+   "response": null
+  },
+  {
+   "command": "music/search",
+   "args": {
+    "search_query": "echo echo",
+    "limit": 5,
+    "media_types": [
+     "album"
+    ]
+   },
+   "response": {
+    "artists": [],
+    "albums": [
+     {
+      "item_id": "590",
+      "provider": "library",
+      "name": "Echo Echo",
+      "uri": "library://album/590",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "204",
+        "provider": "library",
+        "name": "Carbon Leaf",
+        "uri": "library://artist/204",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     }
+    ],
+    "genres": [],
+    "tracks": [],
+    "playlists": [],
+    "radio": [],
+    "audiobooks": [],
+    "podcasts": [],
+    "sound_effects": []
+   }
+  }
+ ]
+}

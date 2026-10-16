@@ -1,0 +1,30 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/search",
+   "args": {
+    "search_query": "zorblax quibbleflap",
+    "limit": 5
+   },
+   "response": {
+    "artists": [],
+    "albums": [],
+    "genres": [],
+    "tracks": [],
+    "playlists": [],
+    "radio": [],
+    "audiobooks": [],
+    "podcasts": [],
+    "sound_effects": []
+   }
+  },
+  {
+   "command": "music/item_by_name",
+   "args": {
+    "name": "zorblax quibbleflap"
+   },
+   "response": null
+  }
+ ]
+}

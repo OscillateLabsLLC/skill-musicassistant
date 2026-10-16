@@ -1,0 +1,49 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/track_by_name",
+   "args": {
+    "track_name": "one more time",
+    "artist_name": "daft punk"
+   },
+   "response": {
+    "item_id": "3987",
+    "provider": "library",
+    "name": "One More Time",
+    "uri": "library://track/3987",
+    "media_type": "track",
+    "artists": [
+     {
+      "item_id": "299",
+      "provider": "library",
+      "name": "Daft Punk",
+      "uri": "library://artist/299",
+      "media_type": "artist",
+      "available": true,
+      "image": null
+     }
+    ],
+    "last_played": 0,
+    "album": {
+     "item_id": "525",
+     "provider": "library",
+     "name": "Discovery",
+     "uri": "library://album/525",
+     "media_type": "album",
+     "available": true,
+     "image": {
+      "type": "thumb",
+      "path": "/library/metadata/8465/thumb/1710406879",
+      "provider": "plex--qpZJzhqJ",
+      "remotely_accessible": false,
+      "proxy_id": "dd6be0b157990605b9da1c56617f6315fdafebd89cb1a50d805b4f59d772d58b"
+     }
+    },
+    "disc_number": 1,
+    "track_number": 1,
+    "audio_metadata": null
+   }
+  }
+ ]
+}

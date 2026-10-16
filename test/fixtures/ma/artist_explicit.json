@@ -1,0 +1,21 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/item_by_name",
+   "args": {
+    "name": "carbon leaf",
+    "media_type": "artist"
+   },
+   "response": {
+    "item_id": "204",
+    "provider": "library",
+    "name": "Carbon Leaf",
+    "uri": "library://artist/204",
+    "media_type": "artist",
+    "artist_type": "singer",
+    "available": true
+   }
+  }
+ ]
+}

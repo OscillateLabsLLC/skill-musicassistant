@@ -1,0 +1,39 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/track_by_name",
+   "args": {
+    "track_name": "discovery",
+    "artist_name": "daft punk"
+   },
+   "response": null
+  },
+  {
+   "command": "music/item_by_name",
+   "args": {
+    "name": "discovery",
+    "artist": "daft punk",
+    "media_type": "album"
+   },
+   "response": {
+    "item_id": "525",
+    "provider": "library",
+    "name": "Discovery",
+    "uri": "library://album/525",
+    "media_type": "album",
+    "artists": [
+     {
+      "item_id": "299",
+      "provider": "library",
+      "name": "Daft Punk",
+      "uri": "library://artist/299",
+      "media_type": "artist",
+      "available": true
+     }
+    ],
+    "available": true
+   }
+  }
+ ]
+}

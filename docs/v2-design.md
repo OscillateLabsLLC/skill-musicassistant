@@ -169,6 +169,13 @@ Contract tests replace hand-written mocks:
   genre Punk; "bbc radio 1" picks the station whose name carries a slogan).
 - Fixtures are re-recorded when the server changes; the diff shows what
   moved. The server is a moving target and this makes that visible.
+- Recordings also pin the client's wire format. A `ma-http-client` upgrade
+  that changes an argument (the 0.2.1 random-order fix moves `sort_field`
+  to `order_by`) means re-recording the affected scenarios with the new pin.
+- The first recording session already paid for itself: the radio-browser
+  provider lists language folders under a capitalised path that it serves
+  empty, and only the lowercase path returns stations. Country codes were
+  lowercase already, which is why the 1.0 trial never saw it.
 
 ### Play pipeline and feedback policy
 

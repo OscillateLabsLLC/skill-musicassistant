@@ -1,0 +1,27 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/playlists/library_items",
+   "args": {
+    "limit": 10,
+    "search": "art of concentration"
+   },
+   "response": [
+    {
+     "item_id": "11",
+     "provider": "library",
+     "name": "Art of Concentration",
+     "uri": "library://playlist/11",
+     "media_type": "playlist",
+     "owner": "",
+     "is_editable": true,
+     "supported_mediatypes": [
+      "track"
+     ],
+     "available": true
+    }
+   ]
+  }
+ ]
+}

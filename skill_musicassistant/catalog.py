@@ -56,8 +56,14 @@ def _first_artist(item: Dict[str, Any]) -> Optional[str]:
     return artist if isinstance(artist, str) else None
 
 
+# What a music request may resolve to; the server's by-name lookup also knows podcasts and audiobooks
+MUSIC_MEDIA_TYPES = frozenset({"track", "album", "artist", "playlist", "radio"})
+
+
 def _resolved(item: Optional[Dict[str, Any]]) -> Optional[ResolvedItem]:
     if not item or not item.get("uri"):
+        return None
+    if str(item.get("media_type") or "") not in MUSIC_MEDIA_TYPES:
         return None
     return ResolvedItem.from_dict(item)
 
@@ -153,10 +159,33 @@ def resolve_album(client, name: str, artist: Optional[str] = None) -> Optional[R
     return _resolved(client.get_item_by_name(name, artist=artist, media_type=MediaType.ALBUM))
 
 
+def resolve_artist(client, name: str) -> Optional[ResolvedItem]:
+    return _resolved(client.get_item_by_name(name, media_type=MediaType.ARTIST))
+
+
+def _search_bucket(client, name: str, media_type: MediaType, bucket: str, limit: int) -> List[ResolvedItem]:
+    """Every item of one type the free-text search returns for a name, server order."""
+    results = client.search_media(query=name, media_types=[media_type], limit=limit) or {}
+    items = [
+        ResolvedItem.from_dict({**i, "media_type": media_type.value}) for i in results.get(bucket, []) if i.get("uri")
+    ]
+    return items
+
+
 def search_albums(client, name: str, limit: int = 5) -> List[ResolvedItem]:
-    """Every album the free-text search returns for a name, best match first."""
-    results = client.search_media(query=name, media_types=[MediaType.ALBUM], limit=limit)
-    return [ResolvedItem.from_dict(a) for a in results.get("albums", []) if a.get("uri")]
+    return _search_bucket(client, name, MediaType.ALBUM, "albums", limit)
+
+
+def search_tracks(client, name: str, limit: int = 5) -> List[ResolvedItem]:
+    return _search_bucket(client, name, MediaType.TRACK, "tracks", limit)
+
+
+def search_artists(client, name: str, limit: int = 5) -> List[ResolvedItem]:
+    return _search_bucket(client, name, MediaType.ARTIST, "artists", limit)
+
+
+def search_playlists(client, name: str, limit: int = 5) -> List[ResolvedItem]:
+    return _search_bucket(client, name, MediaType.PLAYLIST, "playlists", limit)
 
 
 def _radio_now_playing(stream_title: str, station: Optional[str], uri: Optional[str]) -> NowPlaying:
@@ -319,10 +348,30 @@ def radio_category_station_uris(client, spoken: str, limit: int) -> List[str]:
             best = candidate
     if not best:
         return []
-    # the listing starts with a ".." folder entry and may hold sub-folders; only stations are playable
-    listing = client.browse(best[1].get("path") or "", limit=limit + 1)
-    stations = [s for s in listing if str(s.get("media_type") or "") == "radio"]
+    stations = _folder_stations(client, best[1].get("path") or "", limit)
     return [uri for uri in (_station_uri(s) for s in stations[:limit]) if uri]
+
+
+def _folder_stations(client, path: str, limit: int) -> List[Dict[str, Any]]:
+    """Stations in a radio-browser folder.
+
+    The listing starts with a ".." entry and may hold sub-folders; only
+    stations are playable. Language folders are listed with a capitalised
+    path ("language/French") that the provider serves empty, while the
+    lowercase path works, so an empty listing is retried lowercased.
+    """
+    for candidate in _path_variants(path):
+        listing = client.browse(candidate, limit=limit + 1)
+        stations = [s for s in listing if str(s.get("media_type") or "") == "radio"]
+        if stations:
+            return stations
+    return []
+
+
+def _path_variants(path: str) -> List[str]:
+    head, _, tail = path.rpartition("/")
+    lowered = f"{head}/{tail.lower()}" if head else path.lower()
+    return [path] if lowered == path else [path, lowered]
 
 
 def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:

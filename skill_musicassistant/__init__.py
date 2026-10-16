@@ -5,8 +5,7 @@ from typing import Dict, List, Optional
 
 import requests
 from ma_http_client import SimpleHTTPMusicAssistantClient, debug_method
-from music_assistant_models.enums import MediaType, QueueOption, RepeatMode
-from music_assistant_models.errors import MusicAssistantError
+from music_assistant_models.enums import QueueOption, RepeatMode
 from music_assistant_models.player import Player
 from ovos_bus_client import Message
 from ovos_bus_client.session import SessionManager
@@ -33,15 +32,11 @@ except ImportError:  # very old ovos-workshop: load as a plain skill without gen
         return decorator
 
 
-from skill_musicassistant import catalog
+from skill_musicassistant import catalog, feedback
 from skill_musicassistant.catalog import ResolvedItem
-from skill_musicassistant.request import (
-    same_artist,
-    split_trailing_location,
-    spoken_station_name,
-    strip_filler,
-    strip_leading_verb,
-)
+from skill_musicassistant.parser import Kind, Lexicon, MediaRequest, parse
+from skill_musicassistant.request import spoken_station_name, strip_leading_verb
+from skill_musicassistant.resolve import Resolution, resolve
 from skill_musicassistant.version import __version__
 
 
@@ -58,24 +53,11 @@ DEFAULT_SESSION_ID = "default"
 # Fallback tier for bare "play X" requests: after every real intent (the medium
 # fallback range starts at 5) but before the LLM fallback skills, which sit at 85+.
 GENERIC_PLAY_FALLBACK_PRIORITY = 50
-# How many tracks a genre or random request queues; shuffle makes the sample feel endless enough
-GENRE_TRACK_LIMIT = 50
-RANDOM_TRACK_LIMIT = 50
-# A genre slot shorter than this is STT noise ("play in music"), so it means random
-MIN_GENRE_LENGTH = 3
-# Stations queued for a radio category so "next station" has somewhere to go
-RADIO_STATION_LIMIT = 5
 # Spoken lists stay short enough to follow by ear
 MAX_SPOKEN_PLAYLIST_NAMES = 5
 MAX_SPOKEN_TRACK_TITLES = 3
-# Which dialog announces a resolved item of each Music Assistant media type
-PLAYING_DIALOG_BY_TYPE = {
-    "artist": "playing",
-    "track": "playing",
-    "album": "playing_album",
-    "playlist": "playing_playlist",
-    "radio": "playing_radio",
-}
+# Media types whose single item is a collection worth shuffling
+SHUFFLED_TYPES = ("artist", "playlist")
 
 
 class MusicAssistantSkill(_SkillBase):
@@ -256,102 +238,6 @@ class MusicAssistantSkill(_SkillBase):
 
         return None
 
-    def _search_media(self, query, media_type=None, artist=None, album=None):
-        """Search for media using the Music Assistant HTTP client"""
-        # TODO: Allow generic search
-        try:
-            if not self.mass_client:
-                self.log.error("Mass client not initialized")
-                return None
-
-            search_results = self.mass_client.search_media(
-                query=query, media_types=[media_type] if media_type else None, limit=5
-            )
-
-            # Filter results by media type and additional criteria
-            if media_type == MediaType.TRACK and "tracks" in search_results:
-                from music_assistant_models.media_items import Track
-
-                tracks = [Track.from_dict(t) for t in search_results["tracks"]]
-                if artist:
-                    # Safe attribute access for track artist
-                    tracks = [
-                        t
-                        for t in tracks
-                        if hasattr(t, "artist")
-                        and t.artist
-                        and hasattr(t.artist, "name")
-                        and artist.lower() in t.artist.name.lower()
-                    ]
-                if album:
-                    # Safe attribute access for track album
-                    tracks = [
-                        t
-                        for t in tracks
-                        if hasattr(t, "album")
-                        and t.album
-                        and hasattr(t.album, "name")
-                        and album.lower() in t.album.name.lower()
-                    ]
-                return tracks[0] if tracks else None
-
-            elif media_type == MediaType.ARTIST and "artists" in search_results:
-                from music_assistant_models.media_items import Artist
-
-                artists = [Artist.from_dict(a) for a in search_results["artists"]]
-                return artists[0] if artists else None
-
-            elif media_type == MediaType.ALBUM and "albums" in search_results:
-                from music_assistant_models.media_items import Album
-
-                albums = [Album.from_dict(a) for a in search_results["albums"]]
-                if artist:
-                    # Safe attribute access for album artist
-                    albums = [
-                        a
-                        for a in albums
-                        if hasattr(a, "artist")
-                        and a.artist
-                        and hasattr(a.artist, "name")
-                        and artist.lower() in a.artist.name.lower()
-                    ]
-                return albums[0] if albums else None
-
-            elif media_type == MediaType.PLAYLIST and "playlists" in search_results:
-                from music_assistant_models.media_items import Playlist
-
-                playlists = [Playlist.from_dict(p) for p in search_results["playlists"]]
-                return playlists[0] if playlists else None
-
-            elif media_type == MediaType.RADIO and "radio" in search_results:
-                from music_assistant_models.media_items import Radio
-
-                radios = [Radio.from_dict(r) for r in search_results["radio"]]
-                return radios[0] if radios else None
-
-        except Exception as e:
-            self.log.error("Search error: %s", e)
-
-        return None
-
-    def _play_media_item(
-        self, media_item, player_id, radio_mode=False, enqueue=QueueOption.PLAY, shuffle: Optional[bool] = None
-    ) -> bool:
-        """Play a media item using the Music Assistant HTTP client"""
-        try:
-            if self.mass_client is None:
-                self.log.error("Failed to create Music Assistant client")
-                return False
-
-            kwargs = {"queue_id": player_id, "media": media_item.uri, "option": enqueue, "radio_mode": radio_mode}
-            if shuffle is not None:
-                kwargs["shuffle"] = shuffle
-            self.mass_client.play_media(**kwargs)
-            return True
-        except Exception as e:
-            self.log.error("Play media error: %s", e)
-            return False
-
     def _resolve(self, resolver, *args) -> Optional[ResolvedItem]:
         """Run a server-side by-name lookup; None on any failure so callers fall back to search."""
         try:
@@ -359,48 +245,6 @@ class MusicAssistantSkill(_SkillBase):
         except Exception as e:
             self.log.warning("By-name lookup failed, falling back to search: %s", e)
             return None
-
-    @staticmethod
-    def _as_resolved(model_item, media_type: str) -> ResolvedItem:
-        """Adapt a music_assistant_models item from the search path to a ResolvedItem."""
-        artists = getattr(model_item, "artists", None) or []
-        artist = artists[0].name if artists else None
-        return ResolvedItem(name=model_item.name, uri=model_item.uri, media_type=media_type, artist=artist)
-
-    def _album_from_search(self, album_name: str, artist_name: Optional[str]) -> Optional[ResolvedItem]:
-        """Free-text album search; says how many matched when the name is ambiguous."""
-        try:
-            albums = catalog.search_albums(self.mass_client, album_name)
-        except Exception as e:
-            self.log.error("Album search error: %s", e)
-            return None
-        if artist_name:
-            albums = [a for a in albums if same_artist(artist_name, a.artist)] or albums
-        if not albums:
-            return None
-        if len(albums) > 1 and not artist_name:
-            self.speak_dialog("found_several_albums", {"count": len(albums), "album": album_name})
-        return albums[0]
-
-    def _speak_if_different_artist(self, requested: Optional[str], item: ResolvedItem):
-        if requested and not same_artist(requested, item.artist):
-            self.speak_dialog("playing_different_artist", {"requested": requested, "actual": item.artist or ""})
-
-    def _speak_playing(self, item: ResolvedItem):
-        """Announce a resolved item with the dialog its media type already uses."""
-        artist = item.artist or "Unknown Artist"
-        dialog = PLAYING_DIALOG_BY_TYPE.get(item.media_type)
-        if dialog == "playing":
-            track_name = item.name if item.media_type == "track" else "music"
-            self.speak_dialog(dialog, {"track_name": track_name, "artist_name": artist})
-        elif dialog == "playing_album":
-            self.speak_dialog(dialog, {"album": item.name, "artist": artist})
-        elif dialog == "playing_playlist":
-            self.speak_dialog(dialog, {"playlist": item.name})
-        elif dialog == "playing_radio":
-            self.speak_dialog(dialog, {"radio": spoken_station_name(item.name)})
-        else:
-            self.speak_dialog("playing_generic", {"name": item.name})
 
     def _get_player(self, location=None, message: Optional[Message] = None) -> str:
         """Get the player ID for the given location"""
@@ -464,51 +308,6 @@ class MusicAssistantSkill(_SkillBase):
             return "mute"
         return None
 
-    @intent_handler("play_artist.intent")
-    def handle_play_artist(self, message: Message):
-        """Handle playing an artist"""
-        artist_name = message.data.get("artist")
-        location = message.data.get("location")
-
-        try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            # Search for artist
-            artist = self._search_media(artist_name, MediaType.ARTIST)
-            if not artist:
-                self.speak_dialog("could_not_find_artist", {"artist": artist_name})
-                self.gui.show_text(f"Could not find the artist {artist_name}.")
-                return
-            # Play artist
-            success: bool = self._play_media_item(artist, player_id, shuffle=True)
-            self.log.info("Play artist success: %s", success)
-            self.gui.show_text(f"Playing {artist.name}.")
-
-            if success:
-                self.speak_dialog(
-                    "playing",
-                    {
-                        "track_name": "music",
-                        "artist_name": artist.name,
-                    },
-                )
-            else:
-                self.speak_dialog("could_not_play_artist", {"artist": artist_name})
-
-        except MusicAssistantError as e:
-            self._handle_exception(e, "Music Assistant error: %s", "could_not_play_artist", {"artist": artist_name})
-        except Exception as e:
-            self._handle_exception(
-                e,
-                "Unexpected error while trying to play an artist: %s",
-                "could_not_play_artist",
-                {"artist": artist_name},
-            )
-
-    # This is also resume after pause
     @intent_handler("pause.intent")
     def handle_pause(self, message: Message):
         """Pause, or resume when the request says so; never the play/pause toggle."""
@@ -659,182 +458,6 @@ class MusicAssistantSkill(_SkillBase):
 
         return None
 
-    @intent_handler("play_track.intent")
-    def handle_play_track(self, message: Message):
-        """Handle playing a track"""
-
-        track_name = message.data.get("track")
-        artist_name = message.data.get("artist")
-        location = message.data.get("location")
-        radio_mode = message.data.get("radio_mode")
-
-        try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            track = self._resolve(catalog.resolve_track, track_name, artist_name)
-            if not track:
-                found = self._search_media(track_name, MediaType.TRACK, artist_name)
-                track = self._as_resolved(found, "track") if found else None
-            if not track and artist_name:
-                # minimy's diff_artist: play the version we have and say whose it is
-                track = self._resolve(catalog.resolve_track, track_name)
-            if not track:
-                search_query = f"{track_name} {artist_name}" if artist_name else track_name
-                self.log.error("No track found for search query: %s", search_query)
-                self.speak_dialog("could_not_find_track", {"track": search_query})
-                return
-
-            self.log.info("Playing track %s on player %s", track, player_id)
-            success = self._play_media_item(track, player_id, bool(radio_mode))
-
-            if success:
-                self._speak_if_different_artist(artist_name, track)
-                self._speak_playing(track)
-            else:
-                self.speak_dialog("could_not_play_track", {"track": track_name})
-
-        except MusicAssistantError as e:
-            self._handle_exception(e, "Music Assistant error: %s", "could_not_play_track", {"track": track_name})
-        except Exception as e:
-            self._handle_exception(
-                e,
-                "Unexpected error while trying to play a track: %s",
-                "could_not_play_track",
-                {"track": track_name},
-            )
-
-    @intent_handler("play_album.intent")
-    def handle_play_album(self, message: Message):
-        """Handle playing an album"""
-
-        album_name = message.data.get("album")
-        artist_name = message.data.get("artist")
-        location = message.data.get("location")
-        radio_mode = message.data.get("radio_mode")  # TODO: Devise tests for this, possibly remove
-
-        try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            album = self._resolve(catalog.resolve_album, album_name, artist_name)
-            if not album:
-                album = self._album_from_search(album_name, artist_name)
-            if not album and artist_name:
-                album = self._resolve(catalog.resolve_album, album_name)
-            if not album:
-                search_query = f"{album_name} {artist_name}" if artist_name else album_name
-                self.speak_dialog("could_not_find_album", {"album": search_query})
-                return
-
-            self.log.info("Playing album %s on player %s", album, player_id)
-            success = self._play_media_item(album, player_id, radio_mode or False)
-
-            if success:
-                self._speak_if_different_artist(artist_name, album)
-                self._speak_playing(album)
-            else:
-                self.speak_dialog("could_not_play_album", {"album": album_name})
-
-        except MusicAssistantError as e:
-            self._handle_exception(e, "Music Assistant error: %s", "could_not_play_album", {"album": album_name})
-        except Exception as e:
-            self._handle_exception(
-                e,
-                "Unexpected error while trying to play an album: %s",
-                "could_not_play_album",
-                {"album": album_name},
-            )
-
-    @intent_handler("play_playlist.intent")
-    def handle_play_playlist(self, message: Message):
-        """Handle playing a playlist"""
-
-        playlist_name = message.data.get("playlist")
-        location = message.data.get("location")
-
-        try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            # Search for playlist
-            playlist = self._search_media(playlist_name, MediaType.PLAYLIST)
-            if not playlist:
-                self.log.error("No playlist found for search query: %s", playlist_name)
-                self.speak_dialog("could_not_find_playlist", {"playlist": playlist_name})
-                return
-
-            # Play playlist
-            self.log.info("Playing playlist %s on player %s", playlist, player_id)
-            success = self._play_media_item(playlist, player_id)
-
-            if success:
-                self.speak_dialog("playing_playlist", {"playlist": playlist.name})
-            else:
-                self.speak_dialog("could_not_play_playlist", {"playlist": playlist_name})
-
-        except MusicAssistantError as e:
-            self._handle_exception(
-                e,
-                "Music Assistant error while trying to play a playlist: %s",
-                "could_not_play_playlist",
-                {"playlist": playlist_name},
-            )
-        except Exception as e:
-            self._handle_exception(
-                e,
-                "Unexpected error while trying to play a playlist: %s",
-                "could_not_play_playlist",
-                {"playlist": playlist_name},
-            )
-
-    def _with_radio_word(self, spoken: str) -> str:
-        """ "bbc 1" said inside a radio request means "bbc 1 radio", which outranks "bbc 1 tv"."""
-        words = spoken.lower().split()
-        return spoken if "radio" in words else f"{spoken} radio"
-
-    @intent_handler("play_radio.intent")
-    def handle_play_radio(self, message: Message):
-        """Handle playing radio stations"""
-
-        station_name = message.data.get("radio_station")
-        location = message.data.get("location")
-
-        try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            # Search for radio station
-            station = self._resolve(catalog.search_radio, station_name, self._with_radio_word(station_name))
-            if not station:
-                found = self._search_media(station_name, MediaType.RADIO)
-                station = self._as_resolved(found, "radio") if found else None
-            if not station:
-                self.speak_dialog("could_not_find_radio", {"station": station_name})
-                return
-
-            # Play radio station
-            self.log.info("Playing radio station %s on player %s", station, player_id)
-            success = self._play_media_item(station, player_id)
-
-            if success:
-                self.speak_dialog("playing_radio", {"radio": spoken_station_name(station.name)})
-            else:
-                self.speak_dialog("could_not_play_radio", {"station": station_name})
-
-        except MusicAssistantError as e:
-            self._handle_exception(e, "Music Assistant error: %s", "could_not_play_radio", {"station": station_name})
-        except Exception as e:
-            self._handle_exception(e, "Unexpected error: %s", "could_not_play_radio", {"station": station_name})
-
     def _current_media(self, message: Message):
         """(player_id, NowPlaying) for the requested or default player; speaks when nothing plays."""
         player_id = self._get_player(message.data.get("location"), message)
@@ -904,109 +527,105 @@ class MusicAssistantSkill(_SkillBase):
             return [candidate]
         return list(candidate or [])
 
+    # Playing
+
+    @property
+    def lexicon(self) -> Lexicon:
+        """Parser word lists for the current language, cached with the other resources."""
+        cache_key = f"{self.lang}:lexicon"
+        if cache_key not in self.resources.static:
+            self.resources.static[cache_key] = Lexicon.from_loader(self._load_cached_list)
+        return self.resources.static[cache_key]
+
+    def _parse(self, utterance: str) -> MediaRequest:
+        return parse(utterance, self.lexicon, is_player=lambda name: self._match_player(name) is not None)
+
+    @intent_handler("play.intent")
+    def handle_play(self, message: Message):
+        """Any request that starts with a play verb: parse, resolve, play, speak."""
+        request = self._parse(message.data.get("utterance") or message.data.get("query") or "")
+        if request.is_empty:
+            self.speak_dialog("could_not_play_music")
+            return
+        self._play_request(request, message, claimed=True)
+
     @fallback_handler(priority=GENERIC_PLAY_FALLBACK_PRIORITY)
     def handle_generic_play(self, message: Message) -> bool:
-        """Resolve "play X" with no type word when no intent claimed it.
+        """The same pipeline for a play-verb utterance no intent claimed.
 
         Runs in the medium fallback tier, after every registered intent and
-        before the LLM fallbacks (85+). Claims the utterance only when it starts
-        with a play verb AND the server resolves the remainder to something
-        playable; otherwise returns False so later fallbacks get their turn.
+        before the LLM fallbacks (85+). Stays silent and returns False on any
+        miss so later fallbacks get their turn.
         """
         if not self.generic_play_fallback:
             return False
         utterance = message.data.get("utterance", "")
-        query = strip_leading_verb(utterance, self._load_cached_list("play_verbs"))
-        if not query:
+        if strip_leading_verb(utterance, self.lexicon.play_verbs) is None:
             return False
-        query, player_id = self._query_and_player(query, message)
+        request = self._parse(utterance)
+        if request.is_empty:
+            return False
+        return self._play_request(request, message, claimed=False)
+
+    def _play_request(self, request: MediaRequest, message: Message, claimed: bool) -> bool:
+        """The one play pipeline: player, catalog, playback, feedback."""
+        location = request.location or None
+        player_id = self._get_player(location, message) if claimed else self._get_player_id(location, message)
         if not player_id:
             return False
-        item = self._resolve(catalog.resolve_generic, query)
-        if not item:
+        found = resolve(self.mass_client, request)
+        self.log.info("Request %s resolved to %s", request, found)
+        if not found.found:
+            if claimed:
+                self._say(*feedback.not_found(request))
             return False
-        shuffle = True if item.media_type in ("artist", "playlist") else None
-        if not self._play_media_item(item, player_id, shuffle=shuffle):
+        if not self._start_playback(found, request, player_id):
+            if claimed:
+                self._say(*feedback.could_not_play(request))
             return False
-        self._speak_playing(item)
+        for dialog, data in feedback.playing(request, found):
+            self._say(dialog, data)
         return True
 
-    def _query_and_player(self, query: str, message: Message):
-        """Peel a trailing "on the kitchen speaker" off the query when it names a player."""
-        for remainder, location in split_trailing_location(query, self._load_cached_list("location_prefixes")):
-            if self._match_player(location):
-                return remainder, self._get_player_id(location, message)
-        return query, self._get_player_id(None, message)
+    def _say(self, dialog: str, data: Optional[dict] = None) -> None:
+        if data:
+            self.speak_dialog(dialog, data)
+        else:
+            self.speak_dialog(dialog)
 
-    def _play_uris(self, uris: List[str], player_id: str) -> bool:
-        """Replace the queue with a shuffled list of uris.
+    def _start_playback(self, found: Resolution, request: MediaRequest, player_id: str) -> bool:
+        """Send the play command the resolution calls for.
 
-        A genre or random request starts a new listening session, so the old
-        queue goes; inserting left a Hub queue at 2,600 items after an hour.
+        One item plays as is; artists and playlists are shuffled. A list of
+        uris replaces the queue: inserting left a Hub queue at 2,600 items
+        after an hour. Radio categories start with one station and append the
+        rest in the background (see _enqueue_rest).
         """
         try:
-            self.mass_client.play_media(queue_id=player_id, media=uris, option=QueueOption.REPLACE, shuffle=True)
+            if found.item is not None:
+                self._play_item(found.item, request, player_id)
+            elif found.kind is Kind.RADIO_CATEGORY:
+                self.mass_client.play_media(queue_id=player_id, media=found.uris[0], option=QueueOption.REPLACE)
+                self._enqueue_rest(list(found.uris[1:]), player_id)
+            else:
+                self.mass_client.play_media(
+                    queue_id=player_id, media=list(found.uris), option=QueueOption.REPLACE, shuffle=True
+                )
             return True
         except Exception as e:
             self.log.error("Play media error: %s", e)
             return False
 
-    @intent_handler("play_genre.intent")
-    def handle_play_genre(self, message: Message):
-        """Play a shuffled sample of a library genre.
-
-        "play {genre} music" also catches "play some music" and "play beatles
-        music", so filler words mean random and a name that is not a genre is
-        resolved like a bare "play X".
-        """
-        spoken = strip_filler(
-            message.data.get("genre") or "",
-            self._load_cached_list("random_words"),
-            self._load_cached_list("media_words"),
-        )
-        if not spoken or len(spoken) < MIN_GENRE_LENGTH:
-            return self.handle_play_random(message)
-        player_id = self._get_player(message.data.get("location"), message)
-        if not player_id:
-            return
-        genre = self._resolve(catalog.find_genre, spoken)
-        if genre:
-            self._play_genre(genre, spoken, player_id)
-            return
-        item = self._resolve(catalog.resolve_generic, spoken)
-        if not item:
-            self.speak_dialog("could_not_find_genre", {"genre": spoken})
-            return
-        shuffle = True if item.media_type in ("artist", "playlist") else None
-        if self._play_media_item(item, player_id, shuffle=shuffle):
-            self._speak_playing(item)
-        else:
-            self.speak_dialog("could_not_play_music")
-
-    def _play_genre(self, genre: dict, spoken: str, player_id: str):
-        uris = self._resolve(catalog.genre_uris, genre, GENRE_TRACK_LIMIT)
-        if not uris:
-            self.speak_dialog("could_not_find_genre", {"genre": spoken})
-            return
-        if self._play_uris(uris, player_id):
-            self.speak_dialog("playing_genre", {"genre": genre.get("name") or spoken})
-        else:
-            self.speak_dialog("could_not_play_music")
-
-    @intent_handler("play_random.intent")
-    def handle_play_random(self, message: Message):
-        """Play a random, shuffled sample of the whole library."""
-        player_id = self._get_player(message.data.get("location"), message)
-        if not player_id:
-            return
-        uris = self._resolve(catalog.random_track_uris, RANDOM_TRACK_LIMIT)
-        if not uris:
-            self.speak_dialog("library_empty")
-            return
-        if self._play_uris(uris, player_id):
-            self.speak_dialog("playing_random")
-        else:
-            self.speak_dialog("could_not_play_music")
+    def _play_item(self, item: ResolvedItem, request: MediaRequest, player_id: str) -> None:
+        kwargs = {
+            "queue_id": player_id,
+            "media": item.uri,
+            "option": QueueOption.PLAY,
+            "radio_mode": request.radio_mode,
+        }
+        if request.shuffle or item.media_type in SHUFFLED_TYPES:
+            kwargs["shuffle"] = True
+        self.mass_client.play_media(**kwargs)
 
     @intent_handler("shuffle.intent")
     def handle_shuffle(self, message: Message):
@@ -1042,25 +661,6 @@ class MusicAssistantSkill(_SkillBase):
         if self.voc_match(utterance, "repeat_all", lang=self.lang):
             return RepeatMode.ALL
         return RepeatMode.ONE
-
-    @intent_handler("play_radio_category.intent")
-    def handle_play_radio_category(self, message: Message):
-        """Queue the most popular stations for a country, language, or genre tag."""
-        category = (message.data.get("category") or "").strip()
-        player_id = self._get_player(message.data.get("location"), message)
-        if not player_id:
-            return
-        uris = self._resolve(catalog.radio_category_station_uris, category, RADIO_STATION_LIMIT)
-        if not uris:
-            self.speak_dialog("could_not_find_radio_category", {"category": category})
-            return
-        try:
-            self.mass_client.play_media(queue_id=player_id, media=uris[0], option=QueueOption.REPLACE)
-        except Exception as e:
-            self._handle_exception(e, "Could not play radio: %s", "could_not_play_music")
-            return
-        self.speak_dialog("playing_radio_category", {"category": category, "count": len(uris)})
-        self._enqueue_rest(uris[1:], player_id)
 
     def _enqueue_rest(self, uris: List[str], player_id: str) -> Optional[threading.Thread]:
         """Add the remaining stations after the first one is already playing.

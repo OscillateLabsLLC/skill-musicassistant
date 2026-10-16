@@ -80,76 +80,6 @@ class TestMusicAssistantSkillIntegration:
         player_id = skill_with_mock_client._get_player_id("Any")
         assert player_id is None
 
-    def test_search_media_artist(self, skill_with_mock_client, mock_client):
-        """Test media search for artists."""
-        # Mock search response
-        mock_client.search_media.return_value = {"artists": [{"name": "Test Artist", "uri": "test://artist/1"}]}
-
-        with patch("music_assistant_models.media_items.Artist") as mock_artist_class:
-            mock_artist = Mock(name="Test Artist")
-            mock_artist_class.from_dict.return_value = mock_artist
-
-            result = skill_with_mock_client._search_media("Test Artist", MediaType.ARTIST)
-
-            # Verify the client was called correctly
-            mock_client.search_media.assert_called_once_with(
-                query="Test Artist", media_types=[MediaType.ARTIST], limit=5
-            )
-            assert result == mock_artist
-
-    def test_search_media_track_with_artist(self, skill_with_mock_client, mock_client):
-        """Test media search for tracks with artist filtering."""
-        # Mock search response
-        mock_client.search_media.return_value = {
-            "tracks": [
-                {"name": "Test Song", "artist": {"name": "Test Artist"}},
-                {"name": "Other Song", "artist": {"name": "Other Artist"}},
-            ]
-        }
-
-        with patch("music_assistant_models.media_items.Track") as mock_track_class:
-            mock_track = Mock()
-            mock_track.artist = Mock(name="Test Artist")
-            mock_track_class.from_dict.return_value = mock_track
-
-            skill_with_mock_client._search_media("Test Song", MediaType.TRACK, artist="Test")
-
-            # Should filter by artist name
-            mock_client.search_media.assert_called_once_with(query="Test Song", media_types=[MediaType.TRACK], limit=5)
-
-    def test_search_media_no_results(self, skill_with_mock_client, mock_client):
-        """Test media search with no results."""
-        mock_client.search_media.return_value = {"artists": []}
-
-        result = skill_with_mock_client._search_media("Nonexistent", MediaType.ARTIST)
-        assert result is None
-
-    def test_play_media_item_success(self, skill_with_mock_client, mock_client):
-        """Test successful media playback."""
-        mock_media = Mock(uri="test://uri")
-        mock_client.play_media.return_value = True
-
-        result = skill_with_mock_client._play_media_item(mock_media, "test-player", radio_mode=True)
-
-        assert result is True
-        mock_client.play_media.assert_called_once()
-
-    def test_play_media_item_no_client(self, skill):
-        """Test media playback with no client."""
-        mock_media = Mock(uri="test://uri")
-        skill.mass_client = None
-
-        result = skill._play_media_item(mock_media, "test-player")
-        assert result is False
-
-    def test_play_media_item_error(self, skill_with_mock_client, mock_client):
-        """Test media playback with error."""
-        mock_media = Mock(uri="test://uri")
-        mock_client.play_media.side_effect = Exception("Playback error")
-
-        result = skill_with_mock_client._play_media_item(mock_media, "test-player")
-        assert result is False
-
     def test_parse_volume_level_numeric(self, skill):
         """Test volume level parsing with numeric input."""
         assert skill._parse_volume_level("50") == 50
@@ -663,6 +593,10 @@ class TestGenericPlayFallback:
         assert skill.can_answer(["play discovery"], "en-us") is False
 
 
+def _play(skill, utterance):
+    skill.handle_play(Message("play.intent", {"utterance": utterance, "query": utterance.split(" ", 1)[-1]}))
+
+
 class TestRadioByName:
     STATIONS = [
         {"name": "bbc 1 tv", "uri": "radiobrowser://radio/tv", "media_type": "radio"},
@@ -682,7 +616,7 @@ class TestRadioByName:
         }
         skill.mass_client.search_media.side_effect = lambda query, media_types=None, limit=5: by_query.get(query, {})
 
-        skill.handle_play_radio(Message("play_radio.intent", {"radio_station": "bbc 1"}))
+        _play(skill, "play the radio station bbc 1")
 
         queries = [c.kwargs["query"] for c in skill.mass_client.search_media.call_args_list]
         assert queries == ["bbc 1", "radio bbc 1", "bbc radio 1", "bbc 1 radio"]
@@ -693,7 +627,7 @@ class TestRadioByName:
         skill = _skill_with_player()
         skill.mass_client.search_media.return_value = {"radio": self.STATIONS}
 
-        skill.handle_play_radio(Message("play_radio.intent", {"radio_station": "bbc radio 1"}))
+        _play(skill, "play the radio station bbc radio 1")
 
         skill.mass_client.search_media.assert_called_once_with(
             query="bbc radio 1", media_types=[MediaType.RADIO], limit=10
@@ -720,7 +654,7 @@ class TestSpokenDisambiguation:
             "artists": [{"name": "Jeff Buckley"}],
         }
 
-        skill.handle_play_track(Message("play_track.intent", {"track": "hallelujah", "artist": "leonard cohen"}))
+        _play(skill, "play the song hallelujah by leonard cohen")
 
         skill.mass_client.get_track_by_name.assert_called_once_with("hallelujah", artist_name="leonard cohen")
         assert skill.speak_dialog.call_args_list[0].args == (
@@ -742,7 +676,7 @@ class TestSpokenDisambiguation:
         )
         skill.mass_client.search_media.return_value = {"tracks": []}
 
-        skill.handle_play_track(Message("play_track.intent", {"track": "hallelujah", "artist": "leonard cohen"}))
+        _play(skill, "play the song hallelujah by leonard cohen")
 
         assert skill.mass_client.play_media.call_args.kwargs["media"] == "library://track/16625"
         assert skill.speak_dialog.call_args_list[0].args == (
@@ -759,7 +693,7 @@ class TestSpokenDisambiguation:
             "artists": [{"name": "Leonard Cohen"}],
         }
 
-        skill.handle_play_track(Message("play_track.intent", {"track": "hallelujah", "artist": "leonard cohen"}))
+        _play(skill, "play the song hallelujah by leonard cohen")
 
         assert skill.speak_dialog.call_count == 1
         assert skill.speak_dialog.call_args.args[0] == "playing"
@@ -774,7 +708,7 @@ class TestSpokenDisambiguation:
             ]
         }
 
-        skill.handle_play_album(Message("play_album.intent", {"album": "greatest hits"}))
+        _play(skill, "play the album greatest hits")
 
         assert skill.speak_dialog.call_args_list[0].args == (
             "found_several_albums",
@@ -792,10 +726,64 @@ class TestSpokenDisambiguation:
             ]
         }
 
-        skill.handle_play_album(Message("play_album.intent", {"album": "greatest hits", "artist": "abba"}))
+        _play(skill, "play the album greatest hits by abba")
 
         assert skill.mass_client.play_media.call_args.kwargs["media"] == "library://album/2"
         assert skill.speak_dialog.call_count == 1
+
+
+class TestPlayIntent:
+    def test_not_found_is_spoken_for_the_kind_asked(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = None
+        skill.mass_client.search_media.return_value = {}
+
+        _play(skill, "play the album nothing at all by nobody")
+
+        skill.mass_client.play_media.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("could_not_find_album", {"album": "nothing at all nobody"})
+
+    def test_bare_verb_speaks_instead_of_guessing(self):
+        skill = _skill_with_player()
+
+        _play(skill, "play")
+
+        skill.mass_client.play_media.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("could_not_play_music")
+
+    def test_playback_failure_is_spoken(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = {
+            "name": "Discovery",
+            "uri": "library://album/3",
+            "media_type": "album",
+        }
+        skill.mass_client.play_media.side_effect = Exception("queue busy")
+
+        _play(skill, "play the album discovery")
+
+        skill.speak_dialog.assert_called_once_with("could_not_play_album", {"album": "discovery"})
+
+    def test_shuffle_verb_shuffles_a_single_album(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = {
+            "name": "Discovery",
+            "uri": "library://album/3",
+            "media_type": "album",
+        }
+
+        _play(skill, "shuffle the album discovery")
+
+        assert skill.mass_client.play_media.call_args.kwargs["shuffle"] is True
+
+    def test_location_in_the_request_picks_the_player_and_speaks_when_unavailable(self):
+        skill = _skill_with_player(player_id="office-1", name="Office Speaker")
+        skill.players[0].available = False
+
+        _play(skill, "play discovery on the office speaker")
+
+        skill.mass_client.play_media.assert_not_called()
+        skill.speak_dialog.assert_called_once_with("player_unavailable", {"player": "Office Speaker"})
 
 
 GENRE_SEARCH = [
@@ -812,7 +800,7 @@ class TestGenreAndRandom:
         skill.mass_client.search_genres.return_value = GENRE_SEARCH
         skill.mass_client.genre_tracks.return_value = [{"uri": "library://track/1"}, {"uri": "library://track/2"}]
 
-        skill.handle_play_genre(Message("play_genre.intent", {"genre": "jazz"}))
+        _play(skill, "play jazz music")
 
         skill.mass_client.search_genres.assert_called_once_with("jazz", limit=25)
         skill.mass_client.genre_tracks.assert_called_once_with("7", limit=50, sort_field="random")
@@ -828,7 +816,7 @@ class TestGenreAndRandom:
         skill.mass_client.genre_tracks.return_value = []
         skill.mass_client.genre_albums.return_value = [{"uri": f"library://album/{i}"} for i in range(8)]
 
-        skill.handle_play_genre(Message("play_genre.intent", {"genre": "jazz"}))
+        _play(skill, "play the genre jazz")
 
         skill.mass_client.genre_albums.assert_called_once_with("7", limit=50, sort_field="random")
         assert skill.mass_client.play_media.call_args.kwargs["media"] == [f"library://album/{i}" for i in range(5)]
@@ -839,7 +827,7 @@ class TestGenreAndRandom:
         skill.mass_client.search_genres.return_value = GENRE_SEARCH
         skill.mass_client.genre_tracks.return_value = [{"uri": "library://track/1"}]
 
-        skill.handle_play_genre(Message("play_genre.intent", {"genre": "some jazz music"}))
+        _play(skill, "play some jazz music")
 
         skill.mass_client.search_genres.assert_called_once_with("jazz", limit=25)
 
@@ -851,7 +839,7 @@ class TestGenreAndRandom:
             "artists": [{"name": "The Beatles", "uri": "library://artist/119"}],
         }
 
-        skill.handle_play_genre(Message("play_genre.intent", {"genre": "beatles"}))
+        _play(skill, "play beatles music")
 
         skill.mass_client.genre_tracks.assert_not_called()
         kwargs = skill.mass_client.play_media.call_args.kwargs
@@ -866,7 +854,7 @@ class TestGenreAndRandom:
         skill.mass_client.search_media.return_value = {}
         skill.mass_client.get_item_by_name.return_value = None
 
-        skill.handle_play_genre(Message("play_genre.intent", {"genre": "polka"}))
+        _play(skill, "play polka music")
 
         skill.mass_client.play_media.assert_not_called()
         skill.speak_dialog.assert_called_once_with("could_not_find_genre", {"genre": "polka"})
@@ -875,7 +863,7 @@ class TestGenreAndRandom:
         skill = _skill_with_player()
         skill.mass_client.library_items.return_value = [{"uri": "library://track/9"}]
 
-        skill.handle_play_genre(Message("play_genre.intent", {"genre": "in"}))
+        _play(skill, "play in music")
 
         skill.mass_client.search_genres.assert_not_called()
         skill.speak_dialog.assert_called_once_with("playing_random")
@@ -884,7 +872,7 @@ class TestGenreAndRandom:
         skill = _skill_with_player()
         skill.mass_client.library_items.return_value = [{"uri": "library://track/9"}]
 
-        skill.handle_play_genre(Message("play_genre.intent", {"genre": "some"}))
+        _play(skill, "play some music")
 
         skill.mass_client.search_genres.assert_not_called()
         skill.mass_client.library_items.assert_called_once_with(MediaType.TRACK, limit=50, sort_field="random")
@@ -894,19 +882,22 @@ class TestGenreAndRandom:
         skill = _skill_with_player()
         skill.mass_client.library_items.return_value = []
 
-        skill.handle_play_random(Message("play_random.intent", {}))
+        _play(skill, "play anything")
 
         skill.mass_client.play_media.assert_not_called()
         skill.speak_dialog.assert_called_once_with("library_empty")
 
-    def test_artist_intent_now_shuffles(self):
+    def test_artist_request_shuffles(self):
         skill = _skill_with_player()
-        artist = Mock()
-        artist.name = "Daft Punk"
-        artist.uri = "library://artist/1"
-        with patch.object(skill, "_search_media", return_value=artist):
-            skill.handle_play_artist(Message("play_artist.intent", {"artist": "daft punk"}))
+        skill.mass_client.get_item_by_name.return_value = {
+            "name": "Daft Punk",
+            "uri": "library://artist/1",
+            "media_type": "artist",
+        }
 
+        _play(skill, "play the artist daft punk")
+
+        skill.mass_client.get_item_by_name.assert_called_once_with("daft punk", media_type=MediaType.ARTIST)
         assert skill.mass_client.play_media.call_args.kwargs["shuffle"] is True
 
 
@@ -1094,7 +1085,7 @@ class TestRadioDiscovery:
         skill = _skill_with_player()
         stations = ["radiobrowser://radio/a", "radiobrowser://radio/b", "radiobrowser://radio/c"]
         with patch("skill_musicassistant.catalog.radio_category_station_uris", return_value=stations) as resolver:
-            skill.handle_play_radio_category(Message("play_radio_category.intent", {"category": "spain"}))
+            _play(skill, "play radio from spain")
         for thread in threading.enumerate():
             if thread.name == "musicassistant-enqueue":
                 thread.join(timeout=5)
@@ -1112,7 +1103,7 @@ class TestRadioDiscovery:
         with patch(
             "skill_musicassistant.catalog.radio_category_station_uris", return_value=["radiobrowser://radio/a"]
         ):
-            skill.handle_play_radio_category(Message("play_radio_category.intent", {"category": "spain"}))
+            _play(skill, "play a radio station in french")
 
         assert skill.mass_client.play_media.call_count == 1
 
@@ -1120,7 +1111,7 @@ class TestRadioDiscovery:
         skill = _skill_with_player()
         skill.mass_client.browse.return_value = []
 
-        skill.handle_play_radio_category(Message("play_radio_category.intent", {"category": "zorblax"}))
+        _play(skill, "play zorblax radio stations")
 
         skill.mass_client.play_media.assert_not_called()
         skill.speak_dialog.assert_called_once_with("could_not_find_radio_category", {"category": "zorblax"})

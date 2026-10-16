@@ -70,23 +70,29 @@ class TestIntentMatching:
     @pytest.mark.parametrize(
         "utterance,intent",
         [
-            ("play the album abbey road", "play_album"),
-            ("shuffle the album abbey road", "play_album"),
-            ("play the album abbey road by the beatles", "play_album"),
-            ("play the album abbey road by the beatles in the kitchen", "play_album"),
-            ("play the album abbey road with radio mode", "play_album"),
-            ("play the track yellow submarine", "play_track"),
-            ("play the song yellow submarine by the beatles", "play_track"),
-            ("play the song yellow submarine in the kitchen", "play_track"),
-            ("play the artist caravan palace", "play_artist"),
-            ("shuffle music by daft punk", "play_artist"),
-            ("play the band caravan palace on the office speaker", "play_artist"),
-            ("play the playlist focus", "play_playlist"),
-            ("play the playlist focus in the kitchen", "play_playlist"),
-            ("tune into kexp", "play_radio"),
-            ("tune in to bbc radio 1", "play_radio"),
-            ("play the radio station kexp", "play_radio"),
-            ("play kexp radio", "play_radio"),
+            # every play request lands on the one play intent; the parser sorts out the rest
+            ("play abbey road", "play"),
+            ("play the album abbey road", "play"),
+            ("shuffle the album abbey road", "play"),
+            ("play the album abbey road by the beatles in the kitchen", "play"),
+            ("play the song yellow submarine by the beatles", "play"),
+            ("play the artist caravan palace", "play"),
+            ("shuffle music by daft punk", "play"),
+            ("play the playlist focus", "play"),
+            ("play art of concentration playlist on office speaker", "play"),
+            ("tune into kexp", "play"),
+            ("tune in to bbc radio 1", "play"),
+            ("play kexp radio", "play"),
+            ("play some jazz music", "play"),
+            ("play the genre jazz", "play"),
+            ("play some music", "play"),
+            ("play anything", "play"),
+            ("shuffle my library", "play"),
+            ("listen to daft punk on the office speaker", "play"),
+            ("play radio from spain", "play"),
+            ("play jazz radio stations", "play"),
+            ("play a radio station in french", "play"),
+            # control intents keep their own files
             ("pause the music", "pause"),
             ("resume the music", "pause"),
             ("pause the music in the kitchen", "pause"),
@@ -105,19 +111,11 @@ class TestIntentMatching:
             ("like this song", "like"),
             ("i love this song", "like"),
             ("add this song to my favorites", "like"),
-            ("play some jazz music", "play_genre"),
-            ("play the genre jazz", "play_genre"),
-            ("play jazz music in the kitchen", "play_genre"),
-            ("play anything", "play_random"),
-            ("shuffle my library", "play_random"),
             ("shuffle on", "shuffle"),
             ("stop shuffling", "shuffle"),
             ("repeat this song", "repeat"),
             ("repeat all", "repeat"),
             ("repeat off", "repeat"),
-            ("play art of concentration playlist on office speaker", "play_playlist"),
-            ("play the art of concentration playlist", "play_playlist"),
-            ("shuffle the focus playlist", "play_playlist"),
             ("create a playlist called workout", "create_playlist"),
             ("make a new playlist road trip", "create_playlist"),
             ("add this song to my workout playlist", "add_to_playlist"),
@@ -127,10 +125,6 @@ class TestIntentMatching:
             ("what playlists do i have", "list_playlists"),
             ("list my playlists", "list_playlists"),
             ("what's on my workout playlist", "playlist_contents"),
-            ("play radio from spain", "play_radio_category"),
-            ("play jazz radio stations", "play_radio_category"),
-            ("play a radio station in french", "play_radio_category"),
-            ("play kexp radio", "play_radio"),
             ("mute", "volume"),
             ("unmute the music in the kitchen", "volume"),
         ],
@@ -139,17 +133,10 @@ class TestIntentMatching:
         result = container.calc_intent(utterance)
         assert result.get("name") == intent, f"{utterance!r} -> {result}"
 
-    def test_slots_extracted(self, container):
+    def test_play_slot_is_the_whole_request(self, container):
         result = container.calc_intent("play the album abbey road by the beatles in the kitchen")
-        assert result["entities"].get("album") == "abbey road"
-        assert result["entities"].get("artist") == "the beatles"
-        assert result["entities"].get("location") == "kitchen"
-
-    def test_playlist_name_before_keyword_keeps_location_out_of_the_name(self, container):
-        result = container.calc_intent("play art of concentration playlist on office speaker")
-        assert result.get("name") == "play_playlist"
-        assert result["entities"].get("playlist") == "art of concentration"
-        assert result["entities"].get("location") == "office speaker"
+        assert result.get("name") == "play"
+        assert result["entities"].get("query") == "the album abbey road by the beatles in the kitchen"
 
     def test_playlist_slots(self, container):
         result = container.calc_intent("add this song to my workout playlist")
@@ -162,13 +149,9 @@ class TestIntentMatching:
         assert result.get("name") == "now_playing"
         assert result["entities"].get("location") == "office speaker"
 
-    def test_play_some_music_lands_on_a_handler_that_plays_random(self, container):
-        """Both patterns can match; the genre handler redirects "some" to random at runtime."""
-        assert container.calc_intent("play some music").get("name") in {"play_random", "play_genre"}
-
-    def test_bare_play_is_not_an_intent(self, container):
-        """Bare "play X" belongs to the fallback handler, never to a Padatious intent."""
-        assert container.calc_intent("play abbey road").get("name") is None
+    def test_bare_verb_is_not_an_intent(self, container):
+        """ "play" alone has no query; resume lives in the pause intent."""
+        assert container.calc_intent("play").get("name") is None
 
 
 class TestLocaleParity:

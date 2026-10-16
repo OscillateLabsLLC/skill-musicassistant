@@ -1,0 +1,2 @@
+# Intention Lecture - un seul champ ; l'analyseur décide du type de demande
+(joue|mets|lance|écoute|passe) {query}

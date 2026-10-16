@@ -1,6 +1,0 @@
-# Radio Discovery Intent - "from", "in" or the plural "stations" keep it apart from a named station
-play radio from {category}
-play some radio from {category}
-play {category} radio stations
-play a radio station in {category}
-play radio stations (from|in) {category}

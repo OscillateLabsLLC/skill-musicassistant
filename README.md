@@ -22,6 +22,24 @@ OCP _must_ be disabled for this skill to work. On OVOS 3.x that means removing t
 - Set your default player by voice, per device when running under HiveMind/Neon Nodes
 - Localized in English and French
 
+## Upgrading to 2.0
+
+2.0 replaces the typed play intents ("play the album X", "play the artist Y", and so on) with one play intent
+and a parser. Every phrasing that worked before still works, and the same words now also work without the type
+word; what changes is how a request is understood and which failures are spoken.
+
+- One `play.intent` catches anything that starts with a play verb. A deterministic parser turns the words into a
+  typed request (track, album, artist, playlist, genre, radio, radio category, random) using the locale word
+  lists under `locale/<lang>/*.list`, so adding a language means adding lists, not code.
+- The catalog policy (by-name lookup before free-text search, the different-artist fallback, genre with album
+  fallback, radio name variants) lives in one module and is tested against recorded Music Assistant responses.
+- A request the server cannot satisfy is reported by kind ("I couldn't find the album X"), and a request for a
+  podcast or audiobook by name is no longer played as music.
+- Radio by language works: the radio-browser provider only serves language folders under a lowercase path.
+- The Padatious training set is roughly half its 1.x size, which matters on small devices.
+- fr-fr: the control intents are translated; the parser word lists are first drafts that need review by a
+  French speaker.
+
 ## Upgrading to 1.0
 
 1.0 changes how requests are resolved. Upgrade at your own risk and review your settings afterwards.
@@ -54,7 +72,7 @@ All playback commands accept an optional player location, e.g. "play the artist 
 - "Play the radio station KEXP" / "Tune into KEXP"
 - "Play radio from Spain" / "Play jazz radio stations" / "Play a radio station in French" (queues the ten most
   popular radio-browser stations for that country, language, or tag; "next station" moves on)
-- "Play Discovery" / "Listen to Daft Punk on the office speaker" (resolved by name when nothing else claims it)
+- "Play Discovery" / "Listen to Daft Punk on the office speaker" (no type word needed; the server decides)
 
 ### Genres, Random, Shuffle and Repeat
 

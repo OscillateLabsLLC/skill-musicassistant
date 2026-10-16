@@ -1,4 +1,0 @@
-# Intention Genre
-(joue|mets|lance) (de la musique|du) {genre}
-(joue|lance) le genre {genre}
-(joue|mets) de la musique {genre} dans {location}

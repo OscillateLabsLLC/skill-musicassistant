@@ -1,0 +1,3 @@
+# Play Intent - one slot; the parser decides what kind of request it is
+(play|listen to|put on|start playing) {query}
+(shuffle|tune into|tune in to|tune to) {query}

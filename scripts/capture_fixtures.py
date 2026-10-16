@@ -16,12 +16,14 @@ from music_assistant_models.enums import MediaType
 from ovos_bus_client import MessageBusClient
 from ovos_utils.fakebus import FakeBus
 
+
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
 
+from ma_http_client import DebugMusicAssistantClient
+
 from skill_musicassistant import MusicAssistantSkill
-from skill_musicassistant.debug_client import DebugMusicAssistantClient
 
 
 def run_fixture_capture():

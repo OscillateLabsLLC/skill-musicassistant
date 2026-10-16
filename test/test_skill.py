@@ -4,13 +4,13 @@ from typing import cast
 from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
+from ma_http_client import SimpleHTTPMusicAssistantClient
 from music_assistant_models.enums import MediaType
 from ovos_bus_client import Message, MessageBusClient
 from ovos_bus_client.session import Session
 from ovos_utils.fakebus import FakeBus
 
 from skill_musicassistant import MusicAssistantSkill
-from skill_musicassistant.music_assistant_client import SimpleHTTPMusicAssistantClient
 
 
 def _make_player(name, player_id):

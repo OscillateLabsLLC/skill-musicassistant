@@ -77,6 +77,19 @@ def radio_similarity(spoken: str, name: str) -> float:
     return fuzz.token_set_ratio(strip_articles(spoken), strip_articles(name), processor=fuzz_utils.default_process)
 
 
+# Station catalog names append a slogan after one of these separators
+STATION_SEPARATORS = (" - ", " | ", ": ")
+
+
+def spoken_station_name(name: str) -> str:
+    """The part of a station name worth saying: "BBC RADIO 1 - The biggest ..." -> "BBC RADIO 1"."""
+    cleaned = name.strip()
+    for separator in STATION_SEPARATORS:
+        if separator in cleaned:
+            cleaned = cleaned.split(separator, 1)[0].strip()
+    return cleaned or name.strip()
+
+
 def same_artist(requested: Optional[str], actual: Optional[str]) -> bool:
     """True when the artist that was asked for is plausibly the one that was found."""
     if not requested or not actual:

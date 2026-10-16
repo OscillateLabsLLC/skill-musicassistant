@@ -419,12 +419,13 @@ class TestSetDefaultPlayer:
         assert skill.settings.get("default_player") is None
 
 
-def _media(title, artist="Daft Punk", album="Discovery", uri="library://track/7"):
+def _media(title, artist="Daft Punk", album="Discovery", uri="library://track/7", media_type="track"):
     media = Mock()
     media.title = title
     media.artist = artist
     media.album = album
     media.uri = uri
+    media.media_type = media_type
     return media
 
 
@@ -460,6 +461,26 @@ class TestNowPlayingAndLike:
 
         skill.speak_dialog.assert_called_once_with(
             "now_playing", {"title": "an untitled track", "artist": "Daft Punk"}
+        )
+
+    def test_now_playing_radio_names_the_station_not_the_stream_junk(self):
+        skill = _skill_with_player(
+            current_media=_media("no desc", artist=None, album="BBC RADIO 1 - The biggest new pop", media_type="radio")
+        )
+
+        skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("now_playing_radio", {"station": "BBC RADIO 1"})
+
+    def test_now_playing_radio_with_a_song_in_the_stream_title(self):
+        skill = _skill_with_player(
+            current_media=_media("Daft Punk - Voyager", artist=None, album="KEXP", media_type="radio")
+        )
+
+        skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with(
+            "now_playing_radio_track", {"title": "Daft Punk - Voyager", "station": "KEXP"}
         )
 
     def test_now_playing_when_idle(self):
@@ -615,9 +636,7 @@ class TestRadioByName:
 
         skill.handle_play_radio(Message("play_radio.intent", {"radio_station": "bbc 1"}))
 
-        skill.mass_client.search_media.assert_called_once_with(
-            query="bbc 1 radio", media_types=[MediaType.RADIO], limit=10
-        )
+        skill.mass_client.search_media.assert_called_once_with(query="bbc 1", media_types=[MediaType.RADIO], limit=10)
         assert skill.mass_client.play_media.call_args.kwargs["media"] == "radiobrowser://radio/r1"
 
     def test_generic_play_prefers_the_station_over_a_track_mentioning_it(self):

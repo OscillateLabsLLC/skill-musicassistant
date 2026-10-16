@@ -32,7 +32,7 @@ except ImportError:  # very old ovos-workshop: load as a plain skill without gen
 
 from skill_musicassistant import catalog
 from skill_musicassistant.catalog import ResolvedItem
-from skill_musicassistant.request import same_artist, split_trailing_location, strip_leading_verb
+from skill_musicassistant.request import same_artist, split_trailing_location, spoken_station_name, strip_leading_verb
 from skill_musicassistant.version import __version__
 
 
@@ -336,7 +336,7 @@ class MusicAssistantSkill(_SkillBase):
         elif dialog == "playing_playlist":
             self.speak_dialog(dialog, {"playlist": item.name})
         elif dialog == "playing_radio":
-            self.speak_dialog(dialog, {"radio": item.name})
+            self.speak_dialog(dialog, {"radio": spoken_station_name(item.name)})
         else:
             self.speak_dialog("playing_generic", {"name": item.name})
 
@@ -740,7 +740,7 @@ class MusicAssistantSkill(_SkillBase):
                 return
 
             # Search for radio station
-            station = self._resolve(catalog.search_radio, self._with_radio_word(station_name))
+            station = self._resolve(catalog.search_radio, station_name, self._with_radio_word(station_name))
             if not station:
                 found = self._search_media(station_name, MediaType.RADIO)
                 station = self._as_resolved(found, "radio") if found else None
@@ -753,7 +753,7 @@ class MusicAssistantSkill(_SkillBase):
             success = self._play_media_item(station, player_id)
 
             if success:
-                self.speak_dialog("playing_radio", {"radio": station.name})
+                self.speak_dialog("playing_radio", {"radio": spoken_station_name(station.name)})
             else:
                 self.speak_dialog("could_not_play_radio", {"station": station_name})
 
@@ -781,6 +781,14 @@ class MusicAssistantSkill(_SkillBase):
         """Say which track and artist a player is rendering."""
         _, now = self._current_media(message)
         if not now:
+            return
+        if now.is_radio:
+            station = spoken_station_name(now.station or "")
+            if now.title != now.station:
+                self.speak_dialog("now_playing_radio_track", {"title": now.title, "station": station})
+            else:
+                self.speak_dialog("now_playing_radio", {"station": station})
+            self.gui.show_text(station)
             return
         self.speak_dialog("now_playing", {"title": now.title, "artist": now.artist or "Unknown Artist"})
         self.gui.show_text(f"{now.title} - {now.artist or ''}")

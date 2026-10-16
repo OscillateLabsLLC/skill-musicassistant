@@ -40,6 +40,8 @@ class NowPlaying:
     artist: Optional[str]
     album: Optional[str]
     uri: Optional[str]
+    station: Optional[str] = None
+    is_radio: bool = False
 
 
 def _first_artist(item: Dict[str, Any]) -> Optional[str]:
@@ -86,11 +88,17 @@ RADIO_MATCH_CONFIDENCE = 90
 _BUCKET_SCORERS = {"radio": radio_similarity}
 
 
-def search_radio(client, spoken: str) -> Optional[ResolvedItem]:
-    """The radio station whose name best fits ``spoken``; a named request always gets the best candidate."""
+def search_radio(client, spoken: str, rank_as: Optional[str] = None) -> Optional[ResolvedItem]:
+    """The radio station whose name best fits the request.
+
+    The server searches by substring, so the query is the raw spoken name;
+    ranking may use a fuller phrase (``rank_as``), such as the name plus the
+    word "radio" the intent stripped. A named request always gets the best
+    candidate.
+    """
     results = client.search_media(query=spoken, media_types=[MediaType.RADIO], limit=10)
     stations = (results or {}).get("radio") or []
-    best = best_named(stations, spoken, cutoff=0, scorer=radio_similarity)
+    best = best_named(stations, rank_as or spoken, cutoff=0, scorer=radio_similarity)
     return _resolved({**best, "media_type": "radio"}) if best else None
 
 
@@ -126,6 +134,15 @@ def search_albums(client, name: str, limit: int = 5) -> List[ResolvedItem]:
     return [ResolvedItem.from_dict(a) for a in results.get("albums", []) if a.get("uri")]
 
 
+def _radio_now_playing(stream_title: str, station: Optional[str], uri: Optional[str]) -> NowPlaying:
+    """For a station the album field holds its name and the title is stream metadata, often junk."""
+    station_name = station or stream_title or UNTITLED
+    song = stream_title if " - " in stream_title else None
+    return NowPlaying(
+        title=song or station_name, artist=None, album=None, uri=uri, station=station_name, is_radio=True
+    )
+
+
 def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:
     """Current media on a player, or None when it is idle."""
     for player in client.get_players():
@@ -139,6 +156,8 @@ def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:
         uri = getattr(media, "uri", None)
         if not title and not uri:
             return None
+        if "radio" in str(getattr(media, "media_type", "") or "").lower():
+            return _radio_now_playing(title, album, uri)
         return NowPlaying(
             # some streams carry no title; the album or the item uri is still worth speaking
             title=title or album or UNTITLED,

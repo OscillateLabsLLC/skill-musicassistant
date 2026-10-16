@@ -5,6 +5,7 @@ from skill_musicassistant.request import (
     radio_similarity,
     same_artist,
     split_trailing_location,
+    spoken_station_name,
     strip_leading_verb,
 )
 
@@ -77,6 +78,18 @@ class TestRadioSimilarity:
 
     def test_other_station_scores_lower(self):
         assert radio_similarity("bbc 1 radio", "bbc 1 tv") < radio_similarity("bbc 1 radio", "BBC Radio 1 - news")
+
+
+class TestSpokenStationName:
+    def test_slogan_is_dropped(self):
+        assert spoken_station_name(" BBC RADIO 1 - The biggest new pop and all-day vibes") == "BBC RADIO 1"
+
+    def test_pipe_and_colon_separators(self):
+        assert spoken_station_name("KEXP | Seattle") == "KEXP"
+        assert spoken_station_name("Radio Paradise: eclectic") == "Radio Paradise"
+
+    def test_plain_name_untouched(self):
+        assert spoken_station_name("KEXP") == "KEXP"
 
 
 class TestSameArtist:

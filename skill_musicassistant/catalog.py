@@ -200,12 +200,17 @@ def _best_genre(genres: List[Dict[str, Any]], spoken: str) -> Optional[Dict[str,
     return named[match[2]] if match else None
 
 
+# Albums expand to many tracks server side, and a long list makes the server resolve them all before playing
+GENRE_ALBUM_LIMIT = 5
+
+
 def genre_uris(client, genre: Dict[str, Any], limit: int) -> List[str]:
-    """Playable uris for a genre: a random track sample, or its albums when tracks carry no genre tags."""
+    """Playable uris for a genre: a random track sample, or a few of its albums when tracks carry no genre tags."""
     tracks = _uris(client.genre_tracks(genre["item_id"], limit=limit, sort_field=SORT_RANDOM))
     if tracks:
         return tracks
-    return _uris(client.genre_albums(genre["item_id"], limit=limit))
+    albums = _uris(client.genre_albums(genre["item_id"], limit=limit, sort_field=SORT_RANDOM))
+    return albums[:GENRE_ALBUM_LIMIT]
 
 
 def random_track_uris(client, limit: int) -> List[str]:

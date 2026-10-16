@@ -933,9 +933,13 @@ class MusicAssistantSkill(_SkillBase):
         return query, self._get_player_id(None, message)
 
     def _play_uris(self, uris: List[str], player_id: str) -> bool:
-        """Replace the queue with a shuffled list of track uris."""
+        """Replace the queue with a shuffled list of uris.
+
+        A genre or random request starts a new listening session, so the old
+        queue goes; inserting left a Hub queue at 2,600 items after an hour.
+        """
         try:
-            self.mass_client.play_media(queue_id=player_id, media=uris, option=QueueOption.PLAY, shuffle=True)
+            self.mass_client.play_media(queue_id=player_id, media=uris, option=QueueOption.REPLACE, shuffle=True)
             return True
         except Exception as e:
             self.log.error("Play media error: %s", e)

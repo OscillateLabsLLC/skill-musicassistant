@@ -6,7 +6,7 @@ from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 from ma_http_client import SimpleHTTPMusicAssistantClient
-from music_assistant_models.enums import MediaType
+from music_assistant_models.enums import MediaType, QueueOption
 from ovos_bus_client import Message, MessageBusClient
 from ovos_bus_client.session import Session
 from ovos_utils.fakebus import FakeBus
@@ -818,18 +818,19 @@ class TestGenreAndRandom:
         kwargs = skill.mass_client.play_media.call_args.kwargs
         assert kwargs["media"] == ["library://track/1", "library://track/2"]
         assert kwargs["shuffle"] is True
+        assert kwargs["option"] == QueueOption.REPLACE
         skill.speak_dialog.assert_called_once_with("playing_genre", {"genre": "Jazz"})
 
     def test_genre_without_track_tags_plays_its_albums(self):
         skill = _skill_with_player()
         skill.mass_client.search_genres.return_value = GENRE_SEARCH
         skill.mass_client.genre_tracks.return_value = []
-        skill.mass_client.genre_albums.return_value = [{"uri": "library://album/4"}, {"uri": "library://album/5"}]
+        skill.mass_client.genre_albums.return_value = [{"uri": f"library://album/{i}"} for i in range(8)]
 
         skill.handle_play_genre(Message("play_genre.intent", {"genre": "jazz"}))
 
-        skill.mass_client.genre_albums.assert_called_once_with("7", limit=50)
-        assert skill.mass_client.play_media.call_args.kwargs["media"] == ["library://album/4", "library://album/5"]
+        skill.mass_client.genre_albums.assert_called_once_with("7", limit=50, sort_field="random")
+        assert skill.mass_client.play_media.call_args.kwargs["media"] == [f"library://album/{i}" for i in range(5)]
         skill.speak_dialog.assert_called_once_with("playing_genre", {"genre": "Jazz"})
 
     def test_filler_words_are_stripped_before_the_lookup(self):

@@ -392,11 +392,27 @@ def _path_variants(path: str) -> List[str]:
     return [path] if lowered == path else [path, lowered]
 
 
+# A player keeps its last track as current media after a stop; this state says the track is over
+IDLE_STATE = "idle"
+
+
+def playback_state(player) -> str:
+    """A player's playback state, lower-cased ("playing", "paused", "idle"); "" when unknown."""
+    state = getattr(player, "playback_state", None)
+    return str(getattr(state, "value", state) or "").lower()
+
+
 def now_playing_for(client, player_id: str) -> Optional[NowPlaying]:
-    """Current media on a player, or None when it is idle."""
+    """Current media on a player, or None when it is idle.
+
+    An idle player still reports the last thing it played, so the state is
+    checked first; an unknown state gets the benefit of the doubt.
+    """
     for player in client.get_players():
         if player.player_id != player_id:
             continue
+        if playback_state(player) == IDLE_STATE:
+            return None
         media = getattr(player, "current_media", None)
         if not media:
             return None

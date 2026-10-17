@@ -887,6 +887,5 @@ class MusicAssistantSkill(_SkillBase):
         """Fresh playback state of a player, lower-cased ("playing", "paused", "idle")."""
         for current in self.mass_client.get_players():
             if current.player_id == player.player_id:
-                state = getattr(current, "playback_state", None)
-                return str(getattr(state, "value", state) or "").lower()
+                return catalog.playback_state(current)
         return ""

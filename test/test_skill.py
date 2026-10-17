@@ -460,6 +460,15 @@ def _skill_with_player(player_id="lr-1", name="Living Room Speaker", current_med
 
 
 class TestNowPlayingAndLike:
+    def test_idle_player_is_nothing_playing_even_with_leftover_media(self):
+        """After a stop the server keeps the last track as current media; it is not playing."""
+        skill = _skill_with_player(current_media=_media("Voyager"))
+        skill.players[0].playback_state = "idle"
+
+        skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("nothing_playing")
+
     def test_now_playing_speaks_title_and_artist(self):
         skill = _skill_with_player(current_media=_media("One More Time"))
 

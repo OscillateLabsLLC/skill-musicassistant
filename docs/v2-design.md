@@ -195,9 +195,13 @@ Contract tests replace hand-written mocks:
    "skip" after "play X on the office speaker" must not wake another room.
 2. `resolve(client, request)` returns a `Resolution` that also counts the
    lookups the server failed.
-3. Play: one item goes through `play_media` with queue option PLAY and a
-   shuffle flag derived from the kind; a uri list REPLACEs the queue; radio
-   categories start one station and append the rest in the background.
+3. Play: a single track goes through `play_media` with queue option PLAY,
+   so it plays now ahead of whatever was queued; an artist, album, playlist
+   or station REPLACEs the queue, so "skip" stays inside what was asked for
+   (seen live: "play music by Michael Jackson", "skip", and a leftover track
+   from the old queue played). Artists and playlists carry a shuffle flag. A
+   uri list REPLACEs the queue; radio categories start one station and
+   append the rest in the background.
 4. `feedback` returns `(dialog_name, data)` pairs. This is the single place
    that knows about `playing_different_artist`, `found_several_albums`,
    `playing_radio_category`, and the not-found dialogs per kind.

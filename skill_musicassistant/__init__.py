@@ -64,6 +64,9 @@ MAX_SPOKEN_TRACK_TITLES = 3
 MAX_STATION_ATTEMPTS = 3
 # Media types whose single item is a collection worth shuffling
 SHUFFLED_TYPES = ("artist", "playlist")
+# A single track plays now, ahead of whatever is queued; everything else replaces the queue,
+# or "skip" after "play Daft Punk" lands on a leftover from the old queue
+INSERTED_TYPES = ("track",)
 # Errors that mean the server, not the skill, failed
 SERVER_ERRORS = (requests.RequestException, MusicAssistantError)
 
@@ -618,9 +621,10 @@ class MusicAssistantSkill(_SkillBase):
     def _start_playback(self, found: Resolution, request: MediaRequest, player_id: str) -> bool:
         """Send the play command the resolution calls for.
 
-        One item plays as is; artists and playlists are shuffled. A list of
-        uris replaces the queue: inserting left a Hub queue at 2,600 items
-        after an hour. Radio categories start with one station and append the
+        A single track plays now ahead of the queue; an artist, album, playlist
+        or station replaces it, and artists and playlists are shuffled. A list
+        of uris replaces the queue too: inserting left a Hub queue at 2,600
+        items after an hour. Radio categories start with one station and append the
         rest in the background (see _enqueue_rest).
         """
         try:
@@ -655,10 +659,12 @@ class MusicAssistantSkill(_SkillBase):
         return False
 
     def _play_item(self, item: ResolvedItem, request: MediaRequest, player_id: str) -> None:
+        """Play one resolved item with the queue option its type calls for."""
+        option = QueueOption.PLAY if item.media_type in INSERTED_TYPES else QueueOption.REPLACE
         kwargs = {
             "queue_id": player_id,
             "media": item.uri,
-            "option": QueueOption.PLAY,
+            "option": option,
             "radio_mode": request.radio_mode,
         }
         if request.shuffle or item.media_type in SHUFFLED_TYPES:

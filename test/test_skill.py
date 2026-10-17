@@ -1353,3 +1353,46 @@ class TestFailuresAreSpoken:
         unguarded = [h.__name__ for h in handlers if not getattr(h, "__wrapped__", None)]
 
         assert handlers and not unguarded
+
+
+class TestQueueOption:
+    """What "play X" does to the queue depends on what X is."""
+
+    def test_an_artist_replaces_the_queue_so_skip_stays_with_the_artist(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_item_by_name.return_value = {
+            "name": "Daft Punk",
+            "uri": "library://artist/861",
+            "media_type": "artist",
+        }
+
+        _play(skill, "play the artist daft punk")
+
+        kwargs = skill.mass_client.play_media.call_args.kwargs
+        assert kwargs["option"] == QueueOption.REPLACE
+        assert kwargs["shuffle"] is True
+
+    def test_a_radio_station_replaces_the_queue(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_media.return_value = {
+            "radio": [{"name": "KEXP", "uri": "radiobrowser://radio/kexp", "media_type": "radio"}]
+        }
+
+        _play(skill, "play kexp radio")
+
+        assert skill.mass_client.play_media.call_args.kwargs["option"] == QueueOption.REPLACE
+
+    def test_a_single_track_plays_next_without_dropping_the_queue(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_track_by_name.return_value = {
+            "name": "Get Lucky",
+            "uri": "library://track/7",
+            "media_type": "track",
+            "artists": [{"name": "Daft Punk"}],
+        }
+
+        _play(skill, "play the song get lucky")
+
+        kwargs = skill.mass_client.play_media.call_args.kwargs
+        assert kwargs["option"] == QueueOption.PLAY
+        assert "shuffle" not in kwargs

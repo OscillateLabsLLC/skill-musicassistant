@@ -22,9 +22,10 @@ OCP _must_ be disabled for this skill to work. On OVOS 3.x that means removing t
 - Set your default player by voice, per device when running under HiveMind/Neon Nodes
 - Localized in English and French
 
-## Upgrading to 2.0
+## Upgrading to 1.0
 
-2.0 replaces the typed play intents ("play the album X", "play the artist Y", and so on) with one play intent
+Release 1.0 bundles two rounds of work. The first (below, "The 1.0 groundwork") moved to the published
+client and added the generic play fallback; the second replaces the typed play intents ("play the album X", "play the artist Y", and so on) with one play intent
 and a parser. Every phrasing that worked before still works, and the same words now also work without the type
 word; what changes is how a request is understood and which failures are spoken.
 
@@ -44,7 +45,7 @@ word; what changes is how a request is understood and which failures are spoken.
 - fr-fr: the control intents are translated; the parser word lists are first drafts that need review by a
   French speaker.
 
-## Upgrading to 1.0
+### The 1.0 groundwork
 
 1.0 changes how requests are resolved. Upgrade at your own risk and review your settings afterwards.
 

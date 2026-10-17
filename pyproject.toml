@@ -13,7 +13,7 @@ authors = [
 keywords = ["mycroft", "ovos", "neon", "plugin", "media", "home assistant", "music assistant", "open home foundation"]
 dynamic = ["version"]
 dependencies = [
-    "ma-http-client>=0.2.0,<1.0.0",
+    "ma-http-client>=0.2.1,<1.0.0",
     "music-assistant-models-loose==0.0.1",
     "ovos-bus-client>=0.0.10,<3.0.0",
     "ovos-number-parser>=0.0.1,<1.0.0",

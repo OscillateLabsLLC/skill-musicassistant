@@ -1,5 +1,58 @@
 # Changelog
 
+## [1.0.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.4...v1.0.0) (2026-10-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* the play_artist, play_album, play_track, play_playlist, play_radio, play_genre, play_random and play_radio_category intents are gone; every phrasing they accepted is handled by play.intent. The generic_play_fallback setting and all other settings keep their meaning.
+* the 1.0 line changes how requests are resolved. The skill now depends on the ma-http-client package (0.2.0 or later) instead of a vendored client; a generic "play X" fallback handler is on by default (setting generic_play_fallback); track and album requests are resolved by name on the server and the skill tells you when it matched a different artist; "stop" pauses the session's last player instead of the first player on the server; new now-playing and like intents exist. Upgrade at your own risk; review your intents and settings after upgrading.
+
+### Features
+
+* create, fill, trim, save, and list playlists by voice ([9f32262](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/9f32262d00964fb07dba0b23452b914916a525cc))
+* depend on ma-http-client instead of a vendored client copy ([493f6f9](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/493f6f939800ccd499c4c5880b01697417fe41a3))
+* depend on ma-http-client instead of a vendored client copy ([afcc296](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/afcc296d48e7768e7ddafda073208b01e5e5a6df))
+* one play intent, one play pipeline, one feedback policy ([ede8218](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/ede82187acd24e2d8c7964c60f295d8388aeb731))
+* **parser:** add deterministic MediaRequest parser with grammar table tests ([ac3f29e](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/ac3f29ede071b695371a93a7dd7bb2cfb9739312))
+* play by genre, random library mixes, and shuffle/repeat by voice ([2bbe3a1](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/2bbe3a14b19289f10cd910625da48e535e596f38))
+* play radio by country, language, or genre tag ([7d3e995](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/7d3e995f49ea8332285df6c161576663228b01f5))
+* resolve bare "play X", say what matched, add now-playing and like ([cff457f](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/cff457f0a88944bb3efc244e741534f5982cdd58))
+* **resolve:** resolve MediaRequests with contract tests on recorded responses ([78a4c09](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/78a4c09b7dc52a859fa0055781b3a00f18e39f49))
+
+
+### Bug Fixes
+
+* an idle player is "nothing playing", whatever its leftover media says ([e7db13b](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/e7db13bfb620f8cffd9c0fe7b15fa8b2ad8879cb))
+* collapse location variants in volume, pause, next and previous intents ([6ec3eef](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/6ec3eef2e8e5ae33d3a901e2827c4b2f1c3b1ae6))
+* find short station names by also searching with "radio" inserted ([5ae33d9](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/5ae33d90a5fcee0b1d749c52b886ce6454b56ea2))
+* genre names must match as a whole ([52e3ec9](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/52e3ec9d783d1764c9b1f6d8a0d27e77d6eef2c0))
+* hear "tune in to", and rank radio stations by their real names ([7132501](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/7132501d854788c3cff08a7774a934dfae9fe924))
+* match "play X playlist" with the name before the keyword ([0c8b40b](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/0c8b40b079d47b16a577fb0b10dea03e5df34d41))
+* match whole names when resolving bare requests, and play another artist's version ([8bfdb66](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/8bfdb66a8a539e0b5abc9d972849dbfb8a5f46e1))
+* name the station when a stream is playing, and search radio by the spoken name ([a389d3a](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/a389d3a48b736fe79160773f1431491a8c3ea430))
+* pick genres by name, fall back to albums, and treat non-genres as "play X" ([d81594b](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/d81594bad828110e645b67f3d1fc60f997b0f083))
+* prefer the exact player name when fuzzy scores tie ([ef04bbf](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/ef04bbf7bc6fb8855d304f7c1d88f6d450827b1c))
+* radio discovery replaces the queue and queues five stations ([9b96e0a](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/9b96e0a4a5e16d86d26b7501a9ee90bf065a9544))
+* **radio:** try the next station when the first one fails to start ([d765bbc](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/d765bbcd46555f850a2ba8450d6c074b1339b9e1))
+* rank bare "play X" by artist, album, then track, and hear "right now" ([302282a](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/302282aeced1c4f5b2eb8e2769a1acb4a199bf0a))
+* real stop, pause and resume; survive a bad settings file; persist settings atomically ([e043184](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/e043184a4360a2a00e1c8039c71ec9fbe67157bd))
+* replace the queue for genre and random plays, and cap album fallback ([7dbf6ab](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/7dbf6abe4950d81bcadc23f72dee07d746805121))
+* restore the rapidfuzz import the playlist matcher needs ([d3ed6a3](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/d3ed6a34e9a28f5fa4da292322e1d1579b387d60))
+* send commands without a location to the player this session last used ([3ad0294](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/3ad0294fc791a68542eeecb6a1d674a2ef8256f4))
+* skip folder entries when collecting radio stations ([1446b28](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/1446b2880066a77abf26b81cba7037c9ef4b5332))
+* speak every failure as what it is; never swallow an exception ([aa616e3](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/aa616e3e285acaeac5c251fe683e3d921e7d9403))
+* speak something sensible when the current stream has no title ([98e2306](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/98e23060c0cc6b13687ee35546f4dba9b3180cd5))
+* start the first radio station before queueing the rest ([2adee9b](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/2adee9b617723918040bf1ca05321eeda3facd1f))
+
+
+### Documentation
+
+* add the minimy-ideas feature plan ([d14d088](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/d14d088b4adfad0eab5db261e6653bb07936ba2a))
+* add v2 design for parser-centric request handling ([4a05670](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/4a056704137bb8e7595987f8b0058eb1a67a40d9))
+* **v2:** note the OCP classifier and Jarbas music-query datasets ([247e60b](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/247e60b0156ec63363f3a4d0210f441260f60ef3))
+* **v2:** record the GLiNER benchmark and drop entity extraction ([01a1578](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/01a1578880ab95aaf74c74ca18487b1fe8f29d5e))
+
 ## [0.4.4](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.3...v0.4.4) (2026-10-16)
 
 

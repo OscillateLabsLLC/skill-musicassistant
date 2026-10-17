@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v1.0.0...v1.0.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* allow ovos-bus-client 2.x and ovos-workshop up to 9.x ([5370acf](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/5370acf978642e086a4f86085863510cb08c61a8))
+* allow ovos-bus-client 2.x and ovos-workshop up to 9.x ([24029be](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/24029bedfd291389f86a2ce7ce746822142e945f))
+* an artist, album, playlist or station replaces the queue ([2120a8e](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/2120a8e1a35337642934c0377c1b5abd0873bd37))
+* an artist, album, playlist or station replaces the queue ([e9abde5](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/e9abde5da358854d3a2902c8fab7c7963a9d4d88))
+* require ma-http-client 0.2.1 and re-record the random scenarios ([67d51d5](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/67d51d5ba6f853b5c600769e7a04c25b33ee0a43))
+
 ## [1.0.0](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v0.4.4...v1.0.0) (2026-10-17)
 
 

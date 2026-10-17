@@ -1,0 +1,97 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/search",
+   "args": {
+    "search_query": "bbc radio 1",
+    "limit": 10,
+    "media_types": [
+     "radio"
+    ]
+   },
+   "response": {
+    "artists": [],
+    "albums": [],
+    "genres": [],
+    "tracks": [],
+    "playlists": [],
+    "radio": [
+     {
+      "item_id": "fdbdc2b0-c184-437b-8643-9a5bfa45c253",
+      "provider": "radiobrowser",
+      "name": "BBC Radio 1",
+      "uri": "radiobrowser://radio/fdbdc2b0-c184-437b-8643-9a5bfa45c253",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "08b5f7e8-8968-429f-8326-04cc3122735b",
+      "provider": "radiobrowser",
+      "name": "BBC Radio 1",
+      "uri": "radiobrowser://radio/08b5f7e8-8968-429f-8326-04cc3122735b",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "f7fd408e-02a5-49a1-8c03-078727e97e8f",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1 - The biggest new pop and all-day vibes",
+      "uri": "radiobrowser://radio/f7fd408e-02a5-49a1-8c03-078727e97e8f",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "091ddace-12f1-497e-b46b-064c31db4dfa",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1 ANTHEMS UK: All-day anthems from the 00s to now. Londres, Inglaterra",
+      "uri": "radiobrowser://radio/091ddace-12f1-497e-b46b-064c31db4dfa",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "87b30b2a-3c14-4e15-9fbb-0660dd99d7cc",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1 ANTHEMS: All-day anthems from the 00s to now",
+      "uri": "radiobrowser://radio/87b30b2a-3c14-4e15-9fbb-0660dd99d7cc",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "eb8e9a54-4240-4f49-bf3a-c78ba8fb18e1",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1 DANCE UK: The biggest current, future and classic dance vibes. Londres, Inglaterra",
+      "uri": "radiobrowser://radio/eb8e9a54-4240-4f49-bf3a-c78ba8fb18e1",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "70df08a8-d166-4acf-8c09-079b4374e1ba",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1 DANCE: The biggest current, future and classic dance vibes",
+      "uri": "radiobrowser://radio/70df08a8-d166-4acf-8c09-079b4374e1ba",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "34e22e2e-bf26-4314-b9b5-93fb33d25e72",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1 UK: The biggest new pop and all-day vibes. Londres, Inglaterra",
+      "uri": "radiobrowser://radio/34e22e2e-bf26-4314-b9b5-93fb33d25e72",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "6b3465d4-0e45-46d2-bdce-ef14ff570b23",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1XTRA UK: Amplifying black music & culture. Londres, Inglaterra",
+      "uri": "radiobrowser://radio/6b3465d4-0e45-46d2-bdce-ef14ff570b23",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "a3b8e3b0-0827-47dc-8362-6f8e26d28f1e",
+      "provider": "radiobrowser",
+      "name": " BBC RADIO 1XTRA: Amplifying black music & culture",
+      "uri": "radiobrowser://radio/a3b8e3b0-0827-47dc-8362-6f8e26d28f1e",
+      "media_type": "radio"
+     }
+    ],
+    "audiobooks": [],
+    "podcasts": [],
+    "sound_effects": []
+   }
+  }
+ ]
+}

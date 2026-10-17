@@ -1,0 +1,1758 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/tracks/library_items",
+   "args": {
+    "limit": 50,
+    "sort_field": "random"
+   },
+   "response": [
+    {
+     "item_id": "21223",
+     "provider": "library",
+     "name": "00:00:01 (Instrumental)",
+     "uri": "library://track/21223",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1333",
+       "provider": "library",
+       "name": "Unleash the Archers",
+       "uri": "library://artist/1333",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "516",
+      "provider": "library",
+      "name": "Demons of the AstroWaste",
+      "uri": "library://album/516",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/107943/thumb/1724294618",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "8e1010f1d002ebc11b8dda4e0c924f7d827d8c52f945419af697c84970cb2e39"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 1,
+     "available": true
+    },
+    {
+     "item_id": "1674",
+     "provider": "library",
+     "name": "01. BassMachine",
+     "uri": "library://track/1674",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 1,
+     "available": true
+    },
+    {
+     "item_id": "22741",
+     "provider": "library",
+     "name": "01 Delta 2.0Hz (deep sleep)",
+     "uri": "library://track/22741",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 1,
+     "available": true
+    },
+    {
+     "item_id": "22732",
+     "provider": "library",
+     "name": "01 Delta 2.0Hz (deep sleep) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22732",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 1,
+     "available": true
+    },
+    {
+     "item_id": "16461",
+     "provider": "library",
+     "name": "01 Title Theme",
+     "uri": "library://track/16461",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "991",
+       "provider": "library",
+       "name": "Pac-Attack",
+       "uri": "library://artist/991",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "1571",
+      "provider": "library",
+      "name": "Pac-Attack Original Game Audio",
+      "uri": "library://album/1571",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 1,
+     "available": true
+    },
+    {
+     "item_id": "22742",
+     "provider": "library",
+     "name": "02 Delta 3.5Hz (sleep, dreamless)",
+     "uri": "library://track/22742",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 2,
+     "available": true
+    },
+    {
+     "item_id": "22733",
+     "provider": "library",
+     "name": "02 Delta 3.5Hz (sleep, dreamless) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22733",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 2,
+     "available": true
+    },
+    {
+     "item_id": "21324",
+     "provider": "library",
+     "name": "02 - Return (from Space Invade",
+     "uri": "library://track/21324",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1341",
+       "provider": "library",
+       "name": "Various",
+       "uri": "library://artist/1341",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "22",
+      "provider": "library",
+      "name": "20th Century Tribute",
+      "uri": "library://album/22",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 0,
+     "available": true
+    },
+    {
+     "item_id": "21325",
+     "provider": "library",
+     "name": "02 - Return (from Space Invade",
+     "uri": "library://track/21325",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1341",
+       "provider": "library",
+       "name": "Various",
+       "uri": "library://artist/1341",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "22",
+      "provider": "library",
+      "name": "20th Century Tribute",
+      "uri": "library://album/22",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 0,
+     "available": true
+    },
+    {
+     "item_id": "1675",
+     "provider": "library",
+     "name": "02. The big show",
+     "uri": "library://track/1675",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 2,
+     "available": true
+    },
+    {
+     "item_id": "16462",
+     "provider": "library",
+     "name": "03 In-Game Music #1",
+     "uri": "library://track/16462",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "991",
+       "provider": "library",
+       "name": "Pac-Attack",
+       "uri": "library://artist/991",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "1571",
+      "provider": "library",
+      "name": "Pac-Attack Original Game Audio",
+      "uri": "library://album/1571",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 3,
+     "available": true
+    },
+    {
+     "item_id": "312",
+     "provider": "library",
+     "name": "03 Secretz Of War",
+     "uri": "library://track/312",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "7",
+       "provider": "library",
+       "name": "03 Secretz Of War",
+       "uri": "library://artist/7",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2363",
+      "provider": "library",
+      "name": "[Unknown Album]",
+      "uri": "library://album/2363",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 0,
+     "available": true
+    },
+    {
+     "item_id": "22743",
+     "provider": "library",
+     "name": "03 Theta 5.0Hz (deep meditation)",
+     "uri": "library://track/22743",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 3,
+     "available": true
+    },
+    {
+     "item_id": "22734",
+     "provider": "library",
+     "name": "03 Theta 5.0Hz (deep meditation) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22734",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 3,
+     "available": true
+    },
+    {
+     "item_id": "1676",
+     "provider": "library",
+     "name": "03. The true sound",
+     "uri": "library://track/1676",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 3,
+     "available": true
+    },
+    {
+     "item_id": "22744",
+     "provider": "library",
+     "name": "04 Theta 6.0Hz (meditation, hypnosis)",
+     "uri": "library://track/22744",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 4,
+     "available": true
+    },
+    {
+     "item_id": "22735",
+     "provider": "library",
+     "name": "04 Theta 6.0Hz (meditation, hypnosis) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22735",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 4,
+     "available": true
+    },
+    {
+     "item_id": "1677",
+     "provider": "library",
+     "name": "04. Train station",
+     "uri": "library://track/1677",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 4,
+     "available": true
+    },
+    {
+     "item_id": "1678",
+     "provider": "library",
+     "name": "05. Contact by bass",
+     "uri": "library://track/1678",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 5,
+     "available": true
+    },
+    {
+     "item_id": "22745",
+     "provider": "library",
+     "name": "05 Theta 7.5Hz (creativity, reverie)",
+     "uri": "library://track/22745",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 5,
+     "available": true
+    },
+    {
+     "item_id": "22736",
+     "provider": "library",
+     "name": "05 Theta 7.5Hz (creativity, reverie) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22736",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 5,
+     "available": true
+    },
+    {
+     "item_id": "22746",
+     "provider": "library",
+     "name": "06 Alpha 10.0Hz (relaxed focus, flow)",
+     "uri": "library://track/22746",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 6,
+     "available": true
+    },
+    {
+     "item_id": "22737",
+     "provider": "library",
+     "name": "06 Alpha 10.0Hz (relaxed focus, flow) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22737",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 6,
+     "available": true
+    },
+    {
+     "item_id": "21326",
+     "provider": "library",
+     "name": "06 - Prelude (from Final Fanta",
+     "uri": "library://track/21326",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1341",
+       "provider": "library",
+       "name": "Various",
+       "uri": "library://artist/1341",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "22",
+      "provider": "library",
+      "name": "20th Century Tribute",
+      "uri": "library://album/22",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 0,
+     "available": true
+    },
+    {
+     "item_id": "1679",
+     "provider": "library",
+     "name": "06. Syndrome de abstinencia",
+     "uri": "library://track/1679",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 6,
+     "available": true
+    },
+    {
+     "item_id": "22747",
+     "provider": "library",
+     "name": "07 Beta 14.0Hz (focus, alert calm)",
+     "uri": "library://track/22747",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 7,
+     "available": true
+    },
+    {
+     "item_id": "22738",
+     "provider": "library",
+     "name": "07 Beta 14.0Hz (focus, alert calm) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22738",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 7,
+     "available": true
+    },
+    {
+     "item_id": "1680",
+     "provider": "library",
+     "name": "07. The warpzone",
+     "uri": "library://track/1680",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 7,
+     "available": true
+    },
+    {
+     "item_id": "1681",
+     "provider": "library",
+     "name": "08. Bass worker",
+     "uri": "library://track/1681",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 8,
+     "available": true
+    },
+    {
+     "item_id": "22748",
+     "provider": "library",
+     "name": "08 Beta 18.0Hz (energy, motivation)",
+     "uri": "library://track/22748",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 8,
+     "available": true
+    },
+    {
+     "item_id": "22739",
+     "provider": "library",
+     "name": "08 Beta 18.0Hz (energy, motivation) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22739",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 8,
+     "available": true
+    },
+    {
+     "item_id": "21327",
+     "provider": "library",
+     "name": "08 - Main Theme",
+     "uri": "library://track/21327",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1341",
+       "provider": "library",
+       "name": "Various",
+       "uri": "library://artist/1341",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "22",
+      "provider": "library",
+      "name": "20th Century Tribute",
+      "uri": "library://album/22",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 0,
+     "available": true
+    },
+    {
+     "item_id": "22749",
+     "provider": "library",
+     "name": "09 Gamma 40.0Hz (peak cognition)",
+     "uri": "library://track/22749",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2682",
+      "provider": "library",
+      "name": "Isochronic Tones",
+      "uri": "library://album/2682",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 9,
+     "available": true
+    },
+    {
+     "item_id": "22740",
+     "provider": "library",
+     "name": "09 Gamma 40.0Hz (peak cognition) [BINAURAL - HEADPHONES ONLY]",
+     "uri": "library://track/22740",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1342",
+       "provider": "library",
+       "name": "Various Artists",
+       "uri": "library://artist/1342",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2681",
+      "provider": "library",
+      "name": "Binaural Beats (Headphones Only)",
+      "uri": "library://album/2681",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/21221/thumb/1780826039",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bc9ccd101f16a4c1e44865a81bba688cafe2ac35b32c6672fe46f6add437424e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 9,
+     "available": true
+    },
+    {
+     "item_id": "1682",
+     "provider": "library",
+     "name": "09. Transformation bass",
+     "uri": "library://track/1682",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 9,
+     "available": true
+    },
+    {
+     "item_id": "8306",
+     "provider": "library",
+     "name": "0% Interest",
+     "uri": "library://track/8306",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "635",
+       "provider": "library",
+       "name": "Jason Mraz",
+       "uri": "library://artist/635",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "1228",
+      "provider": "library",
+      "name": "Live At Java Joe's",
+      "uri": "library://album/1228",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/11073/thumb/1697795239",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "e325a7cd0dc668388bfe5298fb7052171ca450ecc81f3aa0bbc7e3df43548244"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 13,
+     "available": true
+    },
+    {
+     "item_id": "23079",
+     "provider": "library",
+     "name": "10,000 Motherfuckers (Live at Montalvo Arts Center, Saratoga, CA, 2006)",
+     "uri": "library://track/23079",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "635",
+       "provider": "library",
+       "name": "Jason Mraz",
+       "uri": "library://artist/635",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2716",
+      "provider": "library",
+      "name": "Selections for Friends",
+      "uri": "library://album/2716",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/124359/thumb/1786773093",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "e836d1c78a2482c8cb32d064458b376f9e2b76db6a3c86da16636b46e9e7a650"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 13,
+     "available": true
+    },
+    {
+     "item_id": "12627",
+     "provider": "library",
+     "name": "1000 Miles Per Hour",
+     "uri": "library://track/12627",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "966",
+       "provider": "library",
+       "name": "OK Go",
+       "uri": "library://artist/966",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "1535",
+      "provider": "library",
+      "name": "OK Go",
+      "uri": "library://album/1535",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/11939/thumb/1703759651",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "63d817f49265249d907a69c6e70ca783dee00e360f32a821f7cfbe7dda23140c"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 5,
+     "available": true
+    },
+    {
+     "item_id": "8298",
+     "provider": "library",
+     "name": "1,000 Things",
+     "uri": "library://track/8298",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "635",
+       "provider": "library",
+       "name": "Jason Mraz",
+       "uri": "library://artist/635",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "1228",
+      "provider": "library",
+      "name": "Live At Java Joe's",
+      "uri": "library://album/1228",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/11073/thumb/1697795239",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "e325a7cd0dc668388bfe5298fb7052171ca450ecc81f3aa0bbc7e3df43548244"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 5,
+     "available": true
+    },
+    {
+     "item_id": "8310",
+     "provider": "library",
+     "name": "1000 Things",
+     "uri": "library://track/8310",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "635",
+       "provider": "library",
+       "name": "Jason Mraz",
+       "uri": "library://artist/635",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2207",
+      "provider": "library",
+      "name": "Tonight, Not Again",
+      "uri": "library://album/2207",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/11060/thumb/1726651872",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f973a78010f5b0a793c66e4425180b69789ad9b4ea8a1916ce07cfcfb23e222d"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 1,
+     "available": true
+    },
+    {
+     "item_id": "3618",
+     "provider": "library",
+     "name": "100 percent",
+     "uri": "library://track/3618",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "251",
+       "provider": "library",
+       "name": "Chromeo",
+       "uri": "library://artist/251",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "672",
+      "provider": "library",
+      "name": "Fancy Footwork",
+      "uri": "library://album/672",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/20983/thumb/1720774766",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "833fa8137f59d1b00c44f27dcb5001537fd6f18a65cec80990e8dfdec5f27688"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 11,
+     "available": true
+    },
+    {
+     "item_id": "1683",
+     "provider": "library",
+     "name": "10. Festfolk",
+     "uri": "library://track/1683",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "116",
+       "provider": "library",
+       "name": "Basshunter",
+       "uri": "library://artist/116",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "205",
+      "provider": "library",
+      "name": "The Bassmachine",
+      "uri": "library://album/205",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/12197/thumb/1725954827",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "f70720cea794de15b20c4b7b319f8cf8c1f1cfc0c02fc00d90a5389e6568ba78"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 10,
+     "available": true
+    },
+    {
+     "item_id": "7832",
+     "provider": "library",
+     "name": "11 a.m.",
+     "uri": "library://track/7832",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "588",
+       "provider": "library",
+       "name": "Incubus",
+       "uri": "library://artist/588",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "1347",
+      "provider": "library",
+      "name": "Morning View",
+      "uri": "library://album/1347",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/9460/thumb/1717837415",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "bf593e9de336611686c3a1401cf3144208c86865b6256cc0ef2985b9fc98bf73"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 5,
+     "available": true
+    },
+    {
+     "item_id": "21328",
+     "provider": "library",
+     "name": "11 - Street Fighter II Opening",
+     "uri": "library://track/21328",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1341",
+       "provider": "library",
+       "name": "Various",
+       "uri": "library://artist/1341",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "22",
+      "provider": "library",
+      "name": "20th Century Tribute",
+      "uri": "library://album/22",
+      "media_type": "album",
+      "available": true
+     },
+     "disc_number": 1,
+     "track_number": 0,
+     "available": true
+    },
+    {
+     "item_id": "4579",
+     "provider": "library",
+     "name": "The 16th Hour",
+     "uri": "library://track/4579",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "336",
+       "provider": "library",
+       "name": "Deadmau5",
+       "uri": "library://artist/336",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "773",
+      "provider": "library",
+      "name": "For Lack of a Better Name",
+      "uri": "library://album/773",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/14616/thumb/1707812621",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "93445af12b7bc57515de55a929e64567c73c68990ee743a0fb3c98114e25a98a"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 9,
+     "available": true
+    },
+    {
+     "item_id": "2628",
+     "provider": "library",
+     "name": "1812 Overdrive",
+     "uri": "library://track/2628",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "180",
+       "provider": "library",
+       "name": "Brian Setzer",
+       "uri": "library://artist/180",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "2577",
+      "provider": "library",
+      "name": "Wolfgang's Big Night Out",
+      "uri": "library://album/2577",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/26999/thumb/1710317247",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "9c40dd132d5c36d081e431c034b8562b76bc7ca40937f63f1714aeb346b60871"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 10,
+     "available": true
+    },
+    {
+     "item_id": "17154",
+     "provider": "library",
+     "name": "1999",
+     "uri": "library://track/17154",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1044",
+       "provider": "library",
+       "name": "Prince",
+       "uri": "library://artist/1044",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "47",
+      "provider": "library",
+      "name": "1999",
+      "uri": "library://album/47",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/11874/thumb/1710494990",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "c132c4ce4d0bd4f9bdf05374b5ee20b38104fa5d8105cb7c08d2e9325d9c8ec5"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 1,
+     "available": true
+    },
+    {
+     "item_id": "17667",
+     "provider": "library",
+     "name": "19th Nervous Breakdown",
+     "uri": "library://track/17667",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1108",
+       "provider": "library",
+       "name": "The Rolling Stones",
+       "uri": "library://artist/1108",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "778",
+      "provider": "library",
+      "name": "Forty Licks [Disc 1]",
+      "uri": "library://album/778",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/3286/thumb/1717745071",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "7d1d2cd7dfa25c5ba994e54d1db59ac654a4d7ff89c1b5e8d6cf20ea08ad041e"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 7,
+     "available": true
+    },
+    {
+     "item_id": "16868",
+     "provider": "library",
+     "name": "1st Things 1st",
+     "uri": "library://track/16868",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1019",
+       "provider": "library",
+       "name": "Phantom Planet",
+       "uri": "library://artist/1019",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "1605",
+      "provider": "library",
+      "name": "Phantom Planet",
+      "uri": "library://album/1605",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/20384/thumb/1709892764",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "6af3b6ae82db4c9975b2001c051d02c8cdfc4dd6cca4f99e8d28d66a0db5e8ff"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 4,
+     "available": true
+    },
+    {
+     "item_id": "17519",
+     "provider": "library",
+     "name": "20 Years Of Snow",
+     "uri": "library://track/17519",
+     "media_type": "track",
+     "artists": [
+      {
+       "item_id": "1084",
+       "provider": "library",
+       "name": "Regina Spektor",
+       "uri": "library://artist/1084",
+       "media_type": "artist",
+       "available": true
+      }
+     ],
+     "last_played": 0,
+     "album": {
+      "item_id": "230",
+      "provider": "library",
+      "name": "Begin To Hope",
+      "uri": "library://album/230",
+      "media_type": "album",
+      "available": true,
+      "image": {
+       "type": "thumb",
+       "path": "/library/metadata/11543/thumb/1710494976",
+       "provider": "plex--qpZJzhqJ",
+       "remotely_accessible": false,
+       "proxy_id": "0f882f4ba2f65f85d332f10b7e7a5ba5ccf3ee0f7d047a1799d03f5055f139a4"
+      }
+     },
+     "disc_number": 1,
+     "track_number": 8,
+     "available": true
+    }
+   ]
+  }
+ ]
+}

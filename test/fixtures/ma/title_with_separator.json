@@ -1,0 +1,101 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/track_by_name",
+   "args": {
+    "track_name": "stand",
+    "artist_name": "me"
+   },
+   "response": null
+  },
+  {
+   "command": "music/item_by_name",
+   "args": {
+    "name": "stand",
+    "artist": "me",
+    "media_type": "album"
+   },
+   "response": null
+  },
+  {
+   "command": "music/search",
+   "args": {
+    "search_query": "stand by me",
+    "limit": 5
+   },
+   "response": {
+    "artists": [],
+    "albums": [],
+    "genres": [],
+    "tracks": [],
+    "playlists": [],
+    "radio": [],
+    "audiobooks": [],
+    "podcasts": [
+     {
+      "item_id": "https://anchor.fm/s/3dca2c58/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Stand By Me",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/3dca2c58/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "Breindel Morales",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://anchor.fm/s/c4d603c/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Stand By Me",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/c4d603c/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "R. Matthew Russell",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://anchor.fm/s/1f7a4594/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Stand by me:)",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/1f7a4594/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "Zulfa Aulia",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://stand-by-me.podigee.io/feed/mp3",
+      "provider": "itunes_podcasts",
+      "name": "STAND BY ME",
+      "uri": "itunes_podcasts://podcast/https://stand-by-me.podigee.io/feed/mp3",
+      "media_type": "podcast",
+      "publisher": "BDA-Digitalrat",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://media.rss.com/stress-that-people-always-have-in-their-30s/feed.xml",
+      "provider": "itunes_podcasts",
+      "name": "Stress That People Always Have in Their 30s 🌟",
+      "uri": "itunes_podcasts://podcast/https://media.rss.com/stress-that-people-always-have-in-their-30s/feed.xml",
+      "media_type": "podcast",
+      "publisher": "Christopher Wraith",
+      "total_episodes": null
+     }
+    ],
+    "sound_effects": []
+   }
+  },
+  {
+   "command": "music/item_by_name",
+   "args": {
+    "name": "stand by me"
+   },
+   "response": {
+    "item_id": "https://anchor.fm/s/3dca2c58/podcast/rss",
+    "provider": "itunes_podcasts",
+    "name": "Stand By Me",
+    "uri": "itunes_podcasts://podcast/https://anchor.fm/s/3dca2c58/podcast/rss",
+    "media_type": "podcast",
+    "publisher": "Breindel Morales",
+    "total_episodes": null
+   }
+  }
+ ]
+}

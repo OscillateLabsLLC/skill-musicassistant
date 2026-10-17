@@ -13,7 +13,7 @@ authors = [
 keywords = ["mycroft", "ovos", "neon", "plugin", "media", "home assistant", "music assistant", "open home foundation"]
 dynamic = ["version"]
 dependencies = [
-    "ma-http-client>=0.1.3,<1.0.0",
+    "ma-http-client>=0.2.0,<1.0.0",
     "music-assistant-models-loose==0.0.1",
     "ovos-bus-client>=0.0.10,<2.0.0",
     "ovos-number-parser>=0.0.1,<1.0.0",
@@ -91,6 +91,13 @@ ignore = [
 [tool.ruff.lint.isort]
 lines-after-imports = 2
 combine-as-imports = true
+
+[tool.pylint.format]
+max-line-length = 119
+
+[tool.pylint.design]
+# an OVOSSkill is one class per skill: every intent handler is a public method
+max-public-methods = 35
 
 [tool.pylint.messages_control]
 disable = [

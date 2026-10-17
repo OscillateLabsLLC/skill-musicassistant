@@ -4,5 +4,5 @@ rewind
 (|go )back
 (previous|last) (track|song|station|title)
 
-# With location
-(previous|last) (track|song) (in|on) (the|) {location}
+# With location - Padatious generalizes the article, so "the" is fixed here (see #30)
+(previous|last) (track|song) (in|on) the {location}

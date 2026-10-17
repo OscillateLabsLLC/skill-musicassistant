@@ -2,12 +2,12 @@
 pause
 pause (the|) (music|playback|player|audio)
 
-# With location
-pause (the|) (music|playback) (in|on) (the|) {location}
+# With location - Padatious generalizes the article, so "the" is fixed here (see #30)
+pause (the|) (music|playback) (in|on) the {location}
 
 # Resume variants
 (unpause|resume) (the|) (music|playback|player|audio)
 continue playing (the|) (music|playback)
 
 # Resume with location
-(unpause|resume) (the|) music (in|on) (the|) {location}
+(unpause|resume) (the|) music (in|on) the {location}

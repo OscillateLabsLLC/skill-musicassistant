@@ -1,0 +1,4 @@
+# Shuffle Intent
+shuffle (on|off)
+(enable|disable) shuffle
+stop shuffling

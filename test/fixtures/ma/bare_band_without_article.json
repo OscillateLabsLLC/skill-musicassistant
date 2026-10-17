@@ -1,0 +1,391 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/search",
+   "args": {
+    "search_query": "beatles",
+    "limit": 5
+   },
+   "response": {
+    "artists": [
+     {
+      "item_id": "119",
+      "provider": "library",
+      "name": "The Beatles",
+      "uri": "library://artist/119",
+      "media_type": "artist",
+      "artist_type": "singer"
+     }
+    ],
+    "albums": [
+     {
+      "item_id": "211",
+      "provider": "library",
+      "name": "Beatles 1",
+      "uri": "library://album/211",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "210",
+      "provider": "library",
+      "name": "The Beatles 1",
+      "uri": "library://album/210",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "212",
+      "provider": "library",
+      "name": "The Beatles Disc 1 (2009 Stereo Remaster)",
+      "uri": "library://album/212",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "208",
+      "provider": "library",
+      "name": "The BEATLES (Disc 1 - Remastered 2009)",
+      "uri": "library://album/208",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "209",
+      "provider": "library",
+      "name": "The BEATLES (Disc 2 Remastered 2009)",
+      "uri": "library://album/209",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     }
+    ],
+    "genres": [],
+    "tracks": [
+     {
+      "item_id": "1884",
+      "provider": "library",
+      "name": "Across the Universe",
+      "uri": "library://track/1884",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "1200",
+       "provider": "library",
+       "name": "Let It Be",
+       "uri": "library://album/1200",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "/library/metadata/1124/thumb/1712562447",
+        "provider": "plex--qpZJzhqJ",
+        "remotely_accessible": false,
+        "proxy_id": "1f82c6ed0effe235cd0302591dd5478570720d8e9252193637add0ec645c0095"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 3,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "/library/metadata/868",
+      "provider": "plex--qpZJzhqJ",
+      "name": "come together",
+      "uri": "plex--qpZJzhqJ://track//library/metadata/868",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": {
+         "type": "thumb",
+         "path": "/library/metadata/748/thumb/1726651753",
+         "provider": "plex--qpZJzhqJ",
+         "remotely_accessible": false,
+         "proxy_id": "4b7e6048fd4efb175a01fc478d76e1e8d809e80a90ce41a2480be39c1c066bda"
+        }
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "/library/metadata/867",
+       "provider": "plex--qpZJzhqJ",
+       "name": "Abbey Road",
+       "uri": "plex--qpZJzhqJ://album//library/metadata/867",
+       "media_type": "album",
+       "available": true,
+       "image": null
+      },
+      "disc_number": 1,
+      "track_number": 1,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "1964",
+      "provider": "library",
+      "name": "Across The Universe",
+      "uri": "library://track/1964",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "1590",
+       "provider": "library",
+       "name": "Past Masters Disc 1 (2009 Stereo Remaster)",
+       "uri": "library://album/1590",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "/library/metadata/808/thumb/1717837280",
+        "provider": "plex--qpZJzhqJ",
+        "remotely_accessible": false,
+        "proxy_id": "b06035e2455e5f58a306226e44fd42fa07f878ebe76922769d48f51e0f7bd76e"
+       }
+      },
+      "disc_number": 2,
+      "track_number": 13,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "/library/metadata/870",
+      "provider": "plex--qpZJzhqJ",
+      "name": "something",
+      "uri": "plex--qpZJzhqJ://track//library/metadata/870",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": {
+         "type": "thumb",
+         "path": "/library/metadata/748/thumb/1726651753",
+         "provider": "plex--qpZJzhqJ",
+         "remotely_accessible": false,
+         "proxy_id": "4b7e6048fd4efb175a01fc478d76e1e8d809e80a90ce41a2480be39c1c066bda"
+        }
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "/library/metadata/867",
+       "provider": "plex--qpZJzhqJ",
+       "name": "Abbey Road",
+       "uri": "plex--qpZJzhqJ://album//library/metadata/867",
+       "media_type": "album",
+       "available": true,
+       "image": null
+      },
+      "disc_number": 1,
+      "track_number": 2,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "1769",
+      "provider": "library",
+      "name": "Ain't She Sweet",
+      "uri": "library://track/1769",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "119",
+        "provider": "library",
+        "name": "The Beatles",
+        "uri": "library://artist/119",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "143",
+       "provider": "library",
+       "name": "Anthology 3 (Disc 2)",
+       "uri": "library://album/143",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "/library/metadata/1139/thumb/1710406896",
+        "provider": "plex--qpZJzhqJ",
+        "remotely_accessible": false,
+        "proxy_id": "13799e92a795618ff4a15b7f4f7368a982319cb73f2068b7c50f56703dce13a5"
+       }
+      },
+      "disc_number": 2,
+      "track_number": 19,
+      "audio_metadata": null
+     }
+    ],
+    "playlists": [],
+    "radio": [
+     {
+      "item_id": "960be1b7-0601-11e8-ae97-52543be04c81",
+      "provider": "radiobrowser",
+      "name": "181.FM - Beatles",
+      "uri": "radiobrowser://radio/960be1b7-0601-11e8-ae97-52543be04c81",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "7aec7a3f-1409-4298-a199-2a975801bcc6",
+      "provider": "radiobrowser",
+      "name": "Australian Digital Radio Network - The Beatles (MP3)",
+      "uri": "radiobrowser://radio/7aec7a3f-1409-4298-a199-2a975801bcc6",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "c9b65784-d744-4ab9-b3b6-1a36bba493f2",
+      "provider": "radiobrowser",
+      "name": "Beatles (181.FM USA)",
+      "uri": "radiobrowser://radio/c9b65784-d744-4ab9-b3b6-1a36bba493f2",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "31138a22-a26c-4ba1-aec0-8878edfcf5c8",
+      "provider": "radiobrowser",
+      "name": "Beatles (181.FM USA)",
+      "uri": "radiobrowser://radio/31138a22-a26c-4ba1-aec0-8878edfcf5c8",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "524abcd9-e1a4-4b91-8094-c56e0f9a2f40",
+      "provider": "radiobrowser",
+      "name": "Beatles 4 Ever (MP3)",
+      "uri": "radiobrowser://radio/524abcd9-e1a4-4b91-8094-c56e0f9a2f40",
+      "media_type": "radio"
+     }
+    ],
+    "audiobooks": [],
+    "podcasts": [
+     {
+      "item_id": "https://www.sneakydragon.com/category/podcast/compleatly-beatles/feed/?redirect=no",
+      "provider": "itunes_podcasts",
+      "name": "Compleatly Beatles",
+      "uri": "itunes_podcasts://podcast/https://www.sneakydragon.com/category/podcast/compleatly-beatles/feed/?redirect=no",
+      "media_type": "podcast",
+      "publisher": "Ian Boothby and David Dedrick",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://rss.libsyn.com/shows/91943/destinations/460617.xml",
+      "provider": "itunes_podcasts",
+      "name": "Screw It, We're Just Gonna Talk About the Beatles",
+      "uri": "itunes_podcasts://podcast/https://rss.libsyn.com/shows/91943/destinations/460617.xml",
+      "media_type": "podcast",
+      "publisher": "Will Hines",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://feed.podbean.com/anotherkindofmind/feed.xml",
+      "provider": "itunes_podcasts",
+      "name": "Another Kind of Mind: A Different Kind of Beatles Podcast",
+      "uri": "itunes_podcasts://podcast/https://feed.podbean.com/anotherkindofmind/feed.xml",
+      "media_type": "podcast",
+      "publisher": "Another Kind of Mind: A Different Kind of Beatles Podcast",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://anchor.fm/s/324739fc/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Winter of Discontent - A Beatles Podcast",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/324739fc/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "Nick Anthony",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://feed.podbean.com/ivegotabeatlespodcast/feed.xml",
+      "provider": "itunes_podcasts",
+      "name": "I’ve Got a Beatles Podcast!",
+      "uri": "itunes_podcasts://podcast/https://feed.podbean.com/ivegotabeatlespodcast/feed.xml",
+      "media_type": "podcast",
+      "publisher": "I’ve Got A Beatles Podcast",
+      "total_episodes": null
+     }
+    ],
+    "sound_effects": []
+   }
+  }
+ ]
+}

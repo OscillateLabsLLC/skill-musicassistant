@@ -1,0 +1,4 @@
+# Add To Playlist Intent - always says "playlist" so it never collides with list skills
+add this to (my|the) {playlist} playlist
+add this (song|track) to (my|the) {playlist} playlist
+add this to (my|the) playlist {playlist}

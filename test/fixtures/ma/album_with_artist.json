@@ -1,0 +1,31 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/item_by_name",
+   "args": {
+    "name": "echo echo",
+    "artist": "carbon leaf",
+    "media_type": "album"
+   },
+   "response": {
+    "item_id": "590",
+    "provider": "library",
+    "name": "Echo Echo",
+    "uri": "library://album/590",
+    "media_type": "album",
+    "artists": [
+     {
+      "item_id": "204",
+      "provider": "library",
+      "name": "Carbon Leaf",
+      "uri": "library://artist/204",
+      "media_type": "artist",
+      "available": true
+     }
+    ],
+    "available": true
+   }
+  }
+ ]
+}

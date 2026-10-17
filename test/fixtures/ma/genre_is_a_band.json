@@ -1,0 +1,1311 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/genres/library_items",
+   "args": {
+    "search": "daft punk",
+    "limit": 25
+   },
+   "response": []
+  },
+  {
+   "command": "music/genres/library_items",
+   "args": {
+    "limit": 500
+   },
+   "response": [
+    {
+     "item_id": "1",
+     "provider": "library",
+     "name": "Afrobeats (West African Urban/Pop Music)",
+     "uri": "library://genre/1",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 10
+    },
+    {
+     "item_id": "2",
+     "provider": "library",
+     "name": "Ambient",
+     "uri": "library://genre/2",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 10
+    },
+    {
+     "item_id": "3",
+     "provider": "library",
+     "name": "Anime & Video Game Music",
+     "uri": "library://genre/3",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 8
+    },
+    {
+     "item_id": "78",
+     "provider": "library",
+     "name": "Arts",
+     "uri": "library://genre/78",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 6
+    },
+    {
+     "item_id": "97",
+     "provider": "library",
+     "name": "Arts & Entertainment",
+     "uri": "library://genre/97",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "4",
+     "provider": "library",
+     "name": "Asian Music",
+     "uri": "library://genre/4",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 8
+    },
+    {
+     "item_id": "98",
+     "provider": "library",
+     "name": "Biography & Memoir",
+     "uri": "library://genre/98",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 5
+    },
+    {
+     "item_id": "5",
+     "provider": "library",
+     "name": "Bluegrass",
+     "uri": "library://genre/5",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "6",
+     "provider": "library",
+     "name": "Blues",
+     "uri": "library://genre/6",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 19
+    },
+    {
+     "item_id": "7",
+     "provider": "library",
+     "name": "Brazilian Music",
+     "uri": "library://genre/7",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 11
+    },
+    {
+     "item_id": "79",
+     "provider": "library",
+     "name": "Business",
+     "uri": "library://genre/79",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 6
+    },
+    {
+     "item_id": "99",
+     "provider": "library",
+     "name": "Business",
+     "uri": "library://genre/99",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 5
+    },
+    {
+     "item_id": "8",
+     "provider": "library",
+     "name": "Chanson",
+     "uri": "library://genre/8",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 4
+    },
+    {
+     "item_id": "9",
+     "provider": "library",
+     "name": "Children's Music",
+     "uri": "library://genre/9",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 7
+    },
+    {
+     "item_id": "10",
+     "provider": "library",
+     "name": "Christmas Music",
+     "uri": "library://genre/10",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 1
+    },
+    {
+     "item_id": "11",
+     "provider": "library",
+     "name": "Church Music",
+     "uri": "library://genre/11",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 24
+    },
+    {
+     "item_id": "12",
+     "provider": "library",
+     "name": "Classical",
+     "uri": "library://genre/12",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 180
+    },
+    {
+     "item_id": "100",
+     "provider": "library",
+     "name": "Classics",
+     "uri": "library://genre/100",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "13",
+     "provider": "library",
+     "name": "Comedy",
+     "uri": "library://genre/13",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 6
+    },
+    {
+     "item_id": "80",
+     "provider": "library",
+     "name": "Comedy",
+     "uri": "library://genre/80",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "101",
+     "provider": "library",
+     "name": "Comedy & Humor",
+     "uri": "library://genre/101",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 4
+    },
+    {
+     "item_id": "14",
+     "provider": "library",
+     "name": "Country",
+     "uri": "library://genre/14",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 26
+    },
+    {
+     "item_id": "15",
+     "provider": "library",
+     "name": "Dance",
+     "uri": "library://genre/15",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 15
+    },
+    {
+     "item_id": "16",
+     "provider": "library",
+     "name": "Dark Ambient",
+     "uri": "library://genre/16",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "17",
+     "provider": "library",
+     "name": "Dark Wave",
+     "uri": "library://genre/17",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "18",
+     "provider": "library",
+     "name": "Disco",
+     "uri": "library://genre/18",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 12
+    },
+    {
+     "item_id": "102",
+     "provider": "library",
+     "name": "Drama & Poetry",
+     "uri": "library://genre/102",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "81",
+     "provider": "library",
+     "name": "Education",
+     "uri": "library://genre/81",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 4
+    },
+    {
+     "item_id": "19",
+     "provider": "library",
+     "name": "Electronic",
+     "uri": "library://genre/19",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 353
+    },
+    {
+     "item_id": "20",
+     "provider": "library",
+     "name": "Experimental",
+     "uri": "library://genre/20",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 22
+    },
+    {
+     "item_id": "103",
+     "provider": "library",
+     "name": "Fantasy & Science Fiction",
+     "uri": "library://genre/103",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 6
+    },
+    {
+     "item_id": "82",
+     "provider": "library",
+     "name": "Fiction",
+     "uri": "library://genre/82",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "104",
+     "provider": "library",
+     "name": "Fiction",
+     "uri": "library://genre/104",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 1
+    },
+    {
+     "item_id": "21",
+     "provider": "library",
+     "name": "Field Recording",
+     "uri": "library://genre/21",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 5
+    },
+    {
+     "item_id": "22",
+     "provider": "library",
+     "name": "Folk",
+     "uri": "library://genre/22",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 82
+    },
+    {
+     "item_id": "105",
+     "provider": "library",
+     "name": "Foreign Language",
+     "uri": "library://genre/105",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "23",
+     "provider": "library",
+     "name": "Funk",
+     "uri": "library://genre/23",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 23
+    },
+    {
+     "item_id": "24",
+     "provider": "library",
+     "name": "Gangsta Rap",
+     "uri": "library://genre/24",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "25",
+     "provider": "library",
+     "name": "Gospel",
+     "uri": "library://genre/25",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 24
+    },
+    {
+     "item_id": "83",
+     "provider": "library",
+     "name": "Government",
+     "uri": "library://genre/83",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 0
+    },
+    {
+     "item_id": "84",
+     "provider": "library",
+     "name": "Health & Fitness",
+     "uri": "library://genre/84",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 7
+    },
+    {
+     "item_id": "26",
+     "provider": "library",
+     "name": "Hip Hop",
+     "uri": "library://genre/26",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 54
+    },
+    {
+     "item_id": "85",
+     "provider": "library",
+     "name": "History",
+     "uri": "library://genre/85",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 0
+    },
+    {
+     "item_id": "106",
+     "provider": "library",
+     "name": "History",
+     "uri": "library://genre/106",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 0
+    },
+    {
+     "item_id": "27",
+     "provider": "library",
+     "name": "Indian Classical",
+     "uri": "library://genre/27",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "28",
+     "provider": "library",
+     "name": "Industrial",
+     "uri": "library://genre/28",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 13
+    },
+    {
+     "item_id": "29",
+     "provider": "library",
+     "name": "Jazz",
+     "uri": "library://genre/29",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 49
+    },
+    {
+     "item_id": "86",
+     "provider": "library",
+     "name": "Kids & Family",
+     "uri": "library://genre/86",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 5
+    },
+    {
+     "item_id": "107",
+     "provider": "library",
+     "name": "Kids & Young Adult",
+     "uri": "library://genre/107",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 7
+    },
+    {
+     "item_id": "30",
+     "provider": "library",
+     "name": "Klezmer",
+     "uri": "library://genre/30",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 4
+    },
+    {
+     "item_id": "31",
+     "provider": "library",
+     "name": "Latin",
+     "uri": "library://genre/31",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 7
+    },
+    {
+     "item_id": "87",
+     "provider": "library",
+     "name": "Leisure",
+     "uri": "library://genre/87",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 8
+    },
+    {
+     "item_id": "32",
+     "provider": "library",
+     "name": "Marching Band",
+     "uri": "library://genre/32",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 8
+    },
+    {
+     "item_id": "33",
+     "provider": "library",
+     "name": "Metal",
+     "uri": "library://genre/33",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 79
+    },
+    {
+     "item_id": "34",
+     "provider": "library",
+     "name": "Middle Eastern Music",
+     "uri": "library://genre/34",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "88",
+     "provider": "library",
+     "name": "Music",
+     "uri": "library://genre/88",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "35",
+     "provider": "library",
+     "name": "Musical",
+     "uri": "library://genre/35",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 19
+    },
+    {
+     "item_id": "108",
+     "provider": "library",
+     "name": "Mystery",
+     "uri": "library://genre/108",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 6
+    },
+    {
+     "item_id": "36",
+     "provider": "library",
+     "name": "New Age",
+     "uri": "library://genre/36",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 9
+    },
+    {
+     "item_id": "89",
+     "provider": "library",
+     "name": "News",
+     "uri": "library://genre/89",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 7
+    },
+    {
+     "item_id": "109",
+     "provider": "library",
+     "name": "Nonfiction",
+     "uri": "library://genre/109",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 0
+    },
+    {
+     "item_id": "37",
+     "provider": "library",
+     "name": "Poetry",
+     "uri": "library://genre/37",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 11
+    },
+    {
+     "item_id": "38",
+     "provider": "library",
+     "name": "Polka",
+     "uri": "library://genre/38",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "39",
+     "provider": "library",
+     "name": "Pop",
+     "uri": "library://genre/39",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 132
+    },
+    {
+     "item_id": "40",
+     "provider": "library",
+     "name": "Psychedelic",
+     "uri": "library://genre/40",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 4
+    },
+    {
+     "item_id": "41",
+     "provider": "library",
+     "name": "Punk",
+     "uri": "library://genre/41",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 79
+    },
+    {
+     "item_id": "43",
+     "provider": "library",
+     "name": "Ragtime",
+     "uri": "library://genre/43",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "44",
+     "provider": "library",
+     "name": "Raï",
+     "uri": "library://genre/44",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 5
+    },
+    {
+     "item_id": "42",
+     "provider": "library",
+     "name": "R&b",
+     "uri": "library://genre/42",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 19
+    },
+    {
+     "item_id": "45",
+     "provider": "library",
+     "name": "Reggae",
+     "uri": "library://genre/45",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 11
+    },
+    {
+     "item_id": "46",
+     "provider": "library",
+     "name": "Reggaeton",
+     "uri": "library://genre/46",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 11
+    },
+    {
+     "item_id": "90",
+     "provider": "library",
+     "name": "Religion & Spirituality",
+     "uri": "library://genre/90",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 8
+    },
+    {
+     "item_id": "110",
+     "provider": "library",
+     "name": "Religion & Spirituality",
+     "uri": "library://genre/110",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "47",
+     "provider": "library",
+     "name": "Rock",
+     "uri": "library://genre/47",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 154
+    },
+    {
+     "item_id": "111",
+     "provider": "library",
+     "name": "Romance",
+     "uri": "library://genre/111",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 0
+    },
+    {
+     "item_id": "48",
+     "provider": "library",
+     "name": "Salsa",
+     "uri": "library://genre/48",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 5
+    },
+    {
+     "item_id": "91",
+     "provider": "library",
+     "name": "Science",
+     "uri": "library://genre/91",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 9
+    },
+    {
+     "item_id": "112",
+     "provider": "library",
+     "name": "Science",
+     "uri": "library://genre/112",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "113",
+     "provider": "library",
+     "name": "Self Help",
+     "uri": "library://genre/113",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "49",
+     "provider": "library",
+     "name": "Singer-Songwriter",
+     "uri": "library://genre/49",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 10
+    },
+    {
+     "item_id": "50",
+     "provider": "library",
+     "name": "Ska",
+     "uri": "library://genre/50",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 10
+    },
+    {
+     "item_id": "92",
+     "provider": "library",
+     "name": "Society & Culture",
+     "uri": "library://genre/92",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 6
+    },
+    {
+     "item_id": "51",
+     "provider": "library",
+     "name": "Soul",
+     "uri": "library://genre/51",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 19
+    },
+    {
+     "item_id": "52",
+     "provider": "library",
+     "name": "Sound Effects",
+     "uri": "library://genre/52",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "53",
+     "provider": "library",
+     "name": "Soundtrack",
+     "uri": "library://genre/53",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 9
+    },
+    {
+     "item_id": "114",
+     "provider": "library",
+     "name": "Speakers & Storytellers",
+     "uri": "library://genre/114",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "54",
+     "provider": "library",
+     "name": "Spoken Word",
+     "uri": "library://genre/54",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 11
+    },
+    {
+     "item_id": "93",
+     "provider": "library",
+     "name": "Sports",
+     "uri": "library://genre/93",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 15
+    },
+    {
+     "item_id": "115",
+     "provider": "library",
+     "name": "Sports",
+     "uri": "library://genre/115",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 4
+    },
+    {
+     "item_id": "55",
+     "provider": "library",
+     "name": "Swing",
+     "uri": "library://genre/55",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "56",
+     "provider": "library",
+     "name": "Tango",
+     "uri": "library://genre/56",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "94",
+     "provider": "library",
+     "name": "Technology",
+     "uri": "library://genre/94",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 1
+    },
+    {
+     "item_id": "116",
+     "provider": "library",
+     "name": "Technology",
+     "uri": "library://genre/116",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 2
+    },
+    {
+     "item_id": "57",
+     "provider": "library",
+     "name": "Trap",
+     "uri": "library://genre/57",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 14
+    },
+    {
+     "item_id": "117",
+     "provider": "library",
+     "name": "Travel & Adventure",
+     "uri": "library://genre/117",
+     "media_type": "genre",
+     "content_type": "audiobook",
+     "available": false,
+     "genre_alias_count": 4
+    },
+    {
+     "item_id": "95",
+     "provider": "library",
+     "name": "True Crime",
+     "uri": "library://genre/95",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 0
+    },
+    {
+     "item_id": "96",
+     "provider": "library",
+     "name": "TV & Film",
+     "uri": "library://genre/96",
+     "media_type": "genre",
+     "content_type": "podcast",
+     "available": false,
+     "genre_alias_count": 6
+    },
+    {
+     "item_id": "58",
+     "provider": "library",
+     "name": "Waltz",
+     "uri": "library://genre/58",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 3
+    },
+    {
+     "item_id": "59",
+     "provider": "library",
+     "name": "Wellness",
+     "uri": "library://genre/59",
+     "media_type": "genre",
+     "available": false,
+     "genre_alias_count": 8
+    }
+   ]
+  },
+  {
+   "command": "music/search",
+   "args": {
+    "search_query": "daft punk",
+    "limit": 5
+   },
+   "response": {
+    "artists": [
+     {
+      "item_id": "299",
+      "provider": "library",
+      "name": "Daft Punk",
+      "uri": "library://artist/299",
+      "media_type": "artist",
+      "artist_type": "singer"
+     }
+    ],
+    "albums": [
+     {
+      "item_id": "474",
+      "provider": "library",
+      "name": "Daft Club",
+      "uri": "library://album/474",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "525",
+      "provider": "library",
+      "name": "Discovery",
+      "uri": "library://album/525",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "1017",
+      "provider": "library",
+      "name": "Human After All",
+      "uri": "library://album/1017",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "2160",
+      "provider": "library",
+      "name": "Technologic",
+      "uri": "library://album/2160",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "2280",
+      "provider": "library",
+      "name": "[Unknown Album]",
+      "uri": "library://album/2280",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     }
+    ],
+    "genres": [],
+    "tracks": [
+     {
+      "item_id": "3974",
+      "provider": "library",
+      "name": "Aerodynamic (Daft Punk Remix)",
+      "uri": "library://track/3974",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "474",
+       "provider": "library",
+       "name": "Daft Club",
+       "uri": "library://album/474",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "https://www.theaudiodb.com/images/media/album/thumb/daft-club-51d1ea81cf5ee.jpg",
+        "provider": "theaudiodb",
+        "remotely_accessible": true,
+        "proxy_id": "d2beb853599b2366ef340b83005e8faceff5cb5ad75a2023bcefac2d1d53c811"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 2,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "/library/metadata/8481",
+      "provider": "plex--qpZJzhqJ",
+      "name": "[Unknown]",
+      "uri": "plex--qpZJzhqJ://track//library/metadata/8481",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "/library/metadata/8444",
+        "provider": "plex--qpZJzhqJ",
+        "name": "Daft Punk",
+        "uri": "plex--qpZJzhqJ://artist//library/metadata/8444",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "/library/metadata/8480",
+       "provider": "plex--qpZJzhqJ",
+       "name": "[Unknown]",
+       "uri": "plex--qpZJzhqJ://album//library/metadata/8480",
+       "media_type": "album",
+       "available": true,
+       "image": null
+      },
+      "disc_number": 1,
+      "track_number": 0,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "3988",
+      "provider": "library",
+      "name": "Aerodynamic",
+      "uri": "library://track/3988",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "525",
+       "provider": "library",
+       "name": "Discovery",
+       "uri": "library://album/525",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "/library/metadata/8465/thumb/1710406879",
+        "provider": "plex--qpZJzhqJ",
+        "remotely_accessible": false,
+        "proxy_id": "dd6be0b157990605b9da1c56617f6315fdafebd89cb1a50d805b4f59d772d58b"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 2,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "3982",
+      "provider": "library",
+      "name": "Aerodynamic (Slum Village Remix)",
+      "uri": "library://track/3982",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "474",
+       "provider": "library",
+       "name": "Daft Club",
+       "uri": "library://album/474",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "https://www.theaudiodb.com/images/media/album/thumb/daft-club-51d1ea81cf5ee.jpg",
+        "provider": "theaudiodb",
+        "remotely_accessible": true,
+        "proxy_id": "d2beb853599b2366ef340b83005e8faceff5cb5ad75a2023bcefac2d1d53c811"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 10,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "3984",
+      "provider": "library",
+      "name": "Aerodynamite",
+      "uri": "library://track/3984",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "474",
+       "provider": "library",
+       "name": "Daft Club",
+       "uri": "library://album/474",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "https://www.theaudiodb.com/images/media/album/thumb/daft-club-51d1ea81cf5ee.jpg",
+        "provider": "theaudiodb",
+        "remotely_accessible": true,
+        "proxy_id": "d2beb853599b2366ef340b83005e8faceff5cb5ad75a2023bcefac2d1d53c811"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 12,
+      "audio_metadata": null
+     }
+    ],
+    "playlists": [],
+    "radio": [
+     {
+      "item_id": "a3f97919-2519-4e58-b0b4-386d1402e367",
+      "provider": "radiobrowser",
+      "name": "Exclusively Daft Punk",
+      "uri": "radiobrowser://radio/a3f97919-2519-4e58-b0b4-386d1402e367",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "be61261d-ba40-4ab1-a045-34f0c49b0ca6",
+      "provider": "radiobrowser",
+      "name": "Exclusively Daft Punk",
+      "uri": "radiobrowser://radio/be61261d-ba40-4ab1-a045-34f0c49b0ca6",
+      "media_type": "radio"
+     }
+    ],
+    "audiobooks": [],
+    "podcasts": [
+     {
+      "item_id": "https://aod.nrjaudio.fm/xml/2364.xml",
+      "provider": "itunes_podcasts",
+      "name": "DAFT PUNK sur NRJ",
+      "uri": "itunes_podcasts://podcast/https://aod.nrjaudio.fm/xml/2364.xml",
+      "media_type": "podcast",
+      "publisher": "NRJ France",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://feeds.megaphone.fm/NPTNI1835647757",
+      "provider": "itunes_podcasts",
+      "name": "Daft Punk - Flash Biográfico",
+      "uri": "itunes_podcasts://podcast/https://feeds.megaphone.fm/NPTNI1835647757",
+      "media_type": "podcast",
+      "publisher": "Inception Point AI",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://anchor.fm/s/1c0f7fc8/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Sir Simon and DaftPunk Drew",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/1c0f7fc8/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "Simon",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://rss.art19.com/daft-punk-le-secret-des-robots",
+      "provider": "itunes_podcasts",
+      "name": "Daft Punk, le secret des robots",
+      "uri": "itunes_podcasts://podcast/https://rss.art19.com/daft-punk-le-secret-des-robots",
+      "media_type": "podcast",
+      "publisher": "Amazon Originals",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://anchor.fm/s/4e0ca294/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Noticia RS : Daft Punk",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/4e0ca294/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "Jezuz Abraham Rivaz Sanchez",
+      "total_episodes": null
+     }
+    ],
+    "sound_effects": []
+   }
+  }
+ ]
+}

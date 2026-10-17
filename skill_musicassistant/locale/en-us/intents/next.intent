@@ -4,5 +4,5 @@ skip
 (next|skip) (track|song|station|title)
 (next|skip) this (track|song)
 
-# With location
-(next|skip) (track|song) (in|on) (the|) {location}
+# With location - Padatious generalizes the article, so "the" is fixed here (see #30)
+(next|skip) (track|song) (in|on) the {location}

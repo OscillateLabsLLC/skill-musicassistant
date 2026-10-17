@@ -1,0 +1,364 @@
+{
+ "recorded": "2026-10-16T21:16:47+00:00",
+ "calls": [
+  {
+   "command": "music/search",
+   "args": {
+    "search_query": "daft punk",
+    "limit": 5
+   },
+   "response": {
+    "artists": [
+     {
+      "item_id": "299",
+      "provider": "library",
+      "name": "Daft Punk",
+      "uri": "library://artist/299",
+      "media_type": "artist",
+      "artist_type": "singer"
+     }
+    ],
+    "albums": [
+     {
+      "item_id": "474",
+      "provider": "library",
+      "name": "Daft Club",
+      "uri": "library://album/474",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "525",
+      "provider": "library",
+      "name": "Discovery",
+      "uri": "library://album/525",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "1017",
+      "provider": "library",
+      "name": "Human After All",
+      "uri": "library://album/1017",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "2160",
+      "provider": "library",
+      "name": "Technologic",
+      "uri": "library://album/2160",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     },
+     {
+      "item_id": "2280",
+      "provider": "library",
+      "name": "[Unknown Album]",
+      "uri": "library://album/2280",
+      "media_type": "album",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ]
+     }
+    ],
+    "genres": [],
+    "tracks": [
+     {
+      "item_id": "3974",
+      "provider": "library",
+      "name": "Aerodynamic (Daft Punk Remix)",
+      "uri": "library://track/3974",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "474",
+       "provider": "library",
+       "name": "Daft Club",
+       "uri": "library://album/474",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "https://www.theaudiodb.com/images/media/album/thumb/daft-club-51d1ea81cf5ee.jpg",
+        "provider": "theaudiodb",
+        "remotely_accessible": true,
+        "proxy_id": "d2beb853599b2366ef340b83005e8faceff5cb5ad75a2023bcefac2d1d53c811"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 2,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "/library/metadata/8481",
+      "provider": "plex--qpZJzhqJ",
+      "name": "[Unknown]",
+      "uri": "plex--qpZJzhqJ://track//library/metadata/8481",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "/library/metadata/8444",
+        "provider": "plex--qpZJzhqJ",
+        "name": "Daft Punk",
+        "uri": "plex--qpZJzhqJ://artist//library/metadata/8444",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "/library/metadata/8480",
+       "provider": "plex--qpZJzhqJ",
+       "name": "[Unknown]",
+       "uri": "plex--qpZJzhqJ://album//library/metadata/8480",
+       "media_type": "album",
+       "available": true,
+       "image": null
+      },
+      "disc_number": 1,
+      "track_number": 0,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "3988",
+      "provider": "library",
+      "name": "Aerodynamic",
+      "uri": "library://track/3988",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "525",
+       "provider": "library",
+       "name": "Discovery",
+       "uri": "library://album/525",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "/library/metadata/8465/thumb/1710406879",
+        "provider": "plex--qpZJzhqJ",
+        "remotely_accessible": false,
+        "proxy_id": "dd6be0b157990605b9da1c56617f6315fdafebd89cb1a50d805b4f59d772d58b"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 2,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "3982",
+      "provider": "library",
+      "name": "Aerodynamic (Slum Village Remix)",
+      "uri": "library://track/3982",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "474",
+       "provider": "library",
+       "name": "Daft Club",
+       "uri": "library://album/474",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "https://www.theaudiodb.com/images/media/album/thumb/daft-club-51d1ea81cf5ee.jpg",
+        "provider": "theaudiodb",
+        "remotely_accessible": true,
+        "proxy_id": "d2beb853599b2366ef340b83005e8faceff5cb5ad75a2023bcefac2d1d53c811"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 10,
+      "audio_metadata": null
+     },
+     {
+      "item_id": "3984",
+      "provider": "library",
+      "name": "Aerodynamite",
+      "uri": "library://track/3984",
+      "media_type": "track",
+      "artists": [
+       {
+        "item_id": "299",
+        "provider": "library",
+        "name": "Daft Punk",
+        "uri": "library://artist/299",
+        "media_type": "artist",
+        "available": true,
+        "image": null
+       }
+      ],
+      "last_played": 0,
+      "album": {
+       "item_id": "474",
+       "provider": "library",
+       "name": "Daft Club",
+       "uri": "library://album/474",
+       "media_type": "album",
+       "available": true,
+       "image": {
+        "type": "thumb",
+        "path": "https://www.theaudiodb.com/images/media/album/thumb/daft-club-51d1ea81cf5ee.jpg",
+        "provider": "theaudiodb",
+        "remotely_accessible": true,
+        "proxy_id": "d2beb853599b2366ef340b83005e8faceff5cb5ad75a2023bcefac2d1d53c811"
+       }
+      },
+      "disc_number": 1,
+      "track_number": 12,
+      "audio_metadata": null
+     }
+    ],
+    "playlists": [],
+    "radio": [
+     {
+      "item_id": "a3f97919-2519-4e58-b0b4-386d1402e367",
+      "provider": "radiobrowser",
+      "name": "Exclusively Daft Punk",
+      "uri": "radiobrowser://radio/a3f97919-2519-4e58-b0b4-386d1402e367",
+      "media_type": "radio"
+     },
+     {
+      "item_id": "be61261d-ba40-4ab1-a045-34f0c49b0ca6",
+      "provider": "radiobrowser",
+      "name": "Exclusively Daft Punk",
+      "uri": "radiobrowser://radio/be61261d-ba40-4ab1-a045-34f0c49b0ca6",
+      "media_type": "radio"
+     }
+    ],
+    "audiobooks": [],
+    "podcasts": [
+     {
+      "item_id": "https://aod.nrjaudio.fm/xml/2364.xml",
+      "provider": "itunes_podcasts",
+      "name": "DAFT PUNK sur NRJ",
+      "uri": "itunes_podcasts://podcast/https://aod.nrjaudio.fm/xml/2364.xml",
+      "media_type": "podcast",
+      "publisher": "NRJ France",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://feeds.megaphone.fm/NPTNI1835647757",
+      "provider": "itunes_podcasts",
+      "name": "Daft Punk - Flash Biográfico",
+      "uri": "itunes_podcasts://podcast/https://feeds.megaphone.fm/NPTNI1835647757",
+      "media_type": "podcast",
+      "publisher": "Inception Point AI",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://anchor.fm/s/1c0f7fc8/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Sir Simon and DaftPunk Drew",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/1c0f7fc8/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "Simon",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://rss.art19.com/daft-punk-le-secret-des-robots",
+      "provider": "itunes_podcasts",
+      "name": "Daft Punk, le secret des robots",
+      "uri": "itunes_podcasts://podcast/https://rss.art19.com/daft-punk-le-secret-des-robots",
+      "media_type": "podcast",
+      "publisher": "Amazon Originals",
+      "total_episodes": null
+     },
+     {
+      "item_id": "https://anchor.fm/s/4e0ca294/podcast/rss",
+      "provider": "itunes_podcasts",
+      "name": "Noticia RS : Daft Punk",
+      "uri": "itunes_podcasts://podcast/https://anchor.fm/s/4e0ca294/podcast/rss",
+      "media_type": "podcast",
+      "publisher": "Jezuz Abraham Rivaz Sanchez",
+      "total_episodes": null
+     }
+    ],
+    "sound_effects": []
+   }
+  }
+ ]
+}

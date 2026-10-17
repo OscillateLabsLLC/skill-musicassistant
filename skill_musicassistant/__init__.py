@@ -1,3 +1,4 @@
+import functools
 import json
 import os
 import threading
@@ -6,6 +7,7 @@ from typing import Dict, List, Optional
 import requests
 from ma_http_client import SimpleHTTPMusicAssistantClient, debug_method
 from music_assistant_models.enums import QueueOption, RepeatMode
+from music_assistant_models.errors import MusicAssistantError
 from music_assistant_models.player import Player
 from ovos_bus_client import Message
 from ovos_bus_client.session import SessionManager
@@ -62,6 +64,29 @@ MAX_SPOKEN_TRACK_TITLES = 3
 MAX_STATION_ATTEMPTS = 3
 # Media types whose single item is a collection worth shuffling
 SHUFFLED_TYPES = ("artist", "playlist")
+# Errors that mean the server, not the skill, failed
+SERVER_ERRORS = (requests.RequestException, MusicAssistantError)
+
+
+def reports_failures(handler):
+    """Last line of defence for an intent handler: nothing escapes unspoken.
+
+    A server error is spoken as such, anything else as a failed request, and
+    both are logged with their traceback. Returns True after speaking so a
+    fallback handler counts as having answered.
+    """
+
+    @functools.wraps(handler)
+    def wrapper(self, message: Message):
+        try:
+            return handler(self, message)
+        except SERVER_ERRORS as e:
+            self._handle_exception(e, f"{handler.__name__}: Music Assistant did not answer", "could_not_reach_server")
+        except Exception as e:
+            self._handle_exception(e, f"{handler.__name__} failed", "request_failed")
+        return True
+
+    return wrapper
 
 
 class MusicAssistantSkill(_SkillBase):
@@ -72,7 +97,6 @@ class MusicAssistantSkill(_SkillBase):
         self.session: Optional[requests.Session] = None
         self.mass_client: Optional[SimpleHTTPMusicAssistantClient] = None
         self.players: List[Player] = []
-        self.cache_refreshed: bool = False
         self.last_player: Dict[str, Player] = {}  # keyed by session ID for Neon Nodes/HiveMind clients
         self.session_default_players: Dict[str, str] = {}  # session ID -> default player name, in-memory only
         self._last_used_player: Optional[Player] = None
@@ -134,8 +158,8 @@ class MusicAssistantSkill(_SkillBase):
         try:
             with open(path, encoding="utf-8") as fh:
                 on_disk = json.load(fh) or {}
-        except (OSError, ValueError):
-            pass
+        except (OSError, ValueError) as e:
+            self.log.warning("Could not read %s; writing the in-memory settings over it: %s", path, e)
         merged = {**on_disk, **dict(self.settings), key: value}
         tmp_path = f"{path}.tmp"
         with open(tmp_path, "w", encoding="utf-8") as fh:
@@ -202,83 +226,87 @@ class MusicAssistantSkill(_SkillBase):
         session = SessionManager.get(message)
         return self.session_default_players.get(session.session_id)
 
-    def _get_player_id(self, location=None, message: Optional[Message] = None):
-        """
-        Resolve player ID with fallback logic:
-        1. Explicit location from utterance (fuzzy matched)
-        2. The player this session used most recently, so "skip" follows "play X on the office speaker"
-        3. This session's default player, if one was set by voice
-        4. Default player from settings
-        """
-        self.log.debug("Getting player ID for location: %s", location)
-        session_id = SessionManager.get(message).session_id
-        last_used = self.last_player.get(session_id)
-        candidates = (
-            location,
-            last_used.name if last_used else None,
-            self._session_default_player(message),
-            self.default_player,
-        )
-        for candidate in candidates:
-            player = self._match_player(candidate)
+    def _refresh_players(self) -> None:
+        """Fetch the player list again; raises when the server does not answer."""
+        self.players = self.mass_client.get_players()
+
+    def _first_match(self, names: List[Optional[str]]) -> Optional[Player]:
+        for name in names:
+            player = self._match_player(name)
             if player:
-                self.cache_refreshed = False
-                self.last_player[session_id] = player
-                self._last_used_player = player
-                return player.player_id
-        if not self.mass_client:
-            self.log.warning("Music Assistant client not initialized, cannot get player ID")
-            return ""
-
-        try:
-            # Get all available players using our HTTP client
-            if self.cache_refreshed:
-                self.log.error("Cache already refreshed, player ID cannot be found")
-                self.cache_refreshed = False
-                return None
-            self.log.info("Could not find %s in cache, getting players from Music Assistant", location)
-            players: list[Player] = self.mass_client.get_players()
-            self.log.info("Got %s players", len(players))
-            self.players = players
-            self.cache_refreshed = True
-            return self._get_player_id(location, message)
-
-        except Exception as e:
-            self.log.error("Error getting players: %s", e)
-            import traceback
-
-            self.log.error("Full traceback: %s", traceback.format_exc())
-
+                return player
         return None
 
-    def _resolve(self, resolver, *args) -> Optional[ResolvedItem]:
-        """Run a server-side by-name lookup; None on any failure so callers fall back to search."""
-        try:
-            return resolver(self.mass_client, *args)
-        except Exception as e:
-            self.log.warning("By-name lookup failed, falling back to search: %s", e)
-            return None
+    def _default_player_names(self, message: Optional[Message]) -> List[Optional[str]]:
+        """What a command without a player means, most specific first."""
+        last_used = self.last_player.get(SessionManager.get(message).session_id)
+        return [last_used.name if last_used else None, self._session_default_player(message), self.default_player]
 
-    def _get_player(self, location=None, message: Optional[Message] = None) -> str:
-        """Get the player ID for the given location"""
+    def _find_player(self, location: Optional[str], message: Optional[Message]) -> Optional[Player]:
+        """The player a request means, or None.
+
+        1. The player named in the utterance; a name that matches nothing is
+           never swapped for a default
+        2. The player this session used most recently, so "skip" follows
+           "play X on the office speaker"
+        3. This session's default player, if one was set by voice
+        4. The default_player setting
+
+        The player list is fetched again once before giving up, which raises
+        when the server does not answer.
+        """
+        names = [location] if location else self._default_player_names(message)
+        player = self._first_match(names)
+        if player is None and self.mass_client is not None:
+            self._refresh_players()
+            player = self._first_match(names)
+        return player
+
+    def _get_player_id(self, location=None, message: Optional[Message] = None) -> Optional[str]:
+        """Player id for a request, remembered as the session's last used; None when nothing matched."""
+        player = self._find_player(location, message)
+        if player is None:
+            return None
+        self.last_player[SessionManager.get(message).session_id] = player
+        self._last_used_player = player
+        return player.player_id
+
+    def _get_player(self, location=None, message: Optional[Message] = None, quiet: bool = False) -> str:
+        """Player id for a request, or "" after saying why there is none.
+
+        ``quiet`` is for the fallback handler, which declines without a word
+        so another skill can answer. A server error propagates either way.
+        """
         if not self.configured:
-            self.speak_dialog("not_configured")
+            if not quiet:
+                self.speak_dialog("not_configured")
             return ""
         player_id = self._get_player_id(location, message)
         if not player_id:
-            self.speak_dialog("could_not_find_player")
-            self.gui.show_text(f"Could not find a player for {location}.")
+            if not quiet:
+                self._say_no_player(location)
             return ""
         player = self._last_used_player
         if player is not None and getattr(player, "available", True) is False:
-            self.speak_dialog("player_unavailable", {"player": player.name})
+            if not quiet:
+                self.speak_dialog("player_unavailable", {"player": player.name})
             return ""
         return player_id
 
-    def _handle_exception(self, e: Exception, log_message: str, dialog: str, dialog_data: Optional[dict] = None):
-        self.log.exception(log_message, e)
-        self.gui.show_text(f"{log_message}. Check the logs for more details.")
-        self.speak_dialog(dialog, dialog_data or {})
+    def _say_no_player(self, location: Optional[str]) -> None:
+        """Say that no player matched, naming the one asked for when there was one."""
+        if location:
+            self.speak_dialog("could_not_find_named_player", {"player": location})
+            self.gui.show_text(f"Could not find a player called {location}.")
+            return
+        self.speak_dialog("could_not_find_player")
+        self.gui.show_text("Could not find a player. Set a default player or name one.")
+
+    def _handle_exception(self, e: Exception, what_failed: str, dialog: str, dialog_data: Optional[dict] = None):
+        """Log a failure with its traceback, show it, and say the matching dialog."""
+        self.log.exception("%s: %s", what_failed, e)
+        self.gui.show_text(f"{what_failed}. Check the logs for more details.")
+        self._say(dialog, dialog_data)
 
     def _load_volume_aliases(self):
         """Load locale-specific volume aliases."""
@@ -288,6 +316,7 @@ class MusicAssistantSkill(_SkillBase):
             try:
                 values = self.resources.load_named_value_file("volume_levels").items()
             except FileNotFoundError:
+                self.log.warning("No volume_levels.value for %s; spoken volume levels are disabled", self.lang)
                 values = []
             for name, value in values:
                 key = name.lower().strip()
@@ -306,6 +335,7 @@ class MusicAssistantSkill(_SkillBase):
             try:
                 values = self.resources.load_list_file(name) or []
             except FileNotFoundError:
+                self.log.warning("No %s.list for %s; the phrasings it covers are disabled", name, self.lang)
                 values = []
             self.resources.static[cache_key] = values
         return self.resources.static[cache_key]
@@ -322,119 +352,93 @@ class MusicAssistantSkill(_SkillBase):
         return None
 
     @intent_handler("pause.intent")
+    @reports_failures
     def handle_pause(self, message: Message):
         """Pause, or resume when the request says so; never the play/pause toggle."""
         self.log.debug("Pause intent received:\n%s", message.data)
-        location = message.data.get("location")
         resume = self.voc_match(message.data.get("utterance", ""), "resume", lang=self.lang)
-
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
         try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
             if resume:
                 self.mass_client.send_command("player_queues/resume", queue_id=player_id)
                 self.speak_dialog("resumed")
             else:
                 self.mass_client.send_command("player_queues/pause", queue_id=player_id)
                 self.speak_dialog("paused")
-
         except Exception as e:
-            self.log.error("Pause error: %s", e)
-            self.speak_dialog("could_not_pause")
+            self._handle_exception(e, "Pause failed", "could_not_pause")
 
     @intent_handler("next.intent")
+    @reports_failures
     def handle_next(self, message: Message):
-        """Handle next track commands"""
+        """Skip to the next track or station."""
         self.log.debug("Next intent received:\n%s", message.data)
-        location = message.data.get("location")
-
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
         try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            if self.mass_client:
-                self.mass_client.queue_command_next(player_id)
-            self.speak_dialog("next_track")
-
+            self.mass_client.queue_command_next(player_id)
         except Exception as e:
-            self.log.error("Next error: %s", e)
-            self.speak_dialog("could_not_next_track")
+            self._handle_exception(e, "Next track failed", "could_not_next_track")
+            return
+        self.speak_dialog("next_track")
 
     @intent_handler("previous.intent")
+    @reports_failures
     def handle_previous(self, message: Message):
-        """Handle previous track commands"""
+        """Go back to the previous track."""
         self.log.debug("Previous intent received:\n%s", message.data)
-        location = message.data.get("location")
-
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
         try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            if self.mass_client:
-                self.mass_client.queue_command_previous(player_id)
-            self.speak_dialog("previous_track")
-
+            self.mass_client.queue_command_previous(player_id)
         except Exception as e:
-            self.log.error("Previous error: %s", e)
-            self.speak_dialog("could_not_previous_track")
+            self._handle_exception(e, "Previous track failed", "could_not_previous_track")
+            return
+        self.speak_dialog("previous_track")
 
     @intent_handler("volume.intent")
+    @reports_failures
     def handle_volume(self, message: Message):
-        """Handle volume control commands"""
+        """Mute, unmute, step, or set the volume of a player."""
         self.log.debug("Volume intent received:\n%s", message.data)
-        volume_level = message.data.get("volume_level")
-        location = message.data.get("location")
-
+        player_id = self._get_player(message.data.get("location"), message)
+        if not player_id:
+            return
         try:
-            # Get player
-            player_id = self._get_player(location, message)
-            if not player_id:
-                return
-
-            action = self._get_volume_action(message)
-            if action == "unmute":
-                self.log.info("Unmuting player %s", player_id)
-                self.mass_client.player_command_volume_mute(player_id, muted=False)
-                self.speak_dialog("volume_unmuted")
-                return
-            if action == "mute":
-                self.log.info("Muting player %s", player_id)
-                self.mass_client.player_command_volume_mute(player_id, muted=True)
-                self.speak_dialog("volume_muted")
-                return
-
-            # Parse volume level (could be "50", "fifty", "moitié", etc.)
-            volume = self._parse_volume_level(volume_level)
-            if volume == "up":
-                self.mass_client.player_command_volume_up(player_id)
-                self.speak_dialog("volume_up")
-                return
-            if volume == "down":
-                self.mass_client.player_command_volume_down(player_id)
-                self.speak_dialog("volume_down")
-                return
-            if volume is None:
-                self.log.error("Invalid volume level: %s", volume_level)
-                self.speak_dialog("could_not_understand_volume", {"volume_level": volume_level})
-                return
-
-            # Use our HTTP client for volume control
-            if self.mass_client:
-                self.log.info("Setting volume to %s for player %s", volume, player_id)
-                self.mass_client.player_command_volume_set(player_id, volume)
-            self.log.debug("Set volume to %s for player %s", volume, player_id)
-            self.speak_dialog("volume_set", {"volume": volume})
-
+            self._change_volume(player_id, self._get_volume_action(message), message.data.get("volume_level"))
         except Exception as e:
-            self.log.error("Volume error: %s", e)
-            self.speak_dialog("could_not_change_volume")
+            self._handle_exception(e, "Volume change failed", "could_not_change_volume")
+
+    def _change_volume(self, player_id: str, action: Optional[str], volume_level) -> None:
+        """Send one volume command and say what was done."""
+        if action == "unmute":
+            self.mass_client.player_command_volume_mute(player_id, muted=False)
+            self.speak_dialog("volume_unmuted")
+            return
+        if action == "mute":
+            self.mass_client.player_command_volume_mute(player_id, muted=True)
+            self.speak_dialog("volume_muted")
+            return
+        volume = self._parse_volume_level(volume_level)
+        if volume == "up":
+            self.mass_client.player_command_volume_up(player_id)
+            self.speak_dialog("volume_up")
+            return
+        if volume == "down":
+            self.mass_client.player_command_volume_down(player_id)
+            self.speak_dialog("volume_down")
+            return
+        if volume is None:
+            self.log.error("Invalid volume level: %s", volume_level)
+            self.speak_dialog("could_not_understand_volume", {"volume_level": volume_level})
+            return
+        self.log.info("Setting volume to %s for player %s", volume, player_id)
+        self.mass_client.player_command_volume_set(player_id, volume)
+        self.speak_dialog("volume_set", {"volume": volume})
 
     @debug_method
     def _parse_volume_level(self, volume_input: str):
@@ -476,16 +480,13 @@ class MusicAssistantSkill(_SkillBase):
         player_id = self._get_player(message.data.get("location"), message)
         if not player_id:
             return None, None
-        try:
-            now = catalog.now_playing_for(self.mass_client, player_id)
-        except Exception as e:
-            self.log.error("Could not read the current media: %s", e)
-            now = None
+        now = catalog.now_playing_for(self.mass_client, player_id)
         if not now:
             self.speak_dialog("nothing_playing")
         return player_id, now
 
     @intent_handler("now_playing.intent")
+    @reports_failures
     def handle_now_playing(self, message: Message):
         """Say which track and artist a player is rendering."""
         _, now = self._current_media(message)
@@ -503,18 +504,19 @@ class MusicAssistantSkill(_SkillBase):
         self.gui.show_text(f"{now.title} - {now.artist or ''}")
 
     @intent_handler("like.intent")
+    @reports_failures
     def handle_like(self, message: Message):
         """Add the current track to the Music Assistant favorites."""
         _, now = self._current_media(message)
         if not now:
             return
         if not now.uri:
-            self.speak_dialog("could_not_find_track", {"track": now.title})
+            self.speak_dialog("could_not_like", {"title": now.title})
             return
         try:
             self.mass_client.add_favorite(now.uri)
         except Exception as e:
-            self._handle_exception(e, "Could not add to favorites: %s", "could_not_find_track", {"track": now.title})
+            self._handle_exception(e, "Could not add to favorites", "could_not_like", {"title": now.title})
             return
         self.speak_dialog("liked", {"title": now.title})
 
@@ -555,6 +557,7 @@ class MusicAssistantSkill(_SkillBase):
         return parse(utterance, self.lexicon, is_player=lambda name: self._match_player(name) is not None)
 
     @intent_handler("play.intent")
+    @reports_failures
     def handle_play(self, message: Message):
         """Any request that starts with a play verb: parse, resolve, play, speak."""
         request = self._parse(message.data.get("utterance") or message.data.get("query") or "")
@@ -564,12 +567,15 @@ class MusicAssistantSkill(_SkillBase):
         self._play_request(request, message, claimed=True)
 
     @fallback_handler(priority=GENERIC_PLAY_FALLBACK_PRIORITY)
+    @reports_failures
     def handle_generic_play(self, message: Message) -> bool:
         """The same pipeline for a play-verb utterance no intent claimed.
 
         Runs in the medium fallback tier, after every registered intent and
-        before the LLM fallbacks (85+). Stays silent and returns False on any
-        miss so later fallbacks get their turn.
+        before the LLM fallbacks (85+). Declines without a word (False) when
+        the request is not for this skill or nothing was found, so later
+        fallbacks get their turn. A server error or a playback failure is
+        spoken, because no other skill can fix it.
         """
         if not self.generic_play_fallback:
             return False
@@ -582,21 +588,22 @@ class MusicAssistantSkill(_SkillBase):
         return self._play_request(request, message, claimed=False)
 
     def _play_request(self, request: MediaRequest, message: Message, claimed: bool) -> bool:
-        """The one play pipeline: player, catalog, playback, feedback."""
-        location = request.location or None
-        player_id = self._get_player(location, message) if claimed else self._get_player_id(location, message)
+        """The one play pipeline: player, catalog, playback, feedback. True when the skill answered."""
+        player_id = self._get_player(request.location or None, message, quiet=not claimed)
         if not player_id:
             return False
         found = resolve(self.mass_client, request)
         self.log.info("Request %s resolved to %s", request, found)
         if not found.found:
+            if found.failed_lookups:
+                self._say("could_not_reach_server")
+                return True
             if claimed:
                 self._say(*feedback.not_found(request))
             return False
         if not self._start_playback(found, request, player_id):
-            if claimed:
-                self._say(*feedback.could_not_play(request))
-            return False
+            self._say(*feedback.could_not_play(request))
+            return True
         for dialog, data in feedback.playing(request, found):
             self._say(dialog, data)
         return True
@@ -627,7 +634,7 @@ class MusicAssistantSkill(_SkillBase):
                 )
             return True
         except Exception as e:
-            self.log.error("Play media error: %s", e)
+            self.log.exception("Play media error: %s", e)
             return False
 
     def _play_first_station(self, uris: List[str], player_id: str) -> bool:
@@ -659,6 +666,7 @@ class MusicAssistantSkill(_SkillBase):
         self.mass_client.play_media(**kwargs)
 
     @intent_handler("shuffle.intent")
+    @reports_failures
     def handle_shuffle(self, message: Message):
         """Turn queue shuffle on or off."""
         enabled = not self.voc_match(message.data.get("utterance", ""), "shuffle_off", lang=self.lang)
@@ -668,11 +676,12 @@ class MusicAssistantSkill(_SkillBase):
         try:
             self.mass_client.queue_set_shuffle(player_id, enabled)
         except Exception as e:
-            self._handle_exception(e, "Could not change shuffle: %s", "could_not_play_music")
+            self._handle_exception(e, "Could not change shuffle", "could_not_change_queue_mode")
             return
         self.speak_dialog("shuffle_on" if enabled else "shuffle_off")
 
     @intent_handler("repeat.intent")
+    @reports_failures
     def handle_repeat(self, message: Message):
         """Set the queue repeat mode from the words used: off, all, or this track."""
         mode = self._repeat_mode(message.data.get("utterance", ""))
@@ -682,7 +691,7 @@ class MusicAssistantSkill(_SkillBase):
         try:
             self.mass_client.queue_set_repeat(player_id, mode)
         except Exception as e:
-            self._handle_exception(e, "Could not change repeat: %s", "could_not_play_music")
+            self._handle_exception(e, "Could not change repeat", "could_not_change_queue_mode")
             return
         self.speak_dialog(f"repeat_{mode.value}")
 
@@ -721,43 +730,47 @@ class MusicAssistantSkill(_SkillBase):
     def _playlist_from(self, message: Message) -> Optional[catalog.PlaylistRef]:
         """The library playlist the utterance names, speaking when there is none."""
         name = self._spoken_playlist_name(message)
-        playlist = self._resolve(catalog.find_playlist, name)
+        playlist = catalog.find_playlist(self.mass_client, name)
         if not playlist:
             self.speak_dialog("could_not_find_playlist", {"playlist": name})
         return playlist
 
     @intent_handler("create_playlist.intent")
+    @reports_failures
     def handle_create_playlist(self, message: Message):
         """Create an empty library playlist by name."""
         name = self._spoken_playlist_name(message)
-        if self._resolve(catalog.find_playlist, name):
+        if catalog.find_playlist(self.mass_client, name):
             self.speak_dialog("playlist_exists", {"playlist": name})
             return
-        created = self._resolve(catalog.create_playlist, name)
-        if not created:
-            self.speak_dialog("could_not_change_playlist", {"playlist": name})
+        try:
+            created = catalog.create_playlist(self.mass_client, name)
+        except Exception as e:
+            self._handle_exception(e, "Could not create the playlist", "could_not_change_playlist", {"playlist": name})
             return
         self.speak_dialog("playlist_created", {"playlist": created.name})
 
     @intent_handler("add_to_playlist.intent")
+    @reports_failures
     def handle_add_to_playlist(self, message: Message):
         """Append the current track; the playlist is created on first use, as in minimy."""
         _, now = self._current_media(message)
         if not now:
             return
         name = self._spoken_playlist_name(message)
-        playlist = self._resolve(catalog.find_playlist, name) or self._resolve(catalog.create_playlist, name)
-        if not playlist or not now.uri:
+        if not now.uri:
             self.speak_dialog("could_not_change_playlist", {"playlist": name})
             return
         try:
+            playlist = catalog.find_playlist(self.mass_client, name) or catalog.create_playlist(self.mass_client, name)
             self.mass_client.add_playlist_tracks(playlist.item_id, [now.uri])
         except Exception as e:
-            self._handle_exception(e, "Could not add to playlist: %s", "could_not_change_playlist", {"playlist": name})
+            self._handle_exception(e, "Could not add to the playlist", "could_not_change_playlist", {"playlist": name})
             return
         self.speak_dialog("added_to_playlist", {"title": now.title, "playlist": playlist.name})
 
     @intent_handler("remove_from_playlist.intent")
+    @reports_failures
     def handle_remove_from_playlist(self, message: Message):
         """Remove the current track from a playlist, by uri first, then by title and artist."""
         _, now = self._current_media(message)
@@ -766,7 +779,7 @@ class MusicAssistantSkill(_SkillBase):
         playlist = self._playlist_from(message)
         if not playlist:
             return
-        positions = self._resolve(catalog.positions_of, playlist, now) or []
+        positions = catalog.positions_of(self.mass_client, playlist, now)
         if not positions:
             self.speak_dialog("not_in_playlist", {"title": now.title, "playlist": playlist.name})
             return
@@ -774,12 +787,13 @@ class MusicAssistantSkill(_SkillBase):
             self.mass_client.remove_playlist_tracks(playlist.item_id, positions)
         except Exception as e:
             self._handle_exception(
-                e, "Could not remove from playlist: %s", "could_not_change_playlist", {"playlist": playlist.name}
+                e, "Could not remove from the playlist", "could_not_change_playlist", {"playlist": playlist.name}
             )
             return
         self.speak_dialog("removed_from_playlist", {"title": now.title, "playlist": playlist.name})
 
     @intent_handler("save_queue.intent")
+    @reports_failures
     def handle_save_queue(self, message: Message):
         """Save the current queue as a new library playlist."""
         name = self._spoken_playlist_name(message)
@@ -789,14 +803,15 @@ class MusicAssistantSkill(_SkillBase):
         try:
             self.mass_client.save_queue_as_playlist(player_id, name)
         except Exception as e:
-            self._handle_exception(e, "Could not save the queue: %s", "could_not_change_playlist", {"playlist": name})
+            self._handle_exception(e, "Could not save the queue", "could_not_change_playlist", {"playlist": name})
             return
         self.speak_dialog("queue_saved", {"playlist": name})
 
     @intent_handler("list_playlists.intent")
+    @reports_failures
     def handle_list_playlists(self, message: Message):  # pylint: disable=unused-argument
         """Say how many playlists there are and name the first few."""
-        playlists = self._resolve(catalog.list_playlists) or []
+        playlists = catalog.list_playlists(self.mass_client)
         if not playlists:
             self.speak_dialog("no_playlists")
             return
@@ -804,12 +819,13 @@ class MusicAssistantSkill(_SkillBase):
         self.speak_dialog("playlists_list", {"count": len(playlists), "names": names})
 
     @intent_handler("playlist_contents.intent")
+    @reports_failures
     def handle_playlist_contents(self, message: Message):
         """Say how many tracks a playlist holds and name the first few."""
         playlist = self._playlist_from(message)
         if not playlist:
             return
-        titles = self._resolve(catalog.playlist_track_titles, playlist) or []
+        titles = catalog.playlist_track_titles(self.mass_client, playlist)
         if not titles:
             self.speak_dialog("playlist_empty", {"playlist": playlist.name})
             return
@@ -817,19 +833,13 @@ class MusicAssistantSkill(_SkillBase):
         self.speak_dialog("playlist_contents", {"playlist": playlist.name, "count": len(titles), "titles": first})
 
     @intent_handler("set_default_player.intent")
+    @reports_failures
     def handle_set_default_player(self, message: Message):
-        """Handle setting the default player for this session (or globally for the local device)"""
-        spoken_name = message.data.get("player")
-        player = self._match_player(spoken_name)
-        if not player and self.mass_client:
-            try:
-                self.players = self.mass_client.get_players()
-            except Exception as e:
-                self.log.error("Error refreshing players: %s", e)
-            player = self._match_player(spoken_name)
+        """Set the default player for this session, or for the device when it is the local session."""
+        spoken_name = (message.data.get("player") or "").strip()
+        player = self._find_player(spoken_name, message) if spoken_name else None
         if not player:
-            self.speak_dialog("could_not_find_player")
-            self.gui.show_text(f"Could not find a player matching {spoken_name}.")
+            self._say_no_player(spoken_name)
             return
 
         session = SessionManager.get(message)

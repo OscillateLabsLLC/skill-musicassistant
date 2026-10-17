@@ -8,8 +8,10 @@ from typing import cast
 from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
+import requests
 from ma_http_client import SimpleHTTPMusicAssistantClient
 from music_assistant_models.enums import MediaType, QueueOption
+from music_assistant_models.errors import MusicAssistantError
 from ovos_bus_client import Message, MessageBusClient
 from ovos_bus_client.session import Session
 from ovos_utils.fakebus import FakeBus
@@ -75,12 +77,12 @@ class TestMusicAssistantSkillIntegration:
             player_id = skill_with_mock_client._get_player_id("Any")
             assert player_id is None
 
-    def test_get_player_id_client_error(self, skill_with_mock_client, mock_client):
-        """Test behavior when client throws an error."""
+    def test_get_player_id_client_error_is_not_swallowed(self, skill_with_mock_client, mock_client):
+        """A server that does not answer raises, so the handler says so instead of guessing a player."""
         mock_client.get_players.side_effect = Exception("Connection error")
 
-        player_id = skill_with_mock_client._get_player_id("Any")
-        assert player_id is None
+        with pytest.raises(Exception, match="Connection error"):
+            skill_with_mock_client._get_player_id("Any")
 
     def test_parse_volume_level_numeric(self, skill):
         """Test volume level parsing with numeric input."""
@@ -425,7 +427,7 @@ class TestSetDefaultPlayer:
 
         skill.handle_set_default_player(message)
 
-        skill.speak_dialog.assert_called_once_with("could_not_find_player")
+        skill.speak_dialog.assert_called_once_with("could_not_find_named_player", {"player": "garage"})
         assert skill.settings.get("default_player") is None
 
 
@@ -610,11 +612,13 @@ class TestGenericPlayFallback:
         skill.mass_client.get_item_by_name.assert_called_once_with("discovery")
         assert skill.mass_client.play_media.call_args.kwargs["queue_id"] == "office-1"
 
-    def test_server_error_declines_instead_of_raising(self):
+    def test_server_error_is_spoken_not_hidden(self):
+        """No other skill can play music when the server is down, so declining would help nobody."""
         skill = _skill_with_player()
         skill.mass_client.get_item_by_name.side_effect = Exception("unknown command")
 
-        assert skill.handle_generic_play(self._utterance("play discovery")) is False
+        assert skill.handle_generic_play(self._utterance("play discovery")) is True
+        skill.speak_dialog.assert_called_once_with("could_not_reach_server")
 
     def test_can_answer_accepts_both_workshop_signatures(self):
         skill = _skill_with_player()
@@ -1257,3 +1261,86 @@ class TestRobustness:
 if __name__ == "__main__":
     # Run tests with pytest
     pytest.main([__file__, "-v"])
+
+
+class TestFailuresAreSpoken:
+    """A failure is always said out loud and never disguised as an empty result."""
+
+    def test_unknown_player_name_is_reported_not_replaced_by_the_default(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_players.return_value = skill.players
+
+        skill.handle_next(Message("next.intent", {"location": "garage"}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_find_named_player", {"player": "garage"})
+        skill.mass_client.queue_command_next.assert_not_called()
+
+    def test_player_list_failure_is_a_server_error_not_a_missing_player(self):
+        skill = _skill_with_player()
+        skill.players = []
+        skill.mass_client.get_players.side_effect = requests.ConnectionError("refused")
+
+        skill.handle_next(Message("next.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_reach_server")
+
+    def test_now_playing_failure_is_not_nothing_playing(self):
+        skill = _skill_with_player()
+        skill.mass_client.get_players.side_effect = requests.ConnectionError("refused")
+
+        skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_reach_server")
+
+    def test_playlist_listing_failure_is_not_no_playlists(self):
+        skill = _skill_with_player()
+        skill.mass_client.library_playlists.side_effect = MusicAssistantError("HTTP 500")
+
+        skill.handle_list_playlists(Message("list_playlists.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_reach_server")
+
+    def test_play_request_with_failing_lookups_is_not_not_found(self):
+        skill = _skill_with_player()
+        skill.mass_client.search_media.side_effect = MusicAssistantError("HTTP 500")
+        skill.mass_client.get_item_by_name.side_effect = MusicAssistantError("HTTP 500")
+
+        skill.handle_play(Message("play.intent", {"utterance": "play discovery"}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_reach_server")
+        skill.mass_client.play_media.assert_not_called()
+
+    def test_like_failure_says_so(self):
+        skill = _skill_with_player(current_media=_media("One More Time"))
+        skill.mass_client.add_favorite.side_effect = MusicAssistantError("HTTP 500")
+
+        skill.handle_like(Message("like.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_like", {"title": "One More Time"})
+
+    def test_shuffle_failure_says_so(self):
+        skill = _skill_with_player()
+        skill.mass_client.queue_set_shuffle.side_effect = MusicAssistantError("HTTP 500")
+
+        skill.handle_shuffle(Message("shuffle.intent", {"utterance": "shuffle on"}))
+
+        skill.speak_dialog.assert_called_once_with("could_not_change_queue_mode")
+
+    def test_a_bug_in_a_handler_is_spoken_and_logged_with_its_traceback(self):
+        skill = _skill_with_player()
+        skill.log = Mock()
+
+        with patch.object(skill, "_current_media", side_effect=TypeError("boom")):
+            skill.handle_now_playing(Message("now_playing.intent", {}))
+
+        skill.speak_dialog.assert_called_once_with("request_failed")
+        skill.log.exception.assert_called_once()
+
+    def test_every_intent_handler_reports_failures(self):
+        handlers = [
+            func for name, func in vars(MusicAssistantSkill).items() if name.startswith("handle_") and callable(func)
+        ]
+
+        unguarded = [h.__name__ for h in handlers if not getattr(h, "__wrapped__", None)]
+
+        assert handlers and not unguarded

@@ -35,6 +35,10 @@ word; what changes is how a request is understood and which failures are spoken.
   fallback, radio name variants) lives in one module and is tested against recorded Music Assistant responses.
 - A request the server cannot satisfy is reported by kind ("I couldn't find the album X"), and a request for a
   podcast or audiobook by name is no longer played as music.
+- Failures are spoken as what they are. A server that does not answer is reported as such, never as "I couldn't
+  find X", "nothing is playing" or "you have no playlists". A player name that matches nothing is reported, never
+  replaced by a default. Commands without a player go to the one you last used in the session (see Default
+  Player). Any error a handler did not expect is logged with its traceback and spoken as a failed request.
 - Radio by language works: the radio-browser provider only serves language folders under a lowercase path.
 - The Padatious training set is roughly half its 1.x size, which matters on small devices.
 - fr-fr: the control intents are translated; the parser word lists are first drafts that need review by a

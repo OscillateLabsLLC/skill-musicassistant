@@ -6,10 +6,10 @@ of the lookup primitives in ``catalog``. The contract tests in
 this module, so a server-side change shows up as a failing scenario.
 """
 
-# every resolver takes (client, request, limits) so the dispatch table can call any of them
+# every resolver takes (lookup, request, limits) so the dispatch table can call any of them
 # pylint: disable=unused-argument
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Callable, Dict, Optional, Tuple
 
 from skill_musicassistant import catalog
@@ -51,6 +51,8 @@ class Resolution:
     label: str = ""
     alternatives: int = 0
     requested_artist: str = ""
+    # lookups the server failed on the way here; with nothing found, the failure is the answer
+    failed_lookups: int = 0
 
     @property
     def found(self) -> bool:
@@ -65,47 +67,64 @@ class Resolution:
         return not same_artist(self.requested_artist, self.item.artist)
 
 
+class _Lookups:  # pylint: disable=too-few-public-methods  # a callable with state, not a service
+    """Runs catalog lookups against one client and counts the ones the server failed.
+
+    A failure returns None so the next fallback gets its turn; the count lets
+    the skill tell "nothing matched" from "the server did not answer" instead
+    of reporting every error as not found.
+    """
+
+    def __init__(self, client):
+        self.client = client
+        self.failures = 0
+
+    def __call__(self, lookup: Callable, *args):
+        try:
+            return lookup(self.client, *args)
+        except Exception as e:
+            self.failures += 1
+            log.warning("Catalog lookup %s failed: %s", getattr(lookup, "__name__", lookup), e, exc_info=True)
+            return None
+
+
 def resolve(client, request: MediaRequest, limits: Limits = Limits()) -> Resolution:
-    """Resolve a parsed request against the server. Never raises for server errors."""
+    """Resolve a parsed request against the server.
+
+    Never raises for server errors: a failed lookup is counted in
+    ``failed_lookups`` and the next fallback rule gets its turn.
+    """
+    lookup = _Lookups(client)
     resolver = _RESOLVERS.get(request.kind, _resolve_unknown)
-    return resolver(client, request, limits)
+    return replace(resolver(lookup, request, limits), failed_lookups=lookup.failures)
 
 
-def _attempt(lookup: Callable, *args):
-    """Run one lookup; None on any failure so the next fallback gets its turn."""
-    try:
-        return lookup(*args)
-    except Exception as e:
-        log.warning("Catalog lookup %s failed: %s", getattr(lookup, "__name__", lookup), e)
-        return None
-
-
-def _resolve_random(client, request: MediaRequest, limits: Limits) -> Resolution:
-    uris = _attempt(catalog.random_track_uris, client, limits.random_tracks) or []
+def _resolve_random(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
+    uris = lookup(catalog.random_track_uris, limits.random_tracks) or []
     return Resolution(Kind.RANDOM, uris=tuple(uris))
 
 
-def _resolve_genre(client, request: MediaRequest, limits: Limits) -> Resolution:
+def _resolve_genre(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
     """A library genre, or whatever the name turns out to be ("play beatles music")."""
     if len(request.name) < MIN_GENRE_LENGTH:
-        return _resolve_random(client, request, limits)
-    genre = _attempt(catalog.find_genre, client, request.name)
+        return _resolve_random(lookup, request, limits)
+    genre = lookup(catalog.find_genre, request.name)
     if genre:
-        uris = _attempt(catalog.genre_uris, client, genre, limits.genre_tracks) or []
+        uris = lookup(catalog.genre_uris, genre, limits.genre_tracks) or []
         return Resolution(Kind.GENRE, uris=tuple(uris), label=genre.get("name") or request.name)
-    by_name = _resolve_unknown(client, request, limits)
+    by_name = _resolve_unknown(lookup, request, limits)
     if by_name.found:
         return by_name
     return Resolution(Kind.GENRE, label=request.name)
 
 
-def _resolve_radio_category(client, request: MediaRequest, limits: Limits) -> Resolution:
-    uris = _attempt(catalog.radio_category_station_uris, client, request.name, limits.radio_stations) or []
+def _resolve_radio_category(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
+    uris = lookup(catalog.radio_category_station_uris, request.name, limits.radio_stations) or []
     return Resolution(Kind.RADIO_CATEGORY, uris=tuple(uris), label=request.name)
 
 
-def _resolve_radio(client, request: MediaRequest, limits: Limits) -> Resolution:
-    item = _attempt(catalog.search_radio, client, request.name, _with_radio_word(request.name))
+def _resolve_radio(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
+    item = lookup(catalog.search_radio, request.name, _with_radio_word(request.name))
     return Resolution(Kind.RADIO, item=item)
 
 
@@ -114,27 +133,27 @@ def _with_radio_word(spoken: str) -> str:
     return spoken if "radio" in spoken.lower().split() else f"{spoken} radio"
 
 
-def _resolve_track(client, request: MediaRequest, limits: Limits) -> Resolution:
+def _resolve_track(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
     artist = request.artist or None
-    item = _attempt(catalog.resolve_track, client, request.name, artist)
+    item = lookup(catalog.resolve_track, request.name, artist)
     if not item:
-        item = _first_by_artist(_attempt(catalog.search_tracks, client, request.name) or [], artist)
+        item = _first_by_artist(lookup(catalog.search_tracks, request.name) or [], artist)
     if not item and artist:
-        item = _attempt(catalog.resolve_track, client, request.name)
+        item = lookup(catalog.resolve_track, request.name)
     return Resolution(Kind.TRACK, item=item, requested_artist=request.artist)
 
 
-def _resolve_album(client, request: MediaRequest, limits: Limits) -> Resolution:
+def _resolve_album(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
     artist = request.artist or None
-    item = _attempt(catalog.resolve_album, client, request.name, artist)
+    item = lookup(catalog.resolve_album, request.name, artist)
     alternatives = 0
     if not item:
-        albums = _attempt(catalog.search_albums, client, request.name) or []
+        albums = lookup(catalog.search_albums, request.name) or []
         item = _first_by_artist(albums, artist)
         if item and not artist:
             alternatives = len(albums) - 1
     if not item and artist:
-        item = _attempt(catalog.resolve_album, client, request.name)
+        item = lookup(catalog.resolve_album, request.name)
     return Resolution(Kind.ALBUM, item=item, alternatives=alternatives, requested_artist=request.artist)
 
 
@@ -145,34 +164,34 @@ def _first_by_artist(items, artist: Optional[str]) -> Optional[ResolvedItem]:
     return items[0] if items else None
 
 
-def _resolve_artist(client, request: MediaRequest, limits: Limits) -> Resolution:
-    item = _attempt(catalog.resolve_artist, client, request.name)
+def _resolve_artist(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
+    item = lookup(catalog.resolve_artist, request.name)
     if not item:
-        artists = _attempt(catalog.search_artists, client, request.name) or []
+        artists = lookup(catalog.search_artists, request.name) or []
         item = artists[0] if artists else None
     return Resolution(Kind.ARTIST, item=item)
 
 
-def _resolve_playlist(client, request: MediaRequest, limits: Limits) -> Resolution:
-    ref = _attempt(catalog.find_playlist, client, request.name)
+def _resolve_playlist(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
+    ref = lookup(catalog.find_playlist, request.name)
     item = ResolvedItem(name=ref.name, uri=ref.uri, media_type="playlist") if ref else None
     if not item:
-        playlists = _attempt(catalog.search_playlists, client, request.name) or []
+        playlists = lookup(catalog.search_playlists, request.name) or []
         item = playlists[0] if playlists else None
     return Resolution(Kind.PLAYLIST, item=item)
 
 
-def _resolve_unknown(client, request: MediaRequest, limits: Limits) -> Resolution:
+def _resolve_unknown(lookup: _Lookups, request: MediaRequest, limits: Limits) -> Resolution:
     """No type word: the server decides, artist before album before track."""
     if request.artist:
-        item = _attempt(catalog.resolve_track, client, request.name, request.artist)
+        item = lookup(catalog.resolve_track, request.name, request.artist)
         if not item:
-            item = _attempt(catalog.resolve_album, client, request.name, request.artist)
+            item = lookup(catalog.resolve_album, request.name, request.artist)
         if not item:
             # the separator may be part of a title: "stand by me"
-            item = _attempt(catalog.resolve_generic, client, f"{request.name} by {request.artist}")
+            item = lookup(catalog.resolve_generic, f"{request.name} by {request.artist}")
     else:
-        item = _attempt(catalog.resolve_generic, client, request.name)
+        item = lookup(catalog.resolve_generic, request.name)
     kind = _KIND_BY_MEDIA_TYPE.get(item.media_type, Kind.UNKNOWN) if item else Kind.UNKNOWN
     return Resolution(kind, item=item, requested_artist=request.artist)
 

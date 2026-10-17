@@ -186,22 +186,50 @@ Contract tests replace hand-written mocks:
 
 ### Play pipeline and feedback policy
 
-`handle_play_request(request, message)` is the only place that plays:
+`_play_request(request, message, claimed)` is the only place that plays:
 
-1. Resolve the player (session default, then settings default, then the
-   first available player; unavailable players produce `player_unavailable`).
-2. `catalog.resolve`.
-3. Play: one item goes through `play_media` with queue option REPLACE and a
-   shuffle flag derived from the kind; a uri list goes through the REPLACE
-   plus background ADD pattern used today for radio categories.
-4. `feedback.dialog_for(request, resolution)` returns `(dialog_name, data)`.
-   This is the single place that knows about `playing_different_artist`,
-   `found_several_albums`, `playing_radio_category`, and the not-found
-   dialogs per kind.
+1. Resolve the player: the one named in the utterance, else the one this
+   session used most recently, else the session's voice-set default, else the
+   `default_player` setting. A name that matches nothing is reported with
+   `could_not_find_named_player`; it is never swapped for a default, because
+   "skip" after "play X on the office speaker" must not wake another room.
+2. `resolve(client, request)` returns a `Resolution` that also counts the
+   lookups the server failed.
+3. Play: one item goes through `play_media` with queue option PLAY and a
+   shuffle flag derived from the kind; a uri list REPLACEs the queue; radio
+   categories start one station and append the rest in the background.
+4. `feedback` returns `(dialog_name, data)` pairs. This is the single place
+   that knows about `playing_different_artist`, `found_several_albums`,
+   `playing_radio_category`, and the not-found dialogs per kind.
 
-Control handlers stay thin and keep their current dialogs. The settings
-persistence fix (`_persist_setting`, merge with disk and atomic replace)
-and the `stop` semantics from 1.0 carry over unchanged.
+The fallback handler (`claimed=False`) declines without a word when the skill
+is not configured, no player matched, or nothing was found, so a later
+fallback can answer. It does speak when the server did not answer or playback
+failed: no other skill can fix those, and silence would hand the request to
+an LLM fallback that cannot play music either.
+
+### Failure policy
+
+Applies to every handler, and is the convention for other skills too:
+
+- A failure is spoken as what it is. A lookup the server failed is never
+  reported as "not found", "nothing playing" or "no playlists": the resolver
+  counts failed lookups, and the handlers let server errors propagate.
+- Every intent handler is wrapped by `reports_failures`. A `requests` or
+  `MusicAssistantError` exception that escapes is spoken as
+  `could_not_reach_server`; anything else as `request_failed`. Both are
+  logged with their traceback through `_handle_exception`.
+- A handler catches an exception itself only to say something more specific
+  (`could_not_pause`, `could_not_like`, `could_not_change_playlist`), and
+  then still logs the traceback.
+- The only swallowed exceptions are inside retry loops (`_play_first_station`,
+  the resolver's fallback chain), where the next attempt is the handling and
+  the failure is counted or logged.
+- Missing locale resources (word lists, volume aliases) and an unreadable
+  settings file are logged at warning level rather than treated as empty.
+
+The settings persistence fix (`_persist_setting`, merge with disk and atomic
+replace) and the `stop` semantics from 1.0 carry over unchanged.
 
 ## Compatibility
 

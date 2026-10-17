@@ -308,6 +308,42 @@ class TestPlayerResolution:
         assert skill.last_player["client-a"].player_id == "office-1"
         assert skill.last_player["client-b"].player_id == "kitchen-1"
 
+    def test_no_location_follows_the_player_this_session_last_used(self, skill):
+        """ "play X on the office speaker" then "skip" must skip the office speaker, not the default."""
+        skill.settings["default_player"] = "Living Room Speaker"
+        message = _message_with_session("client-a")
+        skill._get_player_id("office speaker", message)
+
+        assert skill._get_player_id(None, message) == "office-1"
+
+    def test_last_used_player_is_per_session(self, skill):
+        skill.settings["default_player"] = "Living Room Speaker"
+        skill._get_player_id("office speaker", _message_with_session("client-a"))
+
+        assert skill._get_player_id(None, _message_with_session("client-b")) == "lr-1"
+
+    def test_last_used_player_beats_session_default(self, skill):
+        skill.session_default_players["client-a"] = "Kitchen Display"
+        message = _message_with_session("client-a")
+        skill._get_player_id("office speaker", message)
+
+        assert skill._get_player_id(None, message) == "office-1"
+
+    def test_location_beats_last_used_player(self, skill):
+        message = _message_with_session("client-a")
+        skill._get_player_id("office speaker", message)
+
+        assert skill._get_player_id("kitchen display", message) == "kitchen-1"
+
+    def test_skip_without_location_targets_the_last_used_player(self, skill):
+        skill.settings["default_player"] = "Living Room Speaker"
+        skill.settings["music_assistant_url"] = "http://ma:8095"
+        skill._get_player_id("office speaker", _message_with_session("client-a"))
+
+        skill.handle_next(_message_with_session("client-a"))
+
+        skill.mass_client.queue_command_next.assert_called_once_with("office-1")
+
 
 class TestSetDefaultPlayer:
     """Tests for the set_default_player intent handler."""

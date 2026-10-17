@@ -60,7 +60,7 @@ word; what changes is how a request is understood and which failures are spoken.
 
 ## Usage
 
-All playback commands accept an optional player location, e.g. "play the artist Caravan Palace **on the office speaker**". Without a location, the skill uses your default player (see below).
+All playback commands accept an optional player location, e.g. "play the artist Caravan Palace **on the office speaker**". Without a location, the skill uses the player you last used in this session, then your default player (see below).
 
 ### Play Music
 
@@ -118,8 +118,9 @@ Always say "playlist" in these commands; "add this to Workout" alone is left to 
 When you don't name a player in a command, the skill resolves one in this order:
 
 1. The player named in the utterance (fuzzy matched)
-2. This session's default player, if one was set by voice
-3. The `default_player` skill setting
+2. The player this session used most recently, so "skip" after "play Discovery on the office speaker" skips the office speaker
+3. This session's default player, if one was set by voice
+4. The `default_player` skill setting
 
 On the local device, setting a default player by voice persists it to the `default_player` setting. Under HiveMind or Neon Nodes, each client session gets its own default — for example, a HiveMind client on your work computer can use the office speaker by default while the kitchen satellite keeps its own. Per-session defaults are held in memory and reset when the skill restarts; the `default_player` setting remains the fallback.
 

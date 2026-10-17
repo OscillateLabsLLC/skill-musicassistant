@@ -206,15 +206,24 @@ class MusicAssistantSkill(_SkillBase):
         """
         Resolve player ID with fallback logic:
         1. Explicit location from utterance (fuzzy matched)
-        2. This session's default player, if one was set by voice
-        3. Default player from settings
+        2. The player this session used most recently, so "skip" follows "play X on the office speaker"
+        3. This session's default player, if one was set by voice
+        4. Default player from settings
         """
         self.log.debug("Getting player ID for location: %s", location)
-        for candidate in (location, self._session_default_player(message), self.default_player):
+        session_id = SessionManager.get(message).session_id
+        last_used = self.last_player.get(session_id)
+        candidates = (
+            location,
+            last_used.name if last_used else None,
+            self._session_default_player(message),
+            self.default_player,
+        )
+        for candidate in candidates:
             player = self._match_player(candidate)
             if player:
                 self.cache_refreshed = False
-                self.last_player[SessionManager.get(message).session_id] = player
+                self.last_player[session_id] = player
                 self._last_used_player = player
                 return player.player_id
         if not self.mass_client:

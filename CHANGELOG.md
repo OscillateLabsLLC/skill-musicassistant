@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v1.0.1...v1.0.2) (2026-11-04)
+
+
+### Bug Fixes
+
+* **deps:** bump certifi to 2026.10.23 ([39710e7](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/39710e7f692bc76fd16e03cefde3974cdb378edc))
+* **deps:** bump certifi to 2026.10.23 ([81c4afd](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/81c4afd080a51bd62b2679ab5f7c1b9bee094d9c))
+
 ## [1.0.1](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v1.0.0...v1.0.1) (2026-10-17)
 
 

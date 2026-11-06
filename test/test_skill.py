@@ -9,13 +9,10 @@ from unittest.mock import Mock, PropertyMock, patch
 
 import pytest
 import requests
-from ma_http_client import SimpleHTTPMusicAssistantClient
-from music_assistant_models.enums import MediaType, QueueOption
-from music_assistant_models.errors import MusicAssistantError
+from ma_http_client import MediaType, MusicAssistantError, QueueOption, SimpleHTTPMusicAssistantClient
 from ovos_bus_client import Message, MessageBusClient
 from ovos_bus_client.session import Session
 from ovos_utils.fakebus import FakeBus
-
 from skill_musicassistant import MusicAssistantSkill
 
 

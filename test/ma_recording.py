@@ -12,8 +12,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
-from ma_http_client import SimpleHTTPMusicAssistantClient
-from music_assistant_models.errors import MusicAssistantError
+from ma_http_client import MusicAssistantError, SimpleHTTPMusicAssistantClient
 
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "ma"

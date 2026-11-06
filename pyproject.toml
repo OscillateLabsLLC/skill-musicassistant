@@ -13,8 +13,7 @@ authors = [
 keywords = ["mycroft", "ovos", "neon", "plugin", "media", "home assistant", "music assistant", "open home foundation"]
 dynamic = ["version"]
 dependencies = [
-    "ma-http-client>=0.2.1,<1.0.0",
-    "music-assistant-models-loose==0.0.1",
+    "ma-http-client>=0.3.0,<1.0.0",
     "ovos-bus-client>=0.0.10,<3.0.0",
     "ovos-number-parser>=0.0.1,<1.0.0",
     "ovos-plugin-manager>=0.8.3",
@@ -114,9 +113,6 @@ python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-
-[tool.uv.sources]
-music-assistant-models = { git = "https://github.com/oscillatelabsllc/music-assistant-models", rev = "main" }
 
 [project.entry-points."ovos.plugin.skill"]
 "skill-musicassistant.oscillatelabsllc" = "skill_musicassistant:MusicAssistantSkill"

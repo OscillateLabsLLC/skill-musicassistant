@@ -5,10 +5,14 @@ import threading
 from typing import Dict, List, Optional
 
 import requests
-from ma_http_client import SimpleHTTPMusicAssistantClient, debug_method
-from music_assistant_models.enums import QueueOption, RepeatMode
-from music_assistant_models.errors import MusicAssistantError
-from music_assistant_models.player import Player
+from ma_http_client import (
+    MusicAssistantError,
+    Player,
+    QueueOption,
+    RepeatMode,
+    SimpleHTTPMusicAssistantClient,
+    debug_method,
+)
 from ovos_bus_client import Message
 from ovos_bus_client.session import SessionManager
 from ovos_number_parser import extract_number

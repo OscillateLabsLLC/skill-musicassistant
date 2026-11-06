@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.3](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v1.0.2...v1.0.3) (2026-11-06)
+
+
+### Bug Fixes
+
+* **deps:** import models from ma-http-client and drop music-assistant-models-loose ([6137d0b](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/6137d0b04778687e1b29d6337111bc2a74a21e29))
+* **deps:** import models from ma-http-client and drop music-assistant-models-loose ([2e0d8c6](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/2e0d8c6097748c0f5d7306ab9e46eb543f1bfcb4))
+* **deps:** require ma-http-client 1.x and update the lockfile ([470119e](https://github.com/OscillateLabsLLC/skill-musicassistant/commit/470119e1df8017f4abf31fba612b556864f57ad7))
+
 ## [1.0.2](https://github.com/OscillateLabsLLC/skill-musicassistant/compare/v1.0.1...v1.0.2) (2026-11-04)
 
 
